@@ -9,14 +9,14 @@ export interface DashboardTemplateProps {
 export function DashboardTemplate({ children }: DashboardTemplateProps) {
 
   return (
-    <>
-      <DashboardMenu />
-      <div className="flex">
-        <DashboardNavigation />
-        <main className="max-w-7xl mx-auto">
+    <div className="h-screen flex">
+      <DashboardNavigation />
+      <div className="w-full">
+        <DashboardMenu />
+        <main className="mx-10 mt-5 flex flex-col space-y-4">
           {children}
         </main>
       </div>
-    </>
+    </div>
   )
 }

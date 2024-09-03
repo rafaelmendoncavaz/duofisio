@@ -2,7 +2,7 @@ import { ComponentProps, forwardRef } from "react";
 import { tv, VariantProps } from "tailwind-variants";
 
 const inputVariants = tv({
-  base: "bg-transparent outline-none border rounded-md focus:border-fisioblue p-1 shadow-shape",
+  base: "bg-transparent outline-none border rounded-md focus:border-fisioblue py-1 px-3 shadow-shape",
 
   variants: {
     sizeVariant: {
