@@ -20,12 +20,12 @@ export function DashboardMenu() {
         <div>
           <button
             onClick={() => handleLogoutSection()}
-            className="flex gap-2"
+            className="flex items-center gap-2"
           >
-            <LogOut size={20} />
             <span className="leading-none hover:underline">
               Sair
             </span>
+            <LogOut size={20} />
           </button>
         </div>
       </div>

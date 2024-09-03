@@ -11,10 +11,12 @@ export function DashboardTemplate({ children }: DashboardTemplateProps) {
   return (
     <>
       <DashboardMenu />
-      <DashboardNavigation />
-      <main>
-        {children}
-      </main>
+      <div className="flex">
+        <DashboardNavigation />
+        <main className="max-w-7xl mx-auto">
+          {children}
+        </main>
+      </div>
     </>
   )
 }
