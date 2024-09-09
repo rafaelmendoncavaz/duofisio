@@ -1,7 +1,8 @@
 import type { z } from "zod";
-import type { loginSchema } from "../schema/schema";
+import type { createPatientSchema, loginSchema } from "../schema/schema";
 
 export type LoginData = z.infer<typeof loginSchema>
+export type CreatePatient = z.infer<typeof createPatientSchema>
 
 export interface Address {
   id: string,
@@ -47,4 +48,19 @@ export interface Patient {
   address: Address,
   clinicalData: ClinicalData,
   adultResponsible?: AdultResponsible
+}
+
+export interface Modal {
+  closeModal: () => void,
+  isCreatePatientModalOpen: boolean,
+  openCreatePatientModal: () => void
+}
+
+export interface SearchFilter {
+  searchName: string,
+  searchPhone: string,
+  searchCPF: string,
+  setSearchName: (name: string) => void,
+  setSearchPhone: (phone: string) => void,
+  setSearchCPF: (cpf: string) => void
 }

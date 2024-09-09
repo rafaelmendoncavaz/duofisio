@@ -4,13 +4,16 @@ import { Input } from "../global/input";
 import { useForm } from "react-hook-form";
 import { Key, User } from "lucide-react";
 import { LoginData } from "../../types/types";
+import { useNavigate } from "react-router-dom";
 
 export function Login() {
 
+  const navigate = useNavigate()
   const { register, handleSubmit } = useForm<LoginData>()
 
   function submitLogin(data: LoginData) {
     console.log(data)
+    navigate("/dashboard/agendamentos")
   }
 
   return (
