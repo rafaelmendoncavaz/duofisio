@@ -14,48 +14,48 @@ export const loginSchema = z.object({
         ),
 })
 
+export const addressSchema = z.object({
+    cep: z.string(),
+    street: z.string(),
+    number: z.coerce.number(),
+    complement: z.string().optional(),
+    neighborhood: z.string(),
+    city: z.string(),
+    state: z.string(),
+})
+
+export const cep = z.string().min(8).max(8)
+
+export const clinicalDataSchema = z.object({
+    cid: z.string(),
+    covenant: z.string().optional(),
+    expires: z.coerce.date().optional(),
+    CNS: z.coerce.number().optional(),
+    allegation: z.string(),
+    diagnosis: z.string(),
+})
+
+export const adultResponsibleSchema = z
+    .object({
+        name: z.string(),
+        cpf: z.string(),
+        phone: z.string(),
+        email: z.string().email(),
+        address: addressSchema,
+    })
+    .optional()
+
 export const createPatientSchema = z.object({
     name: z.string(),
     cpf: z.string(),
-    rg: z.string(),
-    dob: z.string(),
-    phone: z.string(),
-    email: z.string(),
-    sex: z.enum(["Masculino", "Feminino"]),
-    profession: z.string(),
-    address: z.object({
-        cep: z.string(),
-        street: z.string(),
-        number: z.coerce.number(),
-        complement: z.string(),
-        neighborhood: z.string(),
-        city: z.string(),
-        state: z.string(),
-    }),
-    clinicalData: z.object({
-        cid: z.string(),
-        covenant: z.string(),
-        expires: z.string(),
-        CNS: z.coerce.number(),
-        allegation: z.string(),
-        diagnosis: z.string(),
-    }),
-    adultResponsible: z.object({
-        name: z.string(),
-        cpf: z.string(),
-        rg: z.string(),
-        phone: z.string(),
-        email: z.string(),
-        address: z.object({
-            cep: z.string(),
-            street: z.string(),
-            number: z.coerce.number(),
-            complement: z.string(),
-            neighborhood: z.string(),
-            city: z.string(),
-            state: z.string(),
-        }),
-    }),
+    dateOfBirth: z.coerce.date(),
+    phone: z.string().optional(),
+    email: z.string().email().optional(),
+    sex: z.union([z.literal("Masculino"), z.literal("Feminino")]).optional(),
+    profession: z.string().optional(),
+    address: addressSchema,
+    clinicalData: clinicalDataSchema,
+    adultResponsible: adultResponsibleSchema,
 })
 
 export const patientListSchema = z.object({

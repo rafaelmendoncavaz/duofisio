@@ -1,23 +1,30 @@
 import type { z } from "zod"
 import type {
+    cep,
     createPatientSchema,
     loginSchema,
     patientListSchema,
 } from "../schema/schema"
 
-export type LoginData = z.infer<typeof loginSchema>
-export type CreatePatient = z.infer<typeof createPatientSchema>
+export type TypeLoginData = z.infer<typeof loginSchema>
+export type TypeCreatePatient = z.infer<typeof createPatientSchema>
 export type TypePatientList = z.infer<typeof patientListSchema>
+export type TypeCep = z.infer<typeof cep>
 
-export interface Address {
-    id: string
+export interface TypeAddress {
+    bairro: string
     cep: string
-    street: string
-    number: number
-    complement: string
-    neighborhood: string
-    city: string
-    state: string
+    complemento: string
+    ddd: string
+    estado: string
+    gia: string
+    ibge: string
+    localidade: string
+    logradouro: string
+    regiao: string
+    siafi: string
+    uf: string
+    unidade: string
 }
 
 export interface ClinicalData {
@@ -37,7 +44,7 @@ export interface AdultResponsible {
     rg: string
     phone: string
     email: string
-    address: Address
+    address: TypeAddress
 }
 
 export interface Modal {
@@ -58,7 +65,11 @@ export interface SearchFilter {
 export interface TypeAPI {
     token: boolean | null
     patientList: TypePatientList[]
-    userLogin: (loginData: LoginData) => Promise<void>
+    patientCEP: string
+    patientAddress: TypeAddress | undefined
+    userLogin: (loginData: TypeLoginData) => Promise<void>
     verifyAuth: () => Promise<void>
+    setCep: (cep: string) => void
+    getAddress: (cep: string) => Promise<void>
     getPatients: () => Promise<void>
 }

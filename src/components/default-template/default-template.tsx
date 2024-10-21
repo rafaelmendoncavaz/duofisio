@@ -4,20 +4,16 @@ import { Footer } from "../global/footer"
 import { Contact } from "../global/contact"
 
 interface DefaultTemplateProps {
-  children: ReactNode
+    children: ReactNode
 }
 
 export function DefaultTemplate({ children }: DefaultTemplateProps) {
-
-  return (
-    <>
-      <Contact />
-      <Header />
-      <main className="max-w-7xl mx-auto my-5">
-        {children}
-      </main>
-      <Footer />
-    </>
-
-  )
+    return (
+        <>
+            <Contact />
+            <Header />
+            <main className="max-w-7xl mx-auto my-5">{children}</main>
+            <Footer />
+        </>
+    )
 }
