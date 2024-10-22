@@ -65,11 +65,10 @@ export interface SearchFilter {
 export interface TypeAPI {
     token: boolean | null
     patientList: TypePatientList[]
-    patientCEP: string
-    patientAddress: TypeAddress | undefined
     userLogin: (loginData: TypeLoginData) => Promise<void>
     verifyAuth: () => Promise<void>
-    setCep: (cep: string) => void
-    getAddress: (cep: string) => Promise<void>
     getPatients: () => Promise<void>
+    createPatient: (
+        data: TypeCreatePatient
+    ) => Promise<{ status: number; id: string } | undefined>
 }

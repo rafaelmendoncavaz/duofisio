@@ -15,11 +15,14 @@ export const loginSchema = z.object({
 })
 
 export const addressSchema = z.object({
-    cep: z.string(),
-    street: z.string(),
-    number: z.coerce.number(),
+    cep: z
+        .string()
+        .min(8, "Insira o CEP do paciente")
+        .max(8, "Somente números"),
+    street: z.string().min(3, "Insira o nome da rua"),
+    number: z.coerce.number().min(1, "Insira o número da casa"),
     complement: z.string().optional(),
-    neighborhood: z.string(),
+    neighborhood: z.string().min(1, "Insira o nome da região/bairro"),
     city: z.string(),
     state: z.string(),
 })
@@ -27,27 +30,30 @@ export const addressSchema = z.object({
 export const cep = z.string().min(8).max(8)
 
 export const clinicalDataSchema = z.object({
-    cid: z.string(),
+    cid: z.string().min(1, "Insira o código do CID"),
     covenant: z.string().optional(),
     expires: z.coerce.date().optional(),
     CNS: z.coerce.number().optional(),
-    allegation: z.string(),
+    allegation: z.string().min(1, "Insira a queixa do paciente"),
     diagnosis: z.string(),
 })
 
 export const adultResponsibleSchema = z
     .object({
-        name: z.string(),
-        cpf: z.string(),
-        phone: z.string(),
-        email: z.string().email(),
+        name: z.string().min(3, "Insira o nome do responsável"),
+        cpf: z.string().min(11, "O campo CPF do responsável é obrigatório"),
+        phone: z.string().min(9, "Insira um número para contato válido"),
+        email: z.string().email().min(7, "Insira um e-mail válido"),
         address: addressSchema,
     })
     .optional()
 
 export const createPatientSchema = z.object({
-    name: z.string(),
-    cpf: z.string(),
+    name: z.string().min(2, "Insira um nome para o paciente"),
+    cpf: z
+        .string()
+        .min(11, "O campo CPF é obrigatório")
+        .max(11, "Somente números"),
     dateOfBirth: z.coerce.date(),
     phone: z.string().optional(),
     email: z.string().email().optional(),

@@ -4,9 +4,9 @@ import type {
     TypeLoginData,
     Modal,
     TypeAPI,
-    TypeCep,
+    TypeCreatePatient,
 } from "../types/types"
-import { api, viacep } from "../api/api"
+import { api } from "../api/api"
 
 export const useModal = create<Modal>(set => ({
     isCreatePatientModalOpen: false,
@@ -47,8 +47,6 @@ export const useAPI = create<TypeAPI>(set => ({
     // Storage states
     token: null,
     patientList: [],
-    patientCEP: "",
-    patientAddress: undefined,
 
     // Functions
     userLogin: async (loginData: TypeLoginData) => {
@@ -69,19 +67,6 @@ export const useAPI = create<TypeAPI>(set => ({
             console.error("Erro ao realizar autenticação", error)
         }
     },
-    setCep: (cep: string) => {
-        set({
-            patientCEP: cep,
-        })
-    },
-    getAddress: async (cep: TypeCep) => {
-        try {
-            const { data } = await viacep.get(`/${cep}/json`)
-            set({ patientAddress: data })
-        } catch (error) {
-            console.error("Erro ao buscar CPF", error)
-        }
-    },
     getPatients: async () => {
         try {
             const { data } = await api.get("/dashboard/patients", {
@@ -90,6 +75,23 @@ export const useAPI = create<TypeAPI>(set => ({
             set({ patientList: data.patients })
         } catch (error) {
             console.error("Erro ao realizar busca por pacientes", error)
+        }
+    },
+    createPatient: async (data: TypeCreatePatient) => {
+        try {
+            const { status, data: id } = await api.post(
+                "/dashboard/patients",
+                data,
+                {
+                    withCredentials: true,
+                }
+            )
+            return {
+                status,
+                id,
+            }
+        } catch (error) {
+            console.error("Erro ao criar paciente", error)
         }
     },
 }))

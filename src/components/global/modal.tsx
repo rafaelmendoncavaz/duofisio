@@ -25,7 +25,7 @@ export function Modal({ children, title }: ModalProps) {
             role="dialog"
         >
             <div
-                className="w-96 rounded shadow-shape space-y-5 bg-slate-100"
+                className="w-[800px] rounded shadow-shape space-y-5 bg-slate-100"
                 ref={modalRef}
             >
                 <div className="flex items-center justify-between py-3 px-5 bg-fisioblue2 rounded-t">
@@ -41,7 +41,7 @@ export function Modal({ children, title }: ModalProps) {
                         <X size={20} />
                     </button>
                 </div>
-                <div className="flex flex-col items-center py-5">
+                <div className="flex flex-col items-center px-5 py-2">
                     {children}
                 </div>
             </div>
