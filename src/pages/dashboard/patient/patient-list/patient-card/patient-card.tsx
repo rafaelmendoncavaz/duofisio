@@ -3,9 +3,10 @@ import type { TypePatientList } from "../../../../../types/types"
 
 interface PatientCardProps {
     patient: TypePatientList
+    onClick: (patient: TypePatientList) => void
 }
 
-export function PatientCard({ patient }: PatientCardProps) {
+export function PatientCard({ patient, onClick }: PatientCardProps) {
     const formattedPhone = patient.phone?.replace(
         /(\d{2})(\d{5})(\d{4})/,
         "($1) $2-$3"
@@ -15,7 +16,7 @@ export function PatientCard({ patient }: PatientCardProps) {
 
     return (
         <li
-            tabIndex={0}
+            onClick={() => onClick(patient)}
             className="border border-fisioblue rounded-md shadow-shape cursor-pointer"
         >
             <div className="flex items-center gap-2 px-1">
@@ -39,7 +40,7 @@ export function PatientCard({ patient }: PatientCardProps) {
                         {formattedPhone ? (
                             formattedPhone
                         ) : (
-                            <span>Sem número</span>
+                            <span>Não Informado</span>
                         )}
                     </span>
                 </span>

@@ -33,7 +33,7 @@ export const clinicalDataSchema = z.object({
     cid: z.string().min(1, "Insira o código do CID"),
     covenant: z.string().optional(),
     expires: z.coerce.date().optional(),
-    CNS: z.coerce.number().optional(),
+    CNS: z.string().optional(),
     allegation: z.string().min(1, "Insira a queixa do paciente"),
     diagnosis: z.string(),
 })
@@ -64,6 +64,21 @@ export const createPatientSchema = z.object({
     adultResponsible: adultResponsibleSchema,
 })
 
+export const updatePatientSchema = z.object({
+    name: z.string().min(2, "Insira um nome para o paciente"),
+    cpf: z
+        .string()
+        .min(11, "O campo CPF é obrigatório")
+        .max(11, "Somente números"),
+    dateOfBirth: z.coerce.date(),
+    phone: z.string().optional(),
+    email: z.string().email().optional(),
+    sex: z.union([z.literal("Masculino"), z.literal("Feminino")]).optional(),
+    profession: z.string().optional(),
+    address: addressSchema,
+    adultResponsible: adultResponsibleSchema,
+})
+
 export const patientListSchema = z.object({
     id: z.string().uuid(),
     name: z.string(),
@@ -84,4 +99,12 @@ export const patientListSchema = z.object({
             }),
         })
     ),
+})
+
+export const createRecordSchema = z.object({
+    cid: z.string().min(1, "Preencha este campo!"),
+    covenant: z.string().optional(),
+    expires: z.coerce.date().optional(),
+    allegation: z.string().min(3, "Preencha a queixa do paciente!"),
+    diagnosis: z.string().min(3, "Forneça um diagnóstico inicial!"),
 })

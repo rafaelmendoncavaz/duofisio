@@ -1,38 +1,63 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
-import { viacep } from "../../api/api"
-import { createPatientSchema } from "../../schema/schema"
-import type { TypeAddress, TypeCreatePatient, TypeCep } from "../../types/types"
-import { Input } from "../global/input"
 import { useAPI, useModal } from "../../context/context"
+import { updatePatientSchema } from "../../schema/schema"
+import { Input } from "../global/input"
+import type {
+    TypeAddress,
+    TypeCep,
+    TypeCreatePatient,
+    TypeUpdatePatient,
+} from "../../types/types"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useEffect, useState } from "react"
+import { UserRoundPen, UserRoundX, X } from "lucide-react"
+import { viacep } from "../../api/api"
+// import { getInputValues } from "../../utils/utils"
 
-export function CreatePatientForm() {
+export function PatientInfoForm() {
+    const { patientData, deletePatient } = useAPI(store => store)
+    const { closeModal } = useModal(store => store)
+
+    const [editPatient, setEditPatient] = useState<boolean>(true)
+
     const [hasAdultResponsible, setHasAdultResponsible] =
         useState<boolean>(false)
-    const [adultCEP, setAdultCEP] = useState<string>("")
-    const [adultAddress, setAdultAddress] = useState<TypeAddress | null>(null)
+
     const [patientCEP, setPatientCEP] = useState<string>("")
+    const [adultCEP, setAdultCEP] = useState<string>("")
+    const [adultStreet, setAdultStreet] = useState<string>("")
+    const [adultNeighborhood, setAdultNeighborhood] = useState<string>("")
     const [patientAddress, setPatientAddress] = useState<TypeAddress | null>(
         null
     )
-    const [patientStreet, setPatientStreet] = useState<string>("")
-    const [patientNeighborhood, setPatientNeighborhood] = useState<string>("")
-    const [adultStreet, setAdultStreet] = useState<string>("")
-    const [adultNeighborhood, setAdultNeighborhood] = useState<string>("")
+    const [adultAddress, setAdultAddress] = useState<TypeAddress | null>(null)
 
-    const { createPatient } = useAPI(store => store)
-    const { closeModal } = useModal(store => store)
+    useEffect(() => {
+        patientData?.adultResponsible
+            ? setHasAdultResponsible(true)
+            : setHasAdultResponsible(false)
 
-    const {
-        handleSubmit,
-        register,
-        setValue,
-        reset,
-        formState: { errors },
-    } = useForm<TypeCreatePatient>({
-        resolver: zodResolver(createPatientSchema),
-    })
+        patientData?.adultResponsible
+            ? setAdultCEP(patientData.adultResponsible.address.cep)
+            : setAdultCEP("")
+
+        patientData?.adultResponsible
+            ? setAdultStreet(patientData.adultResponsible.address.street)
+            : setAdultStreet("")
+
+        patientData?.adultResponsible
+            ? setAdultNeighborhood(
+                  patientData.adultResponsible.address.neighborhood
+              )
+            : setAdultNeighborhood("")
+
+        if (patientCEP && patientCEP.length === 8) {
+            getPatientAddress(patientCEP)
+        }
+        if (adultCEP && adultCEP.length === 8) {
+            getAdultAddress(adultCEP)
+        }
+    }, [patientData, patientCEP, adultCEP])
 
     async function getPatientAddress(cep: TypeCep) {
         try {
@@ -52,97 +77,105 @@ export function CreatePatientForm() {
         }
     }
 
-    // biome-ignore lint/correctness/useExhaustiveDependencies: <Function re-renders>
-    useEffect(() => {
-        if (patientCEP && patientCEP.length === 8) {
-            getPatientAddress(patientCEP)
-        }
-        if (adultCEP && adultCEP.length === 8) {
-            getAdultAddress(adultCEP)
-        }
-    }, [patientCEP, adultCEP])
+    const {
+        handleSubmit,
+        register,
+        setValue,
+        formState: { errors },
+    } = useForm<TypeCreatePatient>({
+        resolver: zodResolver(updatePatientSchema),
+    })
 
-    async function handleCreatePatient(data: TypeCreatePatient) {
-        const { adultResponsible, clinicalData, address, ...rest } = data
-        const patient = {
-            ...rest,
-            address,
-            clinicalData,
-        }
-        const patientWithAdult = {
-            ...rest,
-            address,
-            clinicalData,
-            adultResponsible,
-        }
+    async function handleDeletion() {
+        const confirmation = confirm(
+            "Você está prestes a deletar este paciente.\nEsta ação não pode ser desfeita!"
+        )
 
-        if (!hasAdultResponsible) {
-            const response = await createPatient(patient)
-            if (response) {
-                if (response.status === 201) {
-                    reset()
-                    closeModal()
-                    return response.id
-                }
-            }
-        }
-        if (hasAdultResponsible) {
-            const response = await createPatient(patientWithAdult)
-            if (response) {
-                if (response.status === 201) {
-                    reset()
-                    closeModal()
-                    return response.id
-                }
-            }
-        }
+        if (!confirmation) return
+
+        if (patientData) await deletePatient(patientData.id)
+
+        closeModal()
     }
 
-    const patientLogradouro =
-        patientAddress?.logradouro && patientAddress.logradouro.length > 0
-            ? patientAddress?.logradouro
-            : patientStreet
-
-    const patientBairro =
-        patientAddress?.bairro && patientAddress.bairro.length > 0
-            ? patientAddress?.bairro
-            : patientNeighborhood
-
-    const adultLogradouro =
-        adultAddress?.logradouro && adultAddress.logradouro.length > 0
-            ? adultAddress?.logradouro
-            : adultStreet
-    const adultBairro =
-        adultAddress?.bairro && adultAddress.bairro.length > 0
-            ? adultAddress?.bairro
-            : adultNeighborhood
-
-    if (patientAddress) {
-        setValue("address.street", patientLogradouro)
-        setValue("address.neighborhood", patientBairro)
-        setValue("address.city", patientAddress?.localidade)
-        setValue("address.state", patientAddress?.estado)
-    }
-    if (adultAddress) {
-        setValue("adultResponsible.address.street", adultLogradouro)
-        setValue("adultResponsible.address.neighborhood", adultBairro)
-        setValue("adultResponsible.address.city", adultAddress?.localidade)
-        setValue("adultResponsible.address.state", adultAddress?.estado)
+    function handleUpdatePatient(data: TypeUpdatePatient) {
+        if (data) {
+            // setValue("name", getInputValues.patientName)
+            // setValue("cpf", getInputValues.patientCPF)
+            // setValue("dateOfBirth", getInputValues.patientDoB)
+            // setValue("phone", getInputValues.patientPhone)
+            // setValue("email", getInputValues.patientEmail)
+            // setValue("sex", getInputValues.patientSex)
+            // setValue("profession", getInputValues.patientOccupation)
+            // setValue("address.cep", getInputValues.patientCEP)
+            // setValue("address.street", getInputValues.patientSt)
+            // setValue("address.number", getInputValues.patientNumber)
+            // setValue("address.complement", getInputValues.patientComplement)
+            // setValue("address.neighborhood", getInputValues.patientNeighborhood)
+            // setValue("address.city", getInputValues.patientCity)
+            // setValue("address.state", getInputValues.patientState)
+            // setValue("adultResponsible.name", getInputValues.adultName)
+            // setValue("adultResponsible.cpf", getInputValues.adultCPF)
+            // setValue("adultResponsible.phone", getInputValues.adultPhone)
+            // setValue("adultResponsible.email", getInputValues.adultEmail)
+            // setValue("adultResponsible.address.cep", getInputValues.adultCEP)
+            // setValue("adultResponsible.address.street", getInputValues.adultSt)
+            // setValue(
+            //     "adultResponsible.address.number",
+            //     getInputValues.adultNumber
+            // )
+            // setValue(
+            //     "adultResponsible.address.complement",
+            //     getInputValues.adultComplement
+            // )
+            // setValue(
+            //     "adultResponsible.address.neighborhood",
+            //     getInputValues.adultNeighborhood
+            // )
+            // setValue("adultResponsible.address.city", getInputValues.adultCity)
+            // setValue(
+            //     "adultResponsible.address.state",
+            //     getInputValues.adultState
+            // )
+        }
+        console.log(data)
     }
 
     return (
         <form
-            onSubmit={handleSubmit(handleCreatePatient)}
             className="flex flex-col items-center gap-2"
+            onSubmit={handleSubmit(handleUpdatePatient)}
         >
             <div className="flex flex-col gap-2 w-full max-h-[500px] overflow-hidden scrollbar-hidden overflow-y-auto">
-                <p className="text-sm text-left">
-                    <span className="font-bold text-red-500">*</span> indica
-                    campos obrigatórios
-                </p>
+                <div className="flex items-center justify-between">
+                    <p className="text-sm text-left">
+                        <span className="font-bold text-red-500">*</span> indica
+                        campos obrigatórios
+                    </p>
+                    <div className="flex items-center gap-4">
+                        <button
+                            type="button"
+                            className={`rounded-md ${editPatient ? "bg-blue-500" : "bg-red-400"} text-zinc-100 p-2`}
+                            onClick={() => setEditPatient(!editPatient)}
+                        >
+                            {editPatient ? (
+                                <UserRoundPen size={20} />
+                            ) : (
+                                <X size={20} />
+                            )}
+                        </button>
+                        <button
+                            type="button"
+                            className="rounded-md bg-red-600 text-zinc-100 p-2"
+                            onClick={() => handleDeletion()}
+                        >
+                            <UserRoundX size={20} />
+                        </button>
+                    </div>
+                </div>
+
                 <div className="flex flex-col py-2 gap-2">
                     <h1>Dados Pessoais</h1>
-
                     <div className="w-full h-px bg-fisioblue shadow-shape" />
 
                     <div>
@@ -150,7 +183,14 @@ export function CreatePatientForm() {
                             Nome{" "}
                             <span className="font-bold text-red-500">*</span>
                         </label>
-                        <Input type="text" {...register("name")} />
+                        <Input
+                            id="patientName"
+                            colorVariant={editPatient ? "disabled" : "enabled"}
+                            type="text"
+                            {...register("name")}
+                            defaultValue={patientData?.name}
+                            disabled={editPatient}
+                        />
                         {errors.name && (
                             <span className="text-sm text-red-500">
                                 {errors.name.message}
@@ -167,7 +207,16 @@ export function CreatePatientForm() {
                                     *
                                 </span>
                             </label>
-                            <Input type="text" {...register("cpf")} />
+                            <Input
+                                id="patientCPF"
+                                colorVariant={
+                                    editPatient ? "disabled" : "enabled"
+                                }
+                                type="text"
+                                {...register("cpf")}
+                                defaultValue={patientData?.cpf}
+                                disabled={editPatient}
+                            />
                             {errors.cpf && (
                                 <span className="text-sm text-red-500">
                                     {errors.cpf.message}
@@ -176,7 +225,16 @@ export function CreatePatientForm() {
                         </div>
                         <div className="w-1/2">
                             <label htmlFor="">Data de Nascimento</label>
-                            <Input type="date" {...register("dateOfBirth")} />
+                            <Input
+                                id="patientDoB"
+                                colorVariant={
+                                    editPatient ? "disabled" : "enabled"
+                                }
+                                type="date"
+                                {...register("dateOfBirth")}
+                                defaultValue={patientData?.dateOfBirth}
+                                disabled={editPatient}
+                            />
                         </div>
                     </div>
 
@@ -184,11 +242,29 @@ export function CreatePatientForm() {
                     <div className="flex items-center justify-between gap-2">
                         <div className="w-1/2">
                             <label htmlFor="">Telefone</label>
-                            <Input type="text" {...register("phone")} />
+                            <Input
+                                id="patientPhone"
+                                colorVariant={
+                                    editPatient ? "disabled" : "enabled"
+                                }
+                                type="text"
+                                {...register("phone")}
+                                defaultValue={patientData?.phone}
+                                disabled={editPatient}
+                            />
                         </div>
                         <div className="w-1/2">
                             <label htmlFor="">Email</label>
-                            <Input type="text" {...register("email")} />
+                            <Input
+                                id="patientEmail"
+                                colorVariant={
+                                    editPatient ? "disabled" : "enabled"
+                                }
+                                type="text"
+                                {...register("email")}
+                                defaultValue={patientData?.email}
+                                disabled={editPatient}
+                            />
                         </div>
                     </div>
 
@@ -197,9 +273,11 @@ export function CreatePatientForm() {
                         <div className="flex flex-col w-1/2">
                             <label htmlFor="">Sexo</label>
                             <select
+                                id="patientSex"
                                 {...register("sex")}
-                                defaultValue={""}
-                                className="bg-transparent outline-none border rounded-md focus:border-fisioblue py-1 px-3 shadow-shape"
+                                defaultValue={patientData?.sex}
+                                disabled={editPatient}
+                                className={`${editPatient ? "bg-slate-200 cursor-text" : "bg-transparent"} outline-none border rounded-md focus:border-fisioblue py-1 px-3 shadow-shape`}
                             >
                                 <option value="" disabled>
                                     Selecione uma opção
@@ -210,7 +288,16 @@ export function CreatePatientForm() {
                         </div>
                         <div className="w-1/2">
                             <label htmlFor="">Ocupação</label>
-                            <Input type="text" {...register("profession")} />
+                            <Input
+                                id="patientOccupation"
+                                colorVariant={
+                                    editPatient ? "disabled" : "enabled"
+                                }
+                                type="text"
+                                {...register("profession")}
+                                defaultValue={patientData?.profession}
+                                disabled={editPatient}
+                            />
                         </div>
                     </div>
                 </div>
@@ -225,10 +312,14 @@ export function CreatePatientForm() {
                             <span className="font-bold text-red-500">*</span>
                         </label>
                         <Input
+                            id="patientCEP"
+                            colorVariant={editPatient ? "disabled" : "enabled"}
                             type="text"
                             {...register("address.cep")}
+                            defaultValue={patientData?.address.cep}
                             onChange={e => setPatientCEP(e.target.value)}
                             value={patientCEP}
+                            disabled={editPatient}
                         />
                         {errors.address?.cep && (
                             <span className="text-sm text-red-500">
@@ -237,7 +328,7 @@ export function CreatePatientForm() {
                         )}
                     </div>
 
-                    {patientAddress ? (
+                    {patientData?.address.cep ? (
                         <>
                             {/* Street / Number DIV */}
                             <div className="flex items-center justify-between gap-2">
@@ -249,21 +340,16 @@ export function CreatePatientForm() {
                                         </span>
                                     </label>
                                     <Input
+                                        id="patientSt"
+                                        colorVariant={
+                                            editPatient ? "disabled" : "enabled"
+                                        }
                                         type="text"
                                         {...register("address.street")}
-                                        defaultValue={patientAddress.logradouro}
-                                        onChange={e =>
-                                            setPatientStreet(e.target.value)
+                                        defaultValue={
+                                            patientData.address.street
                                         }
-                                        value={
-                                            patientAddress.logradouro.length !==
-                                            0
-                                                ? patientAddress.logradouro
-                                                : patientStreet
-                                        }
-                                        disabled={
-                                            patientAddress.logradouro.length > 0
-                                        }
+                                        disabled={editPatient}
                                     />
                                     {errors.address?.street && (
                                         <span className="text-sm text-red-500">
@@ -279,9 +365,17 @@ export function CreatePatientForm() {
                                         </span>
                                     </label>
                                     <Input
+                                        id="patientNumber"
+                                        colorVariant={
+                                            editPatient ? "disabled" : "enabled"
+                                        }
                                         sizeVariant="small"
                                         type="text"
                                         {...register("address.number")}
+                                        defaultValue={
+                                            patientData.address.number
+                                        }
+                                        disabled={editPatient}
                                     />
                                     {errors.address?.number && (
                                         <span className="text-sm text-red-500">
@@ -296,8 +390,16 @@ export function CreatePatientForm() {
                                 <div className="w-1/2">
                                     <label htmlFor="">Complemento</label>
                                     <Input
+                                        id="patientComplement"
+                                        colorVariant={
+                                            editPatient ? "disabled" : "enabled"
+                                        }
                                         type="text"
                                         {...register("address.complement")}
+                                        defaultValue={
+                                            patientData.address.complement
+                                        }
+                                        disabled={editPatient}
                                     />
                                 </div>
                                 <div className="w-1/2">
@@ -308,22 +410,16 @@ export function CreatePatientForm() {
                                         </span>
                                     </label>
                                     <Input
+                                        id="patientNeighborhood"
+                                        colorVariant={
+                                            editPatient ? "disabled" : "enabled"
+                                        }
                                         type="text"
                                         {...register("address.neighborhood")}
-                                        defaultValue={patientAddress.bairro}
-                                        onChange={e =>
-                                            setPatientNeighborhood(
-                                                e.target.value
-                                            )
+                                        defaultValue={
+                                            patientData.address.neighborhood
                                         }
-                                        value={
-                                            patientAddress.bairro.length > 0
-                                                ? patientAddress.bairro
-                                                : patientNeighborhood
-                                        }
-                                        disabled={
-                                            patientAddress.bairro.length > 0
-                                        }
+                                        disabled={editPatient}
                                     />
                                     {errors.address?.neighborhood && (
                                         <span className="text-sm text-red-500">
@@ -346,10 +442,14 @@ export function CreatePatientForm() {
                                         </span>
                                     </label>
                                     <Input
+                                        id="patientCity"
+                                        colorVariant={
+                                            editPatient ? "disabled" : "enabled"
+                                        }
                                         type="text"
                                         {...register("address.city")}
-                                        value={patientAddress.localidade}
-                                        disabled
+                                        defaultValue={patientData.address.city}
+                                        disabled={editPatient}
                                     />
                                 </div>
                                 <div className="w-1/2">
@@ -360,95 +460,19 @@ export function CreatePatientForm() {
                                         </span>
                                     </label>
                                     <Input
+                                        id="patientState"
+                                        colorVariant={
+                                            editPatient ? "disabled" : "enabled"
+                                        }
                                         type="text"
                                         {...register("address.state")}
-                                        value={patientAddress.estado}
-                                        disabled
+                                        defaultValue={patientData.address.state}
+                                        disabled={editPatient}
                                     />
                                 </div>
                             </div>
                         </>
                     ) : null}
-                </div>
-
-                <div className="flex flex-col py-2 gap-2">
-                    <h1>Dados Clínicos</h1>
-                    <div className="w-full h-px bg-fisioblue shadow-shape" />
-
-                    {/* CID / CNS DIV */}
-                    <div className="flex items-center justify-between gap-2">
-                        <div className="w-1/2">
-                            <label htmlFor="">
-                                CID{" "}
-                                <span className="font-bold text-red-500">
-                                    *
-                                </span>
-                            </label>
-                            <Input
-                                type="text"
-                                {...register("clinicalData.cid")}
-                            />
-                            {errors.clinicalData?.cid && (
-                                <span className="text-sm text-red-500">
-                                    {errors.clinicalData.cid.message}
-                                </span>
-                            )}
-                        </div>
-                        <div className="w-1/2">
-                            <label htmlFor="">CNS</label>
-                            <Input
-                                type="text"
-                                {...register("clinicalData.CNS")}
-                            />
-                        </div>
-                    </div>
-
-                    {/* Covenant / Expires */}
-                    <div className="flex items-center justify-between gap-2">
-                        <div className="w-1/2">
-                            <label htmlFor="">Convênio</label>
-                            <Input
-                                type="text"
-                                {...register("clinicalData.covenant")}
-                            />
-                        </div>
-                        <div className="w-1/2">
-                            <label htmlFor="">Data de vencimento</label>
-                            <Input
-                                type="date"
-                                defaultValue="0001-01-01"
-                                {...register("clinicalData.expires")}
-                            />
-                        </div>
-                    </div>
-
-                    {/* Allegation / Diagnosis */}
-                    <div className="flex items-center justify-between gap-2">
-                        <div className="w-1/2">
-                            <label htmlFor="">
-                                Queixa do paciente{" "}
-                                <span className="font-bold text-red-500">
-                                    *
-                                </span>
-                            </label>
-                            <Input
-                                type="text"
-                                {...register("clinicalData.allegation")}
-                            />
-                            {errors.clinicalData?.allegation && (
-                                <span className="text-sm text-red-500">
-                                    {errors.clinicalData.allegation.message}
-                                </span>
-                            )}
-                        </div>
-                        <div className="w-1/2">
-                            <label htmlFor="">Diagnóstico Inicial</label>
-                            <Input
-                                type="text"
-                                {...register("clinicalData.diagnosis")}
-                            />
-                        </div>
-                    </div>
                 </div>
 
                 <fieldset className="flex flex-col gap-1">
@@ -464,6 +488,7 @@ export function CreatePatientForm() {
                                 setHasAdultResponsible(!hasAdultResponsible)
                             }
                             checked={hasAdultResponsible}
+                            disabled={editPatient}
                         />
                         <label htmlFor="sim" className="text-sm">
                             Possui
@@ -487,8 +512,16 @@ export function CreatePatientForm() {
                                     </span>
                                 </label>
                                 <Input
+                                    id="adultName"
                                     type="text"
                                     {...register("adultResponsible.name")}
+                                    colorVariant={
+                                        editPatient ? "disabled" : "enabled"
+                                    }
+                                    disabled={editPatient}
+                                    defaultValue={
+                                        patientData?.adultResponsible.name
+                                    }
                                 />
                                 {errors.adultResponsible?.name && (
                                     <span className="text-sm text-red-500">
@@ -504,8 +537,16 @@ export function CreatePatientForm() {
                                     </span>
                                 </label>
                                 <Input
+                                    id="adultCPF"
                                     type="text"
                                     {...register("adultResponsible.cpf")}
+                                    colorVariant={
+                                        editPatient ? "disabled" : "enabled"
+                                    }
+                                    disabled={editPatient}
+                                    defaultValue={
+                                        patientData?.adultResponsible.cpf
+                                    }
                                 />
                                 {errors.adultResponsible?.cpf && (
                                     <span className="text-sm text-red-500">
@@ -525,8 +566,16 @@ export function CreatePatientForm() {
                                     </span>
                                 </label>
                                 <Input
+                                    id="adultPhone"
                                     type="text"
                                     {...register("adultResponsible.phone")}
+                                    colorVariant={
+                                        editPatient ? "disabled" : "enabled"
+                                    }
+                                    disabled={editPatient}
+                                    defaultValue={
+                                        patientData?.adultResponsible.phone
+                                    }
                                 />
                                 {errors.adultResponsible?.phone && (
                                     <span className="text-sm text-red-500">
@@ -542,8 +591,16 @@ export function CreatePatientForm() {
                                     </span>
                                 </label>
                                 <Input
+                                    id="adultEmail"
                                     type="text"
                                     {...register("adultResponsible.email")}
+                                    colorVariant={
+                                        editPatient ? "disabled" : "enabled"
+                                    }
+                                    disabled={editPatient}
+                                    defaultValue={
+                                        patientData?.adultResponsible.email
+                                    }
                                 />
                                 {errors.adultResponsible?.email && (
                                     <span className="text-sm text-red-500">
@@ -565,10 +622,19 @@ export function CreatePatientForm() {
                                     </span>
                                 </label>
                                 <Input
+                                    id="adultCEP"
                                     type="text"
                                     {...register(
                                         "adultResponsible.address.cep"
                                     )}
+                                    colorVariant={
+                                        editPatient ? "disabled" : "enabled"
+                                    }
+                                    disabled={editPatient}
+                                    defaultValue={
+                                        patientData?.adultResponsible.address
+                                            .cep
+                                    }
                                     onChange={e => setAdultCEP(e.target.value)}
                                     value={adultCEP}
                                 />
@@ -581,7 +647,7 @@ export function CreatePatientForm() {
                                     </span>
                                 )}
                             </div>
-                            {adultAddress ? (
+                            {patientData?.adultResponsible.address ? (
                                 <>
                                     {/* Adult Address Street / Adult Address Number  DIV */}
                                     <div className="flex items-center justify-between gap-2">
@@ -593,27 +659,27 @@ export function CreatePatientForm() {
                                                 </span>
                                             </label>
                                             <Input
+                                                id="adultSt"
                                                 type="text"
                                                 {...register(
                                                     "adultResponsible.address.street"
                                                 )}
-                                                defaultValue={
-                                                    adultAddress?.logradouro
-                                                }
                                                 onChange={e =>
                                                     setAdultStreet(
                                                         e.target.value
                                                     )
                                                 }
-                                                value={
-                                                    adultAddress.logradouro
-                                                        .length > 0
-                                                        ? adultAddress.logradouro
-                                                        : adultStreet
+                                                value={adultStreet}
+                                                colorVariant={
+                                                    editPatient
+                                                        ? "disabled"
+                                                        : "enabled"
                                                 }
-                                                disabled={
-                                                    adultAddress.logradouro
-                                                        .length > 0
+                                                disabled={editPatient}
+                                                defaultValue={
+                                                    patientData
+                                                        ?.adultResponsible
+                                                        .address.street
                                                 }
                                             />
                                             {errors.adultResponsible?.address
@@ -635,10 +701,22 @@ export function CreatePatientForm() {
                                                 </span>
                                             </label>
                                             <Input
+                                                id="adultNumber"
                                                 type="text"
                                                 {...register(
                                                     "adultResponsible.address.number"
                                                 )}
+                                                colorVariant={
+                                                    editPatient
+                                                        ? "disabled"
+                                                        : "enabled"
+                                                }
+                                                disabled={editPatient}
+                                                defaultValue={
+                                                    patientData
+                                                        ?.adultResponsible
+                                                        .address.number
+                                                }
                                             />
                                             {errors.adultResponsible?.address
                                                 ?.number && (
@@ -660,10 +738,22 @@ export function CreatePatientForm() {
                                                 Complemento
                                             </label>
                                             <Input
+                                                id="adultComplement"
                                                 type="text"
                                                 {...register(
                                                     "adultResponsible.address.complement"
                                                 )}
+                                                colorVariant={
+                                                    editPatient
+                                                        ? "disabled"
+                                                        : "enabled"
+                                                }
+                                                disabled={editPatient}
+                                                defaultValue={
+                                                    patientData
+                                                        ?.adultResponsible
+                                                        .address.complement
+                                                }
                                             />
                                         </div>
                                         <div className="w-1/2">
@@ -674,27 +764,27 @@ export function CreatePatientForm() {
                                                 </span>
                                             </label>
                                             <Input
+                                                id="adultNeighborhood"
                                                 type="text"
                                                 {...register(
                                                     "adultResponsible.address.neighborhood"
                                                 )}
-                                                defaultValue={
-                                                    adultAddress?.bairro
-                                                }
                                                 onChange={e =>
                                                     setAdultNeighborhood(
                                                         e.target.value
                                                     )
                                                 }
-                                                value={
-                                                    adultAddress.bairro.length >
-                                                    0
-                                                        ? adultAddress.bairro
-                                                        : adultNeighborhood
+                                                value={adultNeighborhood}
+                                                colorVariant={
+                                                    editPatient
+                                                        ? "disabled"
+                                                        : "enabled"
                                                 }
-                                                disabled={
-                                                    adultAddress.bairro.length >
-                                                    0
+                                                disabled={editPatient}
+                                                defaultValue={
+                                                    patientData
+                                                        ?.adultResponsible
+                                                        .address.neighborhood
                                                 }
                                             />
                                             {errors.adultResponsible?.address
@@ -721,12 +811,22 @@ export function CreatePatientForm() {
                                                 </span>
                                             </label>
                                             <Input
+                                                id="adultCity"
                                                 type="text"
                                                 {...register(
                                                     "adultResponsible.address.city"
                                                 )}
-                                                value={adultAddress?.localidade}
-                                                disabled
+                                                colorVariant={
+                                                    editPatient
+                                                        ? "disabled"
+                                                        : "enabled"
+                                                }
+                                                disabled={editPatient}
+                                                defaultValue={
+                                                    patientData
+                                                        ?.adultResponsible
+                                                        .address.city
+                                                }
                                             />
                                         </div>
                                         <div className="w-1/2">
@@ -737,12 +837,22 @@ export function CreatePatientForm() {
                                                 </span>
                                             </label>
                                             <Input
+                                                id="adultState"
                                                 type="text"
                                                 {...register(
                                                     "adultResponsible.address.state"
                                                 )}
-                                                value={adultAddress?.estado}
-                                                disabled
+                                                colorVariant={
+                                                    editPatient
+                                                        ? "disabled"
+                                                        : "enabled"
+                                                }
+                                                disabled={editPatient}
+                                                defaultValue={
+                                                    patientData
+                                                        ?.adultResponsible
+                                                        .address.state
+                                                }
                                             />
                                         </div>
                                     </div>
@@ -754,9 +864,10 @@ export function CreatePatientForm() {
             </div>
             <button
                 type="submit"
-                className="w-full rounded-md bg-fisioblue text-slate-100 font-semibold py-1 hover:bg-fisioblue2"
+                className={`w-full rounded-md ${editPatient ? "bg-fisiolightgray" : "bg-fisioblue hover:bg-fisioblue2"} text-slate-100 font-semibold py-1`}
+                disabled={editPatient}
             >
-                Cadastrar Paciente
+                Atualizar dados do paciente
             </button>
         </form>
     )

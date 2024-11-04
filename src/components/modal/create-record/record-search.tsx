@@ -1,51 +1,23 @@
-import {
-    UserPlus,
-    UserSearch,
-    User,
-    Phone,
-    IdCard,
-    ClipboardPlus,
-} from "lucide-react"
-import { Input } from "../global/input"
-import { useModal, useSearchFilter } from "../../context/context"
+import { UserSearch, User, Phone, IdCard } from "lucide-react"
+import { PatientList } from "../../../pages/dashboard/patient/patient-list/patient-list"
+import { Input } from "../../global/input"
+import { useState } from "react"
+import type { TypePatientList } from "../../../types/types"
+import { useAPI } from "../../../context/context"
 
-export function SearchFilter() {
-    const { openCreatePatientModal, openCreateRecordModal } = useModal(
-        store => store
-    )
-    const {
-        searchName,
-        setSearchName,
-        searchPhone,
-        setSearchPhone,
-        searchCPF,
-        setSearchCPF,
-    } = useSearchFilter(store => store)
+export function RecordSearch() {
+    const [searchName, setSearchName] = useState<string>("")
+    const [searchPhone, setSearchPhone] = useState<string>("")
+    const [searchCPF, setSearchCPF] = useState<string>("")
+
+    const { getClinicalRecords, clinicalRecords } = useAPI(store => store)
+
+    async function handleClick(patient: TypePatientList) {
+        await getClinicalRecords(patient.id)
+    }
 
     return (
-        <>
-            <div className="w-full flex items-center justify-between">
-                <h1 className="font-bold text-2xl">Lista de pacientes</h1>
-                <div className="flex items-center gap-4">
-                    <button
-                        onClick={openCreateRecordModal}
-                        type="button"
-                        className="flex items-center gap-2 rounded-md bg-fisioblue text-slate-100 hover:bg-fisiolightgray px-2 py-[0.125rem] shadow-shape font-semibold"
-                    >
-                        <ClipboardPlus size={20} />
-                        Cadastrar Novo CID
-                    </button>
-                    <button
-                        onClick={openCreatePatientModal}
-                        type="button"
-                        className="flex items-center gap-2 rounded-md bg-fisioblue text-slate-100 hover:bg-fisiolightgray px-2 py-[0.125rem] shadow-shape font-semibold"
-                    >
-                        <UserPlus size={20} />
-                        Cadastrar Paciente
-                    </button>
-                </div>
-            </div>
-
+        <div className="mx-10 flex flex-col space-y-4">
             <div>
                 <div className="flex flex-col gap-2 max-w-[50%]">
                     <div className="flex items-center gap-2">
@@ -54,7 +26,7 @@ export function SearchFilter() {
                             htmlFor="search"
                             className="font-semibold text-lg"
                         >
-                            Pesquisar
+                            Pesquisar paciente
                         </label>
                     </div>
                     <div className="flex items-center gap-2">
@@ -88,6 +60,15 @@ export function SearchFilter() {
                     </div>
                 </div>
             </div>
-        </>
+
+            <div className="w-full h-px bg-fisioblue shadow-shape" />
+
+            <PatientList
+                searchName={searchName}
+                searchPhone={searchPhone}
+                searchCPF={searchCPF}
+                handleClick={handleClick}
+            />
+        </div>
     )
 }

@@ -1,8 +1,11 @@
 import { LogOut } from "lucide-react"
 import { useNavigate } from "react-router-dom"
+import { useAPI } from "../../context/context"
 
 export function DashboardMenu() {
     const navigate = useNavigate()
+
+    const { user } = useAPI(store => store)
 
     function handleLogoutSection() {
         navigate("/")
@@ -14,7 +17,7 @@ export function DashboardMenu() {
                 <div className="flex gap-2">
                     <h1 className="leading-none">
                         Seja bem vindo,{" "}
-                        <span className="font-semibold">Usuário</span>
+                        <span className="font-semibold">{user?.name}</span>
                     </h1>
                 </div>
                 <div>

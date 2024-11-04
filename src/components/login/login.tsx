@@ -3,14 +3,14 @@ import roundLogo from "../../assets/duofisio-rounded-transparent.png"
 import { Input } from "../global/input"
 import { useForm } from "react-hook-form"
 import { Key, User } from "lucide-react"
-import type { LoginData } from "../../types/types"
+import type { TypeLoginData } from "../../types/types"
 import { useNavigate } from "react-router-dom"
 import { useAPI } from "../../context/context"
 import { useEffect } from "react"
 
 export function Login() {
     const navigate = useNavigate()
-    const { register, handleSubmit } = useForm<LoginData>()
+    const { register, handleSubmit } = useForm<TypeLoginData>()
     const { userLogin, verifyAuth, token } = useAPI(store => store)
 
     useEffect(() => {
@@ -19,7 +19,7 @@ export function Login() {
         }
     }, [token, navigate])
 
-    async function submitLogin(data: LoginData) {
+    async function submitLogin(data: TypeLoginData) {
         await userLogin(data)
         await verifyAuth()
         navigate("/dashboard")

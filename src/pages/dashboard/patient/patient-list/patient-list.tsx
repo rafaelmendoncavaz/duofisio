@@ -1,11 +1,20 @@
-import { useAPI, useSearchFilter } from "../../../../context/context"
+import { useAPI } from "../../../../context/context"
+import type { TypePatientList } from "../../../../types/types"
 import { PatientCard } from "./patient-card/patient-card"
 
-export function PatientList() {
-    const { searchName, searchPhone, searchCPF } = useSearchFilter(
-        store => store
-    )
+interface PatientListProps {
+    handleClick: (patient: TypePatientList) => void
+    searchName: string
+    searchPhone: string
+    searchCPF: string
+}
 
+export function PatientList({
+    handleClick,
+    searchName,
+    searchPhone,
+    searchCPF,
+}: PatientListProps) {
     const { getPatients, patientList } = useAPI(store => store)
 
     const search =
@@ -24,7 +33,11 @@ export function PatientList() {
     return (
         <ul className="grid grid-cols-5 gap-10">
             {search.map(patient => (
-                <PatientCard key={patient.id} patient={patient} />
+                <PatientCard
+                    key={patient.id}
+                    patient={patient}
+                    onClick={handleClick}
+                />
             ))}
             <button type="button" onClick={() => getPatients()}>
                 GetPatients
