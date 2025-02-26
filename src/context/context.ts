@@ -76,15 +76,24 @@ export const useAPI = create<TypeAPI>(set => ({
     // Functions
     userLogin: async (loginData: TypeLoginData) => {
         try {
-            await api.post("/login", loginData)
+            const { data } = await api.post("/login", loginData)
+            if (data.token) {
+                localStorage.setItem("@authToken", data.token)
+            }
         } catch (error) {
             console.error("Erro ao realizar login", error)
         }
     },
     verifyAuth: async () => {
         try {
+            const token: string = JSON.parse(
+                localStorage.getItem("@authToken") as string
+            )
+            if (!token) throw new Error("Erro ao buscar o token")
             const { data } = await api.get("/dashboard/auth", {
-                withCredentials: true,
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
             })
             set({ token: data.authenticated, user: data.user })
         } catch (error) {
