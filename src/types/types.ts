@@ -112,7 +112,7 @@ export interface SearchFilter {
 }
 
 export interface TypeAPI {
-    token: boolean | null
+    token: boolean | null | string
     user: { name: string; email: string } | null
     patientList: TypePatientList[]
     patientData: TypePatient | null

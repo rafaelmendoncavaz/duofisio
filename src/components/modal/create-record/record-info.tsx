@@ -14,7 +14,7 @@ export function RecordInfo() {
 
     async function handleDeleteRecord() {
         const confirmation = confirm(
-            "Você está prestes a deletar este paciente.\nEsta ação não pode ser desfeita!"
+            "Você está prestes a deletar este registro.\nEsta ação não pode ser desfeita!"
         )
 
         if (!confirmation) return

@@ -76,7 +76,7 @@ export const useAPI = create<TypeAPI>(set => ({
     // Functions
     userLogin: async (loginData: TypeLoginData) => {
         try {
-            const { data } = await api.post("/login", loginData)
+            const { data } = await api.post("/auth/login", loginData)
             if (data.token) {
                 localStorage.setItem("@authToken", data.token)
             }
@@ -86,16 +86,15 @@ export const useAPI = create<TypeAPI>(set => ({
     },
     verifyAuth: async () => {
         try {
-            const token: string = JSON.parse(
-                localStorage.getItem("@authToken") as string
-            )
+            const token: string = localStorage.getItem("@authToken") as string
             if (!token) throw new Error("Erro ao buscar o token")
-            const { data } = await api.get("/dashboard/auth", {
+            const { data } = await api.get("/auth/verify", {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
             })
-            set({ token: data.authenticated, user: data.user })
+            console.log(data)
+            set({ token: token, user: data.user })
         } catch (error) {
             set({ token: false })
             console.error("Erro ao realizar autenticação", error)
@@ -103,11 +102,15 @@ export const useAPI = create<TypeAPI>(set => ({
     },
     createPatient: async (data: TypeCreatePatient) => {
         try {
+            const token: string = localStorage.getItem("@authToken") as string
+            if (!token) throw new Error("Erro ao buscar o token")
             const { status, data: id } = await api.post(
                 "/dashboard/patients",
                 data,
                 {
-                    withCredentials: true,
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
                 }
             )
             return {
@@ -120,8 +123,12 @@ export const useAPI = create<TypeAPI>(set => ({
     },
     getPatients: async () => {
         try {
+            const token: string = localStorage.getItem("@authToken") as string
+            if (!token) throw new Error("Erro ao buscar o token")
             const { data } = await api.get("/dashboard/patients", {
-                withCredentials: true,
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
             })
             set({ patientList: data.patients })
         } catch (error) {
@@ -130,12 +137,17 @@ export const useAPI = create<TypeAPI>(set => ({
     },
     getSinglePatient: async (id: string) => {
         try {
+            const token: string = localStorage.getItem("@authToken") as string
+            if (!token) throw new Error("Erro ao buscar o token")
             set({
                 patientData: null,
             })
             const { data } = await api.get(`/dashboard/patients/${id}`, {
-                withCredentials: true,
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
             })
+            console.log(data)
             set({
                 patientData: data.patient,
             })
@@ -145,8 +157,12 @@ export const useAPI = create<TypeAPI>(set => ({
     },
     deletePatient: async (id: string) => {
         try {
+            const token: string = localStorage.getItem("@authToken") as string
+            if (!token) throw new Error("Erro ao buscar o token")
             await api.delete(`/dashboard/patients/${id}`, {
-                withCredentials: true,
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
             })
         } catch (error) {
             console.error("Erro ao deletar paciente", error)
@@ -154,8 +170,12 @@ export const useAPI = create<TypeAPI>(set => ({
     },
     createClinicalRecord: async (id: string, data: TypeCreateRecord) => {
         try {
+            const token: string = localStorage.getItem("@authToken") as string
+            if (!token) throw new Error("Erro ao buscar o token")
             await api.post(`/dashboard/patients/${id}/clinical`, data, {
-                withCredentials: true,
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
             })
         } catch (error) {
             console.error("Erro ao criar novo registro clínico", error)
@@ -163,13 +183,18 @@ export const useAPI = create<TypeAPI>(set => ({
     },
     getClinicalRecords: async (id: string) => {
         try {
+            const token: string = localStorage.getItem("@authToken") as string
+            if (!token) throw new Error("Erro ao buscar o token")
             set({ clinicalRecords: null })
             const { data } = await api.get(
                 `/dashboard/patients/${id}/clinical`,
                 {
-                    withCredentials: true,
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
                 }
             )
+
             set({ clinicalRecords: data.patientClinicalRecord })
         } catch (error) {
             console.error(
@@ -180,11 +205,15 @@ export const useAPI = create<TypeAPI>(set => ({
     },
     getSingleClinicalRecord: async (id: string, recordId: string) => {
         try {
+            const token: string = localStorage.getItem("@authToken") as string
+            if (!token) throw new Error("Erro ao buscar o token")
             set({ clinicalRecord: null })
             const { data } = await api.get(
                 `/dashboard/patients/${id}/clinical/${recordId}`,
                 {
-                    withCredentials: true,
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
                 }
             )
             console.log(data)
@@ -195,8 +224,12 @@ export const useAPI = create<TypeAPI>(set => ({
     },
     deleteClinicalRecord: async (id: string, recordId: string) => {
         try {
+            const token: string = localStorage.getItem("@authToken") as string
+            if (!token) throw new Error("Erro ao buscar o token")
             await api.delete(`/dashboard/patients/${id}/clinical/${recordId}`, {
-                withCredentials: true,
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
             })
         } catch (error) {
             console.error("Erro ao deletar registro específico", error)
