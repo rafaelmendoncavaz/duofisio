@@ -2,7 +2,7 @@ import { type ComponentProps, forwardRef } from "react"
 import { tv, type VariantProps } from "tailwind-variants"
 
 const inputVariants = tv({
-    base: "outline-none border rounded-md focus:border-fisioblue py-1 px-3 shadow-shape",
+    base: "outline-none border rounded-md focus:border-fisioblue py-1 px-3 shadow-shape transition-colors",
 
     variants: {
         sizeVariant: {
@@ -10,8 +10,8 @@ const inputVariants = tv({
             small: "flex-0",
         },
         colorVariant: {
-            enabled: "bg-transparent",
-            disabled: "bg-slate-200 cursor-text",
+            enabled: "bg-transparent text-black",
+            disabled: "bg-slate-200 text-gray-500 cursor-not-allowed",
         },
     },
     defaultVariants: {
@@ -24,21 +24,17 @@ interface InputProps
     extends ComponentProps<"input">,
         VariantProps<typeof inputVariants> {}
 
-function Input(
-    { sizeVariant, colorVariant, ...props }: InputProps,
-    ref: React.Ref<HTMLInputElement>
-) {
-    return (
-        <input
-            ref={ref}
-            {...props}
-            className={inputVariants({ sizeVariant, colorVariant })}
-        />
-    )
-}
+export const Input = forwardRef<HTMLInputElement, InputProps>(
+    ({ sizeVariant, colorVariant, className, ...props }, ref) => {
+        return (
+            <input
+                ref={ref}
+                {...props}
+                className={inputVariants({ sizeVariant, colorVariant })}
+                disabled={props.disabled}
+            />
+        )
+    }
+)
 
-const ForwardedInput = forwardRef(Input)
-
-ForwardedInput.displayName = "Input"
-
-export { ForwardedInput as Input }
+Input.displayName = "Input"

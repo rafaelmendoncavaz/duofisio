@@ -5,24 +5,37 @@ import { useNavigate } from "react-router-dom"
 export function DashboardNavigation() {
     const navigate = useNavigate()
 
-    return (
-        <aside className="bg-fisiogray text-slate-100 w-60">
-            <div className="w-full h-9 bg-fisioblue" />
+    const navItems = [
+        {
+            label: "Agenda",
+            path: "/dashboard/agendamentos",
+            icon: <CalendarDays size={20} />,
+        },
+        {
+            label: "Pacientes",
+            path: "/dashboard/pacientes",
+            icon: <Users size={20} />,
+        },
+    ]
 
-            <div className="flex flex-col gap-10">
+    return (
+        <aside className="bg-fisiogray text-slate-100 w-60 h-full">
+            <div className="flex flex-col gap-10 p-4">
+                {/* Cabeçalho */}
                 <div className="shadow-shape px-2 py-1.5 flex items-center gap-2">
-                    <div className="rounded-[50%] h-10 w-10 bg-slate-100">
+                    <div className="rounded-full h-10 w-10 bg-slate-100 overflow-hidden">
                         <img
-                            className="object-contain"
+                            className="object-contain w-full h-full"
                             src={roundedLogo}
-                            alt="Duofisio"
+                            alt="Logotipo Duofisio"
                         />
                     </div>
-                    <h1 className="font-bold text-lg font-roboto">
+                    <h1 className="font-bold text-lg text-right font-roboto">
                         Menu Principal
                     </h1>
                 </div>
 
+                {/* Navegação */}
                 <div>
                     <div className="shadow-shape px-2 py-1.5 flex items-center gap-2">
                         <Hospital size={20} />
@@ -31,25 +44,20 @@ export function DashboardNavigation() {
                         </h1>
                     </div>
 
-                    <button
-                        onClick={() => navigate("/dashboard/agendamentos")}
-                        className="flex items-center gap-2 py-1.5 w-full hover:bg-gray-700"
-                        type="button"
-                    >
-                        <div className="w-[4px] h-6 bg-fisiolightgray" />
-                        <CalendarDays size={20} />
-                        <span>Agenda</span>
-                    </button>
-
-                    <button
-                        onClick={() => navigate("/dashboard/pacientes")}
-                        className="flex items-center gap-2 py-1.5 w-full hover:bg-gray-700"
-                        type="button"
-                    >
-                        <div className="w-[4px] h-6 bg-fisiolightgray" />
-                        <Users size={20} />
-                        <span>Pacientes</span>
-                    </button>
+                    <nav className="mt-2">
+                        {navItems.map(item => (
+                            <button
+                                key={item.path}
+                                onClick={() => navigate(item.path)}
+                                className="flex items-center gap-2 py-1.5 w-full hover:bg-gray-700 transition-colors"
+                                type="button"
+                            >
+                                <div className="w-1 h-6 bg-fisiolightgray" />
+                                {item.icon}
+                                <span>{item.label}</span>
+                            </button>
+                        ))}
+                    </nav>
                 </div>
             </div>
         </aside>

@@ -13,12 +13,15 @@ import { DashboardHome } from "../pages/dashboard/dashboard-home"
 export function MainRoutes() {
     return (
         <Routes>
+            {/* Rotas públicas */}
             <Route path="/" element={<Home />} />
             <Route path="/sobre-nos" element={<About />} />
             <Route path="/servicos" element={<Services />} />
             <Route path="/agendamentos" element={<Appointments />} />
             <Route path="/convenios" element={<Covenants />} />
             <Route path="/login" element={<Login />} />
+
+            {/* Rotas restritas */}
             <Route path="/dashboard" element={<RestrictRoutes />}>
                 <Route index element={<DashboardHome />} />
                 <Route path="agendamentos" element={<DashboardSchedule />} />

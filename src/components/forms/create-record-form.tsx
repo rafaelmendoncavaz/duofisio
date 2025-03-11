@@ -1,51 +1,39 @@
 import { ArrowLeftCircle } from "lucide-react"
-import { useAPI, useModal } from "../../context/context"
-import { RecordList } from "../modal/create-record/record-list"
+import { useAPI, useModal } from "../../store/store"
 import { useForm } from "react-hook-form"
 import type { TypeCreateRecord } from "../../types/types"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { createRecordSchema } from "../../schema/schema"
 import { Input } from "../global/input"
-import { RecordInfo } from "../modal/create-record/record-info"
 
-export function CreateRecordForm() {
-    const {
-        createClinicalRecord,
-        clinicalRecords,
-        clearRecords,
-        clinicalRecord,
-        clearRecord,
-    } = useAPI(store => store)
+interface CreateRecordFormProps {
+    closeCreateRecord: () => void
+}
 
-    const { closeModal } = useModal(store => store)
+export function CreateRecordForm({ closeCreateRecord }: CreateRecordFormProps) {
+    const { createClinicalRecord, clinicalRecords, clearRecords, clearRecord } =
+        useAPI()
+    const { closeModal } = useModal()
 
     const {
         register,
         reset,
         handleSubmit,
-        formState: { errors },
+        formState: { errors, isSubmitting },
     } = useForm<TypeCreateRecord>({
         resolver: zodResolver(createRecordSchema),
+        defaultValues: {
+            cid: "",
+            allegation: "",
+            diagnosis: "",
+            covenant: null,
+            expires: null,
+        },
     })
 
-    async function handleCreateRecord(data: TypeCreateRecord) {
-        if (!clinicalRecords) return
+    const onSubmit = async (data: TypeCreateRecord) => {
+        if (!clinicalRecords?.patientId) return
 
-        const { covenant, expires, ...rest } = data
-
-        if (covenant?.length === 0) {
-            const newRecord = {
-                covenant: undefined,
-                expires: undefined,
-                ...rest,
-            }
-            await createClinicalRecord(clinicalRecords.patientId, newRecord)
-            reset()
-            clearRecords()
-            clearRecord()
-            closeModal()
-            return
-        }
         await createClinicalRecord(clinicalRecords.patientId, data)
         reset()
         clearRecords()
@@ -53,118 +41,104 @@ export function CreateRecordForm() {
         closeModal()
     }
 
+    if (!clinicalRecords) {
+        return (
+            <div className="p-4 text-center">Nenhum paciente selecionado.</div>
+        )
+    }
+
     return (
-        <div className="mx-10 flex flex-col space-y-4 w-full">
-            {clinicalRecord !== null ? (
-                <RecordInfo />
-            ) : (
-                <>
-                    <div className="flex items-center justify-between">
-                        <h1>
-                            Criar novo registro clínico para{" "}
-                            {clinicalRecords?.patientName}
-                        </h1>
+        <div className="flex flex-col gap-6 py-2 w-full mx-auto">
+            <div className="flex items-center justify-between">
+                <h1 className="text-lg">
+                    <span className="font-semibold">
+                        Novo Registro Clínico para:{" "}
+                    </span>
+                    <span>{clinicalRecords.patientName}</span>
+                </h1>
+                <button
+                    type="button"
+                    onClick={closeCreateRecord}
+                    className="flex items-center gap-2 rounded-md bg-fisioblue hover:bg-fisioblue2 px-3 py-1 text-slate-100 font-semibold"
+                >
+                    <ArrowLeftCircle size={20} />
+                    Voltar
+                </button>
+            </div>
 
-                        <button
-                            type="button"
-                            onClick={clearRecords}
-                            className="flex items-center gap-2 rounded-md bg-fisioblue hover:bg-fisioblue2 p-1 text-slate-100 font-semibold"
-                        >
-                            <ArrowLeftCircle size={20} />
-                            Voltar
-                        </button>
+            <div className="w-full h-px bg-fisioblue shadow-shape" />
+
+            <p className="text-sm">
+                <span className="font-bold text-red-500">*</span> indica campos
+                obrigatórios
+            </p>
+
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <label className="block" htmlFor="">
+                            CID <span className="text-red-500">*</span>
+                        </label>
+                        <Input type="text" {...register("cid")} />
+                        {errors.cid && (
+                            <span className="text-sm text-red-500">
+                                {errors.cid.message}
+                            </span>
+                        )}
                     </div>
+                    <div className="space-y-2">
+                        <label className="block" htmlFor="">
+                            Queixa <span className="text-red-500">*</span>
+                        </label>
+                        <Input type="text" {...register("allegation")} />
+                        {errors.allegation && (
+                            <span className="text-sm text-red-500">
+                                {errors.allegation.message}
+                            </span>
+                        )}
+                    </div>
+                </div>
 
-                    <div className="w-full h-px bg-fisioblue shadow-shape" />
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <label className="block" htmlFor="">
+                            Convênio
+                        </label>
+                        <Input type="text" {...register("covenant")} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="block" htmlFor="">
+                            Vencimento
+                        </label>
+                        <Input type="date" {...register("expires")} />
+                    </div>
+                </div>
 
-                    <form
-                        className="flex flex-col space-y-6"
-                        onSubmit={handleSubmit(handleCreateRecord)}
-                    >
-                        <div className="flex items-center justify-between gap-2">
-                            <div className="w-1/2">
-                                <label htmlFor="">
-                                    CID{" "}
-                                    <span className="font-bold text-red-500">
-                                        *
-                                    </span>
-                                </label>
-                                <Input type="text" {...register("cid")} />
-                                {errors.cid && (
-                                    <span className="text-sm text-red-500">
-                                        {errors.cid.message}
-                                    </span>
-                                )}
-                            </div>
-                            <div className="w-1/2">
-                                <label htmlFor="">
-                                    Queixa{" "}
-                                    <span className="font-bold text-red-500">
-                                        *
-                                    </span>
-                                </label>
-                                <Input
-                                    type="text"
-                                    {...register("allegation")}
-                                />
-                                {errors.allegation && (
-                                    <span className="text-sm text-red-500">
-                                        {errors.allegation.message}
-                                    </span>
-                                )}
-                            </div>
-                        </div>
+                <div className="space-y-2">
+                    <label className="block" htmlFor="">
+                        Diagnóstico <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                        rows={4}
+                        placeholder="Escreva um breve diagnóstico inicial..."
+                        className="w-full bg-transparent border rounded-md p-2 focus:border-fisioblue shadow-shape"
+                        {...register("diagnosis")}
+                    />
+                    {errors.diagnosis && (
+                        <span className="text-sm text-red-500">
+                            {errors.diagnosis.message}
+                        </span>
+                    )}
+                </div>
 
-                        <div className="flex items-center justify-between gap-2">
-                            <div className="w-1/2">
-                                <label htmlFor="">Convênio</label>
-                                <Input type="text" {...register("covenant")} />
-                            </div>
-                            <div className="w-1/2">
-                                <label htmlFor="">Vencimento</label>
-                                <Input
-                                    type="date"
-                                    {...register("expires")}
-                                    defaultValue="0001-01-01"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="flex flex-col gap-2">
-                            <label htmlFor="">
-                                Diagnóstico Inicial{" "}
-                                <span className="font-bold text-red-500">
-                                    *
-                                </span>
-                            </label>
-                            <textarea
-                                rows={4}
-                                placeholder="Escreva um breve diagnóstico inicial..."
-                                className="bg-transparent outline-none border rounded-md focus:border-fisioblue py-1 px-3 shadow-shape"
-                                {...register("diagnosis")}
-                            />
-                            {errors.diagnosis && (
-                                <span className="text-sm text-red-500">
-                                    {errors.diagnosis.message}
-                                </span>
-                            )}
-                        </div>
-
-                        <button
-                            type="submit"
-                            className="w-full rounded-md bg-fisioblue text-slate-100 font-semibold py-1 hover:bg-fisioblue2"
-                        >
-                            Cadastrar Novo CID
-                        </button>
-                    </form>
-
-                    <div className="w-full h-px bg-fisioblue shadow-shape" />
-
-                    <h1>Prontuários de {clinicalRecords?.patientName}</h1>
-
-                    <RecordList />
-                </>
-            )}
+                <button
+                    type="submit"
+                    className="w-full rounded-md bg-fisioblue text-slate-100 font-semibold py-2 hover:bg-fisioblue2 disabled:bg-gray-400"
+                    disabled={isSubmitting}
+                >
+                    {isSubmitting ? "Cadastrando..." : "Cadastrar Registro"}
+                </button>
+            </form>
         </div>
     )
 }

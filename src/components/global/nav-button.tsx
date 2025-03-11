@@ -8,7 +8,7 @@ export function NavButton({ children, ...props }: NavButtonProps) {
     return (
         <button
             {...props}
-            className="flex items-center gap-1 px-2 py-1 border border-transparent rounded-3xl hover:bg-fisioblue hover:text-slate-100 focus:bg-fisioblue focus:text-slate-100"
+            className="flex items-center gap-1 px-2 py-1 rounded-3xl text-gray-800 hover:bg-fisioblue hover:text-slate-100 focus:bg-fisioblue focus:text-slate-100 focus:outline-none focus:ring-2 focus:ring-fisioblue2 transition-colors"
         >
             {children}
         </button>

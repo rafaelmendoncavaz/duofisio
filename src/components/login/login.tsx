@@ -1,80 +1,97 @@
-import { Contact } from "../global/contact"
-import roundLogo from "../../assets/duofisio-rounded-transparent.png"
-import { Input } from "../global/input"
-import { useForm } from "react-hook-form"
-import { Key, User } from "lucide-react"
-import type { TypeLoginData } from "../../types/types"
-import { useNavigate } from "react-router-dom"
-import { useAPI } from "../../context/context"
 import { useEffect } from "react"
+import { useForm } from "react-hook-form"
+import { useNavigate } from "react-router-dom"
+import { Key, User } from "lucide-react"
+import { Contact } from "../global/contact"
+import { Input } from "../global/input"
+import { useAPI } from "../../store/store"
+import type { TypeLoginData } from "../../types/types"
+import roundLogo from "../../assets/duofisio-rounded-transparent.png"
 
 export function Login() {
     const navigate = useNavigate()
-    const { register, handleSubmit } = useForm<TypeLoginData>()
-    const { userLogin, verifyAuth, token } = useAPI(store => store)
+    const { userLogin, token } = useAPI()
+    const {
+        register,
+        handleSubmit,
+        formState: { isSubmitting },
+    } = useForm<TypeLoginData>({
+        defaultValues: { email: "", password: "" },
+    })
 
     useEffect(() => {
         if (token) {
-            navigate("/dashboard")
+            navigate("/dashboard", { replace: true })
         }
     }, [token, navigate])
 
-    async function submitLogin(data: TypeLoginData) {
-        await userLogin(data)
-        await verifyAuth()
-        navigate("/dashboard")
+    const onSubmit = async (data: TypeLoginData) => {
+        const response = await userLogin(data)
+        if (response?.success) {
+            navigate("/dashboard", { replace: true })
+        }
     }
 
     return (
-        <>
+        <div className="h-screen flex flex-col">
             <Contact />
-            <div className="fixed inset-10 flex items-center justify-center">
-                <div className="border-t border-fisioblue shadow-shape rounded-md w-80 mx-auto">
-                    <div className="bg-fisioblue flex items-center gap-2 p-1">
-                        <div className="rounded-[50%] h-10 w-10 bg-slate-100">
+            <div className="flex-1 flex items-center justify-center bg-gray-100 p-4">
+                <div className="w-full max-w-sm rounded-md border-t border-fisioblue shadow-shape bg-white">
+                    <header className="bg-fisioblue flex items-center gap-2 p-2 rounded-t-md">
+                        <div className="rounded-full h-10 w-10 bg-slate-100 overflow-hidden">
                             <img
-                                className="object-contain"
                                 src={roundLogo}
                                 alt="Duofisio"
+                                className="object-contain h-full w-full"
                             />
                         </div>
                         <h1 className="text-slate-100 font-semibold">Login</h1>
-                    </div>
+                    </header>
 
                     <form
-                        className="flex flex-col items-center space-y-2 p-2"
-                        onSubmit={handleSubmit(submitLogin)}
+                        onSubmit={handleSubmit(onSubmit)}
+                        className="flex flex-col gap-4 p-4"
                     >
-                        <div className="w-full flex items-center gap-1">
-                            <User className="text-fisioblue" size={20} />
+                        <div className="flex items-center gap-2">
+                            <User
+                                className="text-fisioblue"
+                                size={20}
+                                aria-hidden="true"
+                            />
                             <Input
                                 type="email"
-                                autoComplete="off"
                                 placeholder="Ex: usuario@email.com"
+                                autoComplete="username"
                                 {...register("email")}
+                                aria-label="Email"
                             />
                         </div>
 
-                        <div className="w-full flex items-center gap-1">
-                            <Key className="text-fisioblue" size={20} />
+                        <div className="flex items-center gap-2">
+                            <Key
+                                className="text-fisioblue"
+                                size={20}
+                                aria-hidden="true"
+                            />
                             <Input
-                                id="teste"
                                 type="password"
-                                autoComplete="off"
                                 placeholder="Insira sua senha"
+                                autoComplete="current-password"
                                 {...register("password")}
+                                aria-label="Senha"
                             />
                         </div>
 
                         <button
-                            className="w-full rounded-md text-slate-100 bg-fisioblue font-semibold text-center py-1"
                             type="submit"
+                            className="w-full rounded-md bg-fisioblue text-slate-100 font-semibold py-2 hover:bg-fisioblue2 disabled:bg-gray-400 transition-colors"
+                            disabled={isSubmitting}
                         >
-                            Fazer Login
+                            {isSubmitting ? "Entrando..." : "Fazer Login"}
                         </button>
                     </form>
                 </div>
             </div>
-        </>
+        </div>
     )
 }

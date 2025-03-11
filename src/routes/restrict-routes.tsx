@@ -1,12 +1,24 @@
 import { Outlet, Navigate } from "react-router-dom"
-import { useAPI } from "../context/context"
+import { useAPI } from "../store/store"
+import { useEffect, useState } from "react"
 
 export function RestrictRoutes() {
-    const { token } = useAPI(store => store)
+    const { token, verifyAuth } = useAPI()
+    const [isLoading, setIsLoading] = useState(true)
 
-    if (token === null) {
-        return <div>Redirecionando...</div>
+    useEffect(() => {
+        const checkAuth = async () => {
+            if (token === null) {
+                await verifyAuth()
+            }
+            setIsLoading(false)
+        }
+        checkAuth()
+    }, [token, verifyAuth])
+
+    if (isLoading) {
+        return <div>Carregando...</div>
     }
 
-    return token ? <Outlet /> : <Navigate to="/" />
+    return token ? <Outlet /> : <Navigate to="/login" replace />
 }

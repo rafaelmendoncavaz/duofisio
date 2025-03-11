@@ -1,49 +1,64 @@
 import { ArrowBigLeft, Facebook, Instagram, Lock } from "lucide-react"
 import wp from "../../assets/whatsapp.svg"
-import { useMatch, useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 
 export function Contact() {
     const navigate = useNavigate()
-    const match = useMatch("/login")
-    const isLogin = match?.pathname
+    const { pathname } = useLocation()
+    const isLoginPage = pathname === "/login"
 
-    function handleLoginSection() {
-        if (!isLogin) {
-            return navigate("/login")
-        }
-        return navigate("/")
+    const handleNavigation = () => {
+        navigate(isLoginPage ? "/" : "/login")
     }
 
     return (
         <div className="bg-fisioblue text-slate-100 py-2">
-            <div className="max-w-7xl flex justify-between mx-auto">
-                <div className="flex gap-2">
+            <div className="max-w-7xl mx-auto flex justify-between items-center">
+                <div className="flex items-center gap-4">
                     <h1 className="leading-none">Fale Conosco:</h1>
-                    <a href="" target="_blank">
+                    <a
+                        href="https://facebook.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Facebook"
+                    >
                         <Facebook size={20} />
                     </a>
-                    <a href="" target="_blank">
+                    <a
+                        href="https://instagram.com/clinduofisio"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Instagram"
+                    >
                         <Instagram size={20} />
                     </a>
-                    <a className="h-5 w-5" href="" target="_blank">
-                        <img src={wp} alt="Whatsapp" />
+                    <a
+                        href="https://wa.me/5544998216349"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="WhatsApp"
+                    >
+                        <img
+                            src={wp}
+                            alt="Ícone do WhatsApp"
+                            className="h-5 w-5"
+                        />
                     </a>
                 </div>
-                <div>
-                    <button
-                        onClick={() => handleLoginSection()}
-                        className="flex gap-2"
-                    >
-                        {isLogin ? (
-                            <ArrowBigLeft size={20} />
-                        ) : (
-                            <Lock size={20} />
-                        )}
-                        <span className="leading-none hover:underline">
-                            {isLogin ? "Retornar" : "Área Restrita"}
-                        </span>
-                    </button>
-                </div>
+                <button
+                    type="button"
+                    onClick={handleNavigation}
+                    className="flex items-center gap-2 hover:underline focus:outline-none focus:ring-2 focus:ring-fisioblue2"
+                >
+                    {isLoginPage ? (
+                        <ArrowBigLeft size={20} />
+                    ) : (
+                        <Lock size={20} />
+                    )}
+                    <span className="leading-none">
+                        {isLoginPage ? "Retornar" : "Área Restrita"}
+                    </span>
+                </button>
             </div>
         </div>
     )

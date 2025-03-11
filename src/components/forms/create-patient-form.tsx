@@ -1,154 +1,88 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useState, useEffect } from "react"
+import { useState, useCallback } from "react"
 import { useForm } from "react-hook-form"
 import { viacep } from "../../api/api"
 import { createPatientSchema } from "../../schema/schema"
-import type { TypeAddress, TypeCreatePatient, TypeCep } from "../../types/types"
+import type { TypeCreatePatient } from "../../types/types"
 import { Input } from "../global/input"
-import { useAPI, useModal } from "../../context/context"
+import { useAPI, useModal } from "../../store/store"
 
 export function CreatePatientForm() {
-    const [hasAdultResponsible, setHasAdultResponsible] =
-        useState<boolean>(false)
-    const [adultCEP, setAdultCEP] = useState<string>("")
-    const [adultAddress, setAdultAddress] = useState<TypeAddress | null>(null)
-    const [patientCEP, setPatientCEP] = useState<string>("")
-    const [patientAddress, setPatientAddress] = useState<TypeAddress | null>(
-        null
-    )
-    const [patientStreet, setPatientStreet] = useState<string>("")
-    const [patientNeighborhood, setPatientNeighborhood] = useState<string>("")
-    const [adultStreet, setAdultStreet] = useState<string>("")
-    const [adultNeighborhood, setAdultNeighborhood] = useState<string>("")
-
-    const { createPatient } = useAPI(store => store)
-    const { closeModal } = useModal(store => store)
-
-    const {
-        handleSubmit,
-        register,
-        setValue,
-        reset,
-        formState: { errors },
-    } = useForm<TypeCreatePatient>({
-        resolver: zodResolver(createPatientSchema),
+    const [hasAdultResponsible, setHasAdultResponsible] = useState(false)
+    const [isLoadingCEP, setIsLoadingCEP] = useState({
+        patient: false,
+        adult: false,
     })
 
-    async function getPatientAddress(cep: TypeCep) {
-        try {
-            const { data } = await viacep.get(`/${cep}/json`)
-            setPatientAddress(data)
-        } catch (error) {
-            console.error("Erro ao buscar endereço do paciente", error)
-        }
-    }
+    const { createPatient } = useAPI()
+    const { closeModal } = useModal()
 
-    async function getAdultAddress(cep: TypeCep) {
-        try {
-            const { data } = await viacep.get(`/${cep}/json`)
-            setAdultAddress(data)
-        } catch (error) {
-            console.error("Erro ao buscar endereço do adulto", error)
-        }
-    }
+    const {
+        register,
+        handleSubmit,
+        setValue,
+        reset,
+        formState: { errors, isSubmitting },
+    } = useForm<TypeCreatePatient>({
+        resolver: zodResolver(createPatientSchema),
+        defaultValues: {
+            address: { cep: "" },
+            clinicalData: { expires: null },
+            adultResponsible: null,
+        },
+    })
 
-    // biome-ignore lint/correctness/useExhaustiveDependencies: <Function re-renders>
-    useEffect(() => {
-        if (patientCEP && patientCEP.length === 8) {
-            getPatientAddress(patientCEP)
-        }
-        if (adultCEP && adultCEP.length === 8) {
-            getAdultAddress(adultCEP)
-        }
-    }, [patientCEP, adultCEP])
-
-    async function handleCreatePatient(data: TypeCreatePatient) {
-        const { adultResponsible, clinicalData, address, ...rest } = data
-        const patient = {
-            ...rest,
-            address,
-            clinicalData,
-        }
-        const patientWithAdult = {
-            ...rest,
-            address,
-            clinicalData,
-            adultResponsible,
-        }
-
-        if (!hasAdultResponsible) {
-            const response = await createPatient(patient)
-            if (response) {
-                if (response.status === 201) {
-                    reset()
-                    closeModal()
-                    return response.id
-                }
+    const fetchAddress = useCallback(
+        async (cep: string, type: "patient" | "adult") => {
+            if (cep.length !== 8) return
+            setIsLoadingCEP(prev => ({ ...prev, [type]: true }))
+            try {
+                const { data } = await viacep.get(`/${cep}/json`)
+                const prefix =
+                    type === "patient" ? "address" : "adultResponsible.address"
+                setValue(`${prefix}.street`, data.logradouro || "")
+                setValue(`${prefix}.neighborhood`, data.bairro || "")
+                setValue(`${prefix}.city`, data.localidade || "")
+                setValue(`${prefix}.state`, data.uf || "")
+            } catch (error) {
+                console.error(`Erro ao buscar endereço do ${type}`, error)
+            } finally {
+                setIsLoadingCEP(prev => ({ ...prev, [type]: false }))
             }
+        },
+        [setValue]
+    )
+
+    const onSubmit = async (data: TypeCreatePatient) => {
+        const payload = hasAdultResponsible
+            ? data
+            : { ...data, adultResponsible: null }
+        const response = await createPatient(payload)
+        if (response?.success && response.status === 201) {
+            reset()
+            closeModal()
         }
-        if (hasAdultResponsible) {
-            const response = await createPatient(patientWithAdult)
-            if (response) {
-                if (response.status === 201) {
-                    reset()
-                    closeModal()
-                    return response.id
-                }
-            }
-        }
-    }
-
-    const patientLogradouro =
-        patientAddress?.logradouro && patientAddress.logradouro.length > 0
-            ? patientAddress?.logradouro
-            : patientStreet
-
-    const patientBairro =
-        patientAddress?.bairro && patientAddress.bairro.length > 0
-            ? patientAddress?.bairro
-            : patientNeighborhood
-
-    const adultLogradouro =
-        adultAddress?.logradouro && adultAddress.logradouro.length > 0
-            ? adultAddress?.logradouro
-            : adultStreet
-    const adultBairro =
-        adultAddress?.bairro && adultAddress.bairro.length > 0
-            ? adultAddress?.bairro
-            : adultNeighborhood
-
-    if (patientAddress) {
-        setValue("address.street", patientLogradouro)
-        setValue("address.neighborhood", patientBairro)
-        setValue("address.city", patientAddress?.localidade)
-        setValue("address.state", patientAddress?.estado)
-    }
-    if (adultAddress) {
-        setValue("adultResponsible.address.street", adultLogradouro)
-        setValue("adultResponsible.address.neighborhood", adultBairro)
-        setValue("adultResponsible.address.city", adultAddress?.localidade)
-        setValue("adultResponsible.address.state", adultAddress?.estado)
     }
 
     return (
         <form
-            onSubmit={handleSubmit(handleCreatePatient)}
-            className="flex flex-col items-center gap-2"
+            onSubmit={handleSubmit(onSubmit)}
+            className="w-full flex flex-col items-center gap-2"
         >
-            <div className="flex flex-col gap-2 w-full max-h-[500px] overflow-hidden scrollbar-hidden overflow-y-auto">
-                <p className="text-sm text-left">
+            <div className="max-h-[70vh] w-full overflow-hidden scrollbar-hidden overflow-y-auto space-y-6">
+                <p className="text-sm">
                     <span className="font-bold text-red-500">*</span> indica
                     campos obrigatórios
                 </p>
-                <div className="flex flex-col py-2 gap-2">
-                    <h1>Dados Pessoais</h1>
 
+                {/* Dados Pessoais */}
+                <section className="space-y-4">
+                    <h2 className="text-lg font-semibold">Dados Pessoais</h2>
                     <div className="w-full h-px bg-fisioblue shadow-shape" />
 
-                    <div>
-                        <label htmlFor="">
-                            Nome{" "}
-                            <span className="font-bold text-red-500">*</span>
+                    <div className="space-y-2">
+                        <label className="block" htmlFor="">
+                            Nome <span className="text-red-500">*</span>
                         </label>
                         <Input type="text" {...register("name")} />
                         {errors.name && (
@@ -158,14 +92,10 @@ export function CreatePatientForm() {
                         )}
                     </div>
 
-                    {/* CPF / Birth DIV */}
-                    <div className="flex items-center justify-between gap-2">
-                        <div className="w-1/2">
-                            <label htmlFor="">
-                                CPF{" "}
-                                <span className="font-bold text-red-500">
-                                    *
-                                </span>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="block" htmlFor="">
+                                CPF <span className="text-red-500">*</span>
                             </label>
                             <Input type="text" {...register("cpf")} />
                             {errors.cpf && (
@@ -174,215 +104,196 @@ export function CreatePatientForm() {
                                 </span>
                             )}
                         </div>
-                        <div className="w-1/2">
-                            <label htmlFor="">Data de Nascimento</label>
+                        <div className="space-y-2">
+                            <label className="block" htmlFor="">
+                                Data de Nascimento
+                            </label>
                             <Input type="date" {...register("dateOfBirth")} />
+                            {errors.dateOfBirth && (
+                                <span className="text-sm text-red-500">
+                                    {errors.dateOfBirth.message}
+                                </span>
+                            )}
                         </div>
                     </div>
 
-                    {/* Phone / Email DIV */}
-                    <div className="flex items-center justify-between gap-2">
-                        <div className="w-1/2">
-                            <label htmlFor="">Telefone</label>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="block" htmlFor="">
+                                Telefone
+                            </label>
                             <Input type="text" {...register("phone")} />
+                            {errors.phone && (
+                                <span className="text-sm text-red-500">
+                                    {errors.phone.message}
+                                </span>
+                            )}
                         </div>
-                        <div className="w-1/2">
-                            <label htmlFor="">Email</label>
-                            <Input type="text" {...register("email")} />
+                        <div className="space-y-2">
+                            <label className="block" htmlFor="">
+                                Email
+                            </label>
+                            <Input type="email" {...register("email")} />
+                            {errors.email && (
+                                <span className="text-sm text-red-500">
+                                    {errors.email.message}
+                                </span>
+                            )}
                         </div>
                     </div>
 
-                    {/* Sex / Occupation DIV */}
-                    <div className="flex items-center justify-between gap-2">
-                        <div className="flex flex-col w-1/2">
-                            <label htmlFor="">Sexo</label>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="block" htmlFor="">
+                                Sexo
+                            </label>
                             <select
                                 {...register("sex")}
-                                defaultValue={""}
-                                className="bg-transparent outline-none border rounded-md focus:border-fisioblue py-1 px-3 shadow-shape"
+                                className="w-full bg-transparent border rounded-md p-2 focus:border-fisioblue shadow-shape"
                             >
-                                <option value="" disabled>
-                                    Selecione uma opção
-                                </option>
+                                <option value="">Selecione</option>
                                 <option value="Masculino">Masculino</option>
                                 <option value="Feminino">Feminino</option>
                             </select>
+                            {errors.sex && (
+                                <span className="text-sm text-red-500">
+                                    {errors.sex.message}
+                                </span>
+                            )}
                         </div>
-                        <div className="w-1/2">
-                            <label htmlFor="">Ocupação</label>
+                        <div className="space-y-2">
+                            <label className="block" htmlFor="">
+                                Ocupação
+                            </label>
                             <Input type="text" {...register("profession")} />
+                            {errors.profession && (
+                                <span className="text-sm text-red-500">
+                                    {errors.profession.message}
+                                </span>
+                            )}
                         </div>
                     </div>
-                </div>
+                </section>
 
-                <div className="flex flex-col py-2 gap-2">
-                    <h1>Endereço</h1>
+                {/* Endereço do Paciente */}
+                <section className="space-y-4">
+                    <h2 className="text-lg font-semibold">Endereço</h2>
                     <div className="w-full h-px bg-fisioblue shadow-shape" />
 
-                    <div>
-                        <label htmlFor="">
-                            CEP{" "}
-                            <span className="font-bold text-red-500">*</span>
+                    <div className="space-y-2">
+                        <label className="block" htmlFor="">
+                            CEP <span className="text-red-500">*</span>
                         </label>
                         <Input
                             type="text"
-                            {...register("address.cep")}
-                            onChange={e => setPatientCEP(e.target.value)}
-                            value={patientCEP}
+                            {...register("address.cep", {
+                                onChange: e =>
+                                    fetchAddress(e.target.value, "patient"),
+                            })}
+                            disabled={isLoadingCEP.patient}
                         />
                         {errors.address?.cep && (
                             <span className="text-sm text-red-500">
                                 {errors.address.cep.message}
                             </span>
                         )}
+                        {isLoadingCEP.patient && (
+                            <span className="text-sm text-gray-500">
+                                Buscando...
+                            </span>
+                        )}
                     </div>
 
-                    {patientAddress ? (
-                        <>
-                            {/* Street / Number DIV */}
-                            <div className="flex items-center justify-between gap-2">
-                                <div className="w-full">
-                                    <label htmlFor="">
-                                        Rua{" "}
-                                        <span className="font-bold text-red-500">
-                                            *
-                                        </span>
-                                    </label>
-                                    <Input
-                                        type="text"
-                                        {...register("address.street")}
-                                        defaultValue={patientAddress.logradouro}
-                                        onChange={e =>
-                                            setPatientStreet(e.target.value)
-                                        }
-                                        value={
-                                            patientAddress.logradouro.length !==
-                                            0
-                                                ? patientAddress.logradouro
-                                                : patientStreet
-                                        }
-                                        disabled={
-                                            patientAddress.logradouro.length > 0
-                                        }
-                                    />
-                                    {errors.address?.street && (
-                                        <span className="text-sm text-red-500">
-                                            {errors.address.street.message}
-                                        </span>
-                                    )}
-                                </div>
-                                <div className="flex flex-col">
-                                    <label htmlFor="">
-                                        Número{" "}
-                                        <span className="font-bold text-red-500">
-                                            *
-                                        </span>
-                                    </label>
-                                    <Input
-                                        sizeVariant="small"
-                                        type="text"
-                                        {...register("address.number")}
-                                    />
-                                    {errors.address?.number && (
-                                        <span className="text-sm text-red-500">
-                                            {errors.address.number.message}
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="block" htmlFor="">
+                                Rua <span className="text-red-500">*</span>
+                            </label>
+                            <Input
+                                type="text"
+                                {...register("address.street")}
+                            />
+                            {errors.address?.street && (
+                                <span className="text-sm text-red-500">
+                                    {errors.address.street.message}
+                                </span>
+                            )}
+                        </div>
+                        <div className="space-y-2">
+                            <label className="block" htmlFor="">
+                                Número <span className="text-red-500">*</span>
+                            </label>
+                            <Input
+                                type="number"
+                                {...register("address.number")}
+                            />
+                            {errors.address?.number && (
+                                <span className="text-sm text-red-500">
+                                    {errors.address.number.message}
+                                </span>
+                            )}
+                        </div>
+                    </div>
 
-                            {/* Complement / Neighborhood DIV */}
-                            <div className="flex items-center justify-between gap-2">
-                                <div className="w-1/2">
-                                    <label htmlFor="">Complemento</label>
-                                    <Input
-                                        type="text"
-                                        {...register("address.complement")}
-                                    />
-                                </div>
-                                <div className="w-1/2">
-                                    <label htmlFor="">
-                                        Bairro{" "}
-                                        <span className="font-bold text-red-500">
-                                            *
-                                        </span>
-                                    </label>
-                                    <Input
-                                        type="text"
-                                        {...register("address.neighborhood")}
-                                        defaultValue={patientAddress.bairro}
-                                        onChange={e =>
-                                            setPatientNeighborhood(
-                                                e.target.value
-                                            )
-                                        }
-                                        value={
-                                            patientAddress.bairro.length > 0
-                                                ? patientAddress.bairro
-                                                : patientNeighborhood
-                                        }
-                                        disabled={
-                                            patientAddress.bairro.length > 0
-                                        }
-                                    />
-                                    {errors.address?.neighborhood && (
-                                        <span className="text-sm text-red-500">
-                                            {
-                                                errors.address.neighborhood
-                                                    .message
-                                            }
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="block" htmlFor="">
+                                Complemento
+                            </label>
+                            <Input
+                                type="text"
+                                {...register("address.complement")}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="block" htmlFor="">
+                                Bairro <span className="text-red-500">*</span>
+                            </label>
+                            <Input
+                                type="text"
+                                {...register("address.neighborhood")}
+                            />
+                            {errors.address?.neighborhood && (
+                                <span className="text-sm text-red-500">
+                                    {errors.address.neighborhood.message}
+                                </span>
+                            )}
+                        </div>
+                    </div>
 
-                            {/* City / State DIV */}
-                            <div className="flex items-center justify-between gap-2">
-                                <div className="w-1/2">
-                                    <label htmlFor="">
-                                        Cidade{" "}
-                                        <span className="font-bold text-red-500">
-                                            *
-                                        </span>
-                                    </label>
-                                    <Input
-                                        type="text"
-                                        {...register("address.city")}
-                                        value={patientAddress.localidade}
-                                        disabled
-                                    />
-                                </div>
-                                <div className="w-1/2">
-                                    <label htmlFor="">
-                                        Estado{" "}
-                                        <span className="font-bold text-red-500">
-                                            *
-                                        </span>
-                                    </label>
-                                    <Input
-                                        type="text"
-                                        {...register("address.state")}
-                                        value={patientAddress.estado}
-                                        disabled
-                                    />
-                                </div>
-                            </div>
-                        </>
-                    ) : null}
-                </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="block" htmlFor="">
+                                Cidade <span className="text-red-500">*</span>
+                            </label>
+                            <Input
+                                type="text"
+                                {...register("address.city")}
+                                disabled
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="block" htmlFor="">
+                                Estado <span className="text-red-500">*</span>
+                            </label>
+                            <Input
+                                type="text"
+                                {...register("address.state")}
+                                disabled
+                            />
+                        </div>
+                    </div>
+                </section>
 
-                <div className="flex flex-col py-2 gap-2">
-                    <h1>Dados Clínicos</h1>
+                {/* Dados Clínicos */}
+                <section className="space-y-4">
+                    <h2 className="text-lg font-semibold">Dados Clínicos</h2>
                     <div className="w-full h-px bg-fisioblue shadow-shape" />
 
-                    {/* CID / CNS DIV */}
-                    <div className="flex items-center justify-between gap-2">
-                        <div className="w-1/2">
-                            <label htmlFor="">
-                                CID{" "}
-                                <span className="font-bold text-red-500">
-                                    *
-                                </span>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="block" htmlFor="">
+                                CID <span className="text-red-500">*</span>
                             </label>
                             <Input
                                 type="text"
@@ -394,8 +305,10 @@ export function CreatePatientForm() {
                                 </span>
                             )}
                         </div>
-                        <div className="w-1/2">
-                            <label htmlFor="">CNS</label>
+                        <div className="space-y-2">
+                            <label className="block" htmlFor="">
+                                CNS
+                            </label>
                             <Input
                                 type="text"
                                 {...register("clinicalData.CNS")}
@@ -403,33 +316,31 @@ export function CreatePatientForm() {
                         </div>
                     </div>
 
-                    {/* Covenant / Expires */}
-                    <div className="flex items-center justify-between gap-2">
-                        <div className="w-1/2">
-                            <label htmlFor="">Convênio</label>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="block" htmlFor="">
+                                Convênio
+                            </label>
                             <Input
                                 type="text"
                                 {...register("clinicalData.covenant")}
                             />
                         </div>
-                        <div className="w-1/2">
-                            <label htmlFor="">Data de vencimento</label>
+                        <div className="space-y-2">
+                            <label className="block" htmlFor="">
+                                Data de Vencimento
+                            </label>
                             <Input
                                 type="date"
-                                defaultValue="0001-01-01"
                                 {...register("clinicalData.expires")}
                             />
                         </div>
                     </div>
 
-                    {/* Allegation / Diagnosis */}
-                    <div className="flex items-center justify-between gap-2">
-                        <div className="w-1/2">
-                            <label htmlFor="">
-                                Queixa do paciente{" "}
-                                <span className="font-bold text-red-500">
-                                    *
-                                </span>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="block" htmlFor="">
+                                Queixa <span className="text-red-500">*</span>
                             </label>
                             <Input
                                 type="text"
@@ -441,50 +352,52 @@ export function CreatePatientForm() {
                                 </span>
                             )}
                         </div>
-                        <div className="w-1/2">
-                            <label htmlFor="">Diagnóstico Inicial</label>
+                        <div className="space-y-2">
+                            <label className="block" htmlFor="">
+                                Diagnóstico{" "}
+                                <span className="text-red-500">*</span>
+                            </label>
                             <Input
                                 type="text"
                                 {...register("clinicalData.diagnosis")}
                             />
+                            {errors.clinicalData?.diagnosis && (
+                                <span className="text-sm text-red-500">
+                                    {errors.clinicalData.diagnosis.message}
+                                </span>
+                            )}
                         </div>
                     </div>
-                </div>
+                </section>
 
-                <fieldset className="flex flex-col gap-1">
+                {/* Responsável Adulto */}
+                <fieldset className="space-y-2">
                     <legend className="italic font-semibold">
-                        Possui adulto responsável?
+                        Possui responsável?
                     </legend>
-                    <div className="flex items-center gap-1">
+                    <label className="flex items-center gap-2">
                         <input
                             type="checkbox"
-                            id="sim"
-                            name="sim"
-                            onChange={() =>
-                                setHasAdultResponsible(!hasAdultResponsible)
-                            }
                             checked={hasAdultResponsible}
+                            onChange={() =>
+                                setHasAdultResponsible(prev => !prev)
+                            }
                         />
-                        <label htmlFor="sim" className="text-sm">
-                            Possui
-                        </label>
-                    </div>
+                        Sim
+                    </label>
                 </fieldset>
 
-                {hasAdultResponsible ? (
-                    <div className="flex flex-col py-2 gap-2">
-                        <h1>Dados do Adulto</h1>
-
+                {hasAdultResponsible && (
+                    <section className="space-y-4">
+                        <h2 className="text-lg font-semibold">
+                            Dados do Responsável
+                        </h2>
                         <div className="w-full h-px bg-fisioblue shadow-shape" />
 
-                        {/* Adult Name / Adult CPF DIV */}
-                        <div className="flex items-center justify-between gap-2">
-                            <div className="w-1/2">
-                                <label htmlFor="">
-                                    Nome{" "}
-                                    <span className="font-bold text-red-500">
-                                        *
-                                    </span>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="block" htmlFor="">
+                                    Nome <span className="text-red-500">*</span>
                                 </label>
                                 <Input
                                     type="text"
@@ -496,12 +409,9 @@ export function CreatePatientForm() {
                                     </span>
                                 )}
                             </div>
-                            <div className="w-1/2">
-                                <label htmlFor="">
-                                    CPF{" "}
-                                    <span className="font-bold text-red-500">
-                                        *
-                                    </span>
+                            <div className="space-y-2">
+                                <label className="block" htmlFor="">
+                                    CPF <span className="text-red-500">*</span>
                                 </label>
                                 <Input
                                     type="text"
@@ -515,14 +425,11 @@ export function CreatePatientForm() {
                             </div>
                         </div>
 
-                        {/* Adult Phone / Adult Email DIV */}
-                        <div className="flex items-center justify-between gap-2">
-                            <div className="w-1/2">
-                                <label htmlFor="">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="block" htmlFor="">
                                     Telefone{" "}
-                                    <span className="font-bold text-red-500">
-                                        *
-                                    </span>
+                                    <span className="text-red-500">*</span>
                                 </label>
                                 <Input
                                     type="text"
@@ -534,15 +441,13 @@ export function CreatePatientForm() {
                                     </span>
                                 )}
                             </div>
-                            <div className="w-1/2">
-                                <label htmlFor="">
+                            <div className="space-y-2">
+                                <label className="block" htmlFor="">
                                     Email{" "}
-                                    <span className="font-bold text-red-500">
-                                        *
-                                    </span>
+                                    <span className="text-red-500">*</span>
                                 </label>
                                 <Input
-                                    type="text"
+                                    type="email"
                                     {...register("adultResponsible.email")}
                                 />
                                 {errors.adultResponsible?.email && (
@@ -553,210 +458,150 @@ export function CreatePatientForm() {
                             </div>
                         </div>
 
-                        <div className="flex flex-col py-2 gap-2">
-                            <h1>Endereço do Adulto</h1>
-                            <div className="w-full h-px bg-fisioblue shadow-shape" />
+                        <div className="space-y-2">
+                            <label className="block" htmlFor="">
+                                CEP <span className="text-red-500">*</span>
+                            </label>
+                            <Input
+                                type="text"
+                                {...register("adultResponsible.address.cep", {
+                                    onChange: e =>
+                                        fetchAddress(e.target.value, "adult"),
+                                })}
+                                disabled={isLoadingCEP.adult}
+                            />
+                            {errors.adultResponsible?.address?.cep && (
+                                <span className="text-sm text-red-500">
+                                    {
+                                        errors.adultResponsible.address.cep
+                                            .message
+                                    }
+                                </span>
+                            )}
+                            {isLoadingCEP.adult && (
+                                <span className="text-sm text-gray-500">
+                                    Buscando...
+                                </span>
+                            )}
+                        </div>
 
-                            <div>
-                                <label htmlFor="">
-                                    CEP{" "}
-                                    <span className="font-bold text-red-500">
-                                        *
-                                    </span>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="block" htmlFor="">
+                                    Rua <span className="text-red-500">*</span>
                                 </label>
                                 <Input
                                     type="text"
                                     {...register(
-                                        "adultResponsible.address.cep"
+                                        "adultResponsible.address.street"
                                     )}
-                                    onChange={e => setAdultCEP(e.target.value)}
-                                    value={adultCEP}
                                 />
-                                {errors.adultResponsible?.address?.cep && (
+                                {errors.adultResponsible?.address?.street && (
                                     <span className="text-sm text-red-500">
                                         {
-                                            errors.adultResponsible?.address
-                                                ?.cep.message
+                                            errors.adultResponsible.address
+                                                .street.message
                                         }
                                     </span>
                                 )}
                             </div>
-                            {adultAddress ? (
-                                <>
-                                    {/* Adult Address Street / Adult Address Number  DIV */}
-                                    <div className="flex items-center justify-between gap-2">
-                                        <div className="w-full">
-                                            <label htmlFor="">
-                                                Rua{" "}
-                                                <span className="font-bold text-red-500">
-                                                    *
-                                                </span>
-                                            </label>
-                                            <Input
-                                                type="text"
-                                                {...register(
-                                                    "adultResponsible.address.street"
-                                                )}
-                                                defaultValue={
-                                                    adultAddress?.logradouro
-                                                }
-                                                onChange={e =>
-                                                    setAdultStreet(
-                                                        e.target.value
-                                                    )
-                                                }
-                                                value={
-                                                    adultAddress.logradouro
-                                                        .length > 0
-                                                        ? adultAddress.logradouro
-                                                        : adultStreet
-                                                }
-                                                disabled={
-                                                    adultAddress.logradouro
-                                                        .length > 0
-                                                }
-                                            />
-                                            {errors.adultResponsible?.address
-                                                ?.street && (
-                                                <span className="text-sm text-red-500">
-                                                    {
-                                                        errors.adultResponsible
-                                                            ?.address?.street
-                                                            .message
-                                                    }
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <label htmlFor="">
-                                                Número{" "}
-                                                <span className="font-bold text-red-500">
-                                                    *
-                                                </span>
-                                            </label>
-                                            <Input
-                                                type="text"
-                                                {...register(
-                                                    "adultResponsible.address.number"
-                                                )}
-                                            />
-                                            {errors.adultResponsible?.address
-                                                ?.number && (
-                                                <span className="text-sm text-red-500">
-                                                    {
-                                                        errors.adultResponsible
-                                                            ?.address?.number
-                                                            .message
-                                                    }
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* Adult Address Complement / Adult Address Neighborhood DIV */}
-                                    <div className="flex items-center justify-between gap-2">
-                                        <div className="w-1/2">
-                                            <label htmlFor="">
-                                                Complemento
-                                            </label>
-                                            <Input
-                                                type="text"
-                                                {...register(
-                                                    "adultResponsible.address.complement"
-                                                )}
-                                            />
-                                        </div>
-                                        <div className="w-1/2">
-                                            <label htmlFor="">
-                                                Bairro{" "}
-                                                <span className="font-bold text-red-500">
-                                                    *
-                                                </span>
-                                            </label>
-                                            <Input
-                                                type="text"
-                                                {...register(
-                                                    "adultResponsible.address.neighborhood"
-                                                )}
-                                                defaultValue={
-                                                    adultAddress?.bairro
-                                                }
-                                                onChange={e =>
-                                                    setAdultNeighborhood(
-                                                        e.target.value
-                                                    )
-                                                }
-                                                value={
-                                                    adultAddress.bairro.length >
-                                                    0
-                                                        ? adultAddress.bairro
-                                                        : adultNeighborhood
-                                                }
-                                                disabled={
-                                                    adultAddress.bairro.length >
-                                                    0
-                                                }
-                                            />
-                                            {errors.adultResponsible?.address
-                                                ?.neighborhood && (
-                                                <span className="text-sm text-red-500">
-                                                    {
-                                                        errors.adultResponsible
-                                                            ?.address
-                                                            ?.neighborhood
-                                                            .message
-                                                    }
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* Adult Address City / Adult Address State DIV */}
-                                    <div className="flex items-center justify-between gap-2">
-                                        <div className="w-1/2">
-                                            <label htmlFor="">
-                                                Cidade{" "}
-                                                <span className="font-bold text-red-500">
-                                                    *
-                                                </span>
-                                            </label>
-                                            <Input
-                                                type="text"
-                                                {...register(
-                                                    "adultResponsible.address.city"
-                                                )}
-                                                value={adultAddress?.localidade}
-                                                disabled
-                                            />
-                                        </div>
-                                        <div className="w-1/2">
-                                            <label htmlFor="">
-                                                Estado{" "}
-                                                <span className="font-bold text-red-500">
-                                                    *
-                                                </span>
-                                            </label>
-                                            <Input
-                                                type="text"
-                                                {...register(
-                                                    "adultResponsible.address.state"
-                                                )}
-                                                value={adultAddress?.estado}
-                                                disabled
-                                            />
-                                        </div>
-                                    </div>
-                                </>
-                            ) : null}
+                            <div className="space-y-2">
+                                <label className="block" htmlFor="">
+                                    Número{" "}
+                                    <span className="text-red-500">*</span>
+                                </label>
+                                <Input
+                                    type="number"
+                                    {...register(
+                                        "adultResponsible.address.number"
+                                    )}
+                                />
+                                {errors.adultResponsible?.address?.number && (
+                                    <span className="text-sm text-red-500">
+                                        {
+                                            errors.adultResponsible.address
+                                                .number.message
+                                        }
+                                    </span>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                ) : null}
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="block" htmlFor="">
+                                    Complemento
+                                </label>
+                                <Input
+                                    type="text"
+                                    {...register(
+                                        "adultResponsible.address.complement"
+                                    )}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="block" htmlFor="">
+                                    Bairro{" "}
+                                    <span className="text-red-500">*</span>
+                                </label>
+                                <Input
+                                    type="text"
+                                    {...register(
+                                        "adultResponsible.address.neighborhood"
+                                    )}
+                                />
+                                {errors.adultResponsible?.address
+                                    ?.neighborhood && (
+                                    <span className="text-sm text-red-500">
+                                        {
+                                            errors.adultResponsible.address
+                                                .neighborhood.message
+                                        }
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="block" htmlFor="">
+                                    Cidade{" "}
+                                    <span className="text-red-500">*</span>
+                                </label>
+                                <Input
+                                    type="text"
+                                    {...register(
+                                        "adultResponsible.address.city"
+                                    )}
+                                    disabled
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="block" htmlFor="">
+                                    Estado{" "}
+                                    <span className="text-red-500">*</span>
+                                </label>
+                                <Input
+                                    type="text"
+                                    {...register(
+                                        "adultResponsible.address.state"
+                                    )}
+                                    disabled
+                                />
+                            </div>
+                        </div>
+                    </section>
+                )}
             </div>
+
             <button
                 type="submit"
-                className="w-full rounded-md bg-fisioblue text-slate-100 font-semibold py-1 hover:bg-fisioblue2"
+                className="w-full rounded-md bg-fisioblue text-slate-100 font-semibold py-2 hover:bg-fisioblue2 disabled:bg-gray-400"
+                disabled={
+                    isSubmitting || isLoadingCEP.patient || isLoadingCEP.adult
+                }
             >
-                Cadastrar Paciente
+                {isSubmitting ? "Cadastrando..." : "Cadastrar Paciente"}
             </button>
         </form>
     )

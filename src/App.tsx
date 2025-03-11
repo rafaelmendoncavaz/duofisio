@@ -1,19 +1,27 @@
-import { useEffect } from "react"
-import { useAPI } from "./context/context"
+import { useEffect, useState } from "react"
+import { useAPI } from "./store/store"
 import { MainRoutes } from "./routes/main-routes"
 
 function App() {
-    const { verifyAuth } = useAPI(store => store)
+    const { verifyAuth } = useAPI()
+    const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
-        verifyAuth()
+        const initAuth = async () => {
+            try {
+                await verifyAuth()
+            } finally {
+                setIsLoading(false)
+            }
+        }
+        initAuth()
     }, [verifyAuth])
 
-    return (
-        <>
-            <MainRoutes />
-        </>
-    )
+    if (isLoading) {
+        return <div>Carregando...</div>
+    }
+
+    return <MainRoutes />
 }
 
 export default App

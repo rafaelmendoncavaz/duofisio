@@ -1,12 +1,17 @@
-import { useRef, useEffect } from "react"
+import { useRef, useEffect, type RefObject } from "react"
+import { useAPI } from "../store/store"
 
-export function useOutClick(callbackfn: () => void) {
-    const ref = useRef<HTMLDivElement | null>(null)
+// Hook para detectar cliques fora de um elemento
+export function useOutClick(callback: () => void): RefObject<HTMLDivElement> {
+    const { clearRecord, clearRecords } = useAPI()
+    const ref = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
         const handleClick = (e: MouseEvent) => {
-            if (!ref.current?.contains(e.target as Node)) {
-                if (callbackfn) callbackfn()
+            if (ref.current && !ref.current.contains(e.target as Node)) {
+                callback()
+                clearRecord()
+                clearRecords()
             }
         }
 
@@ -15,21 +20,25 @@ export function useOutClick(callbackfn: () => void) {
         return () => {
             window.removeEventListener("mousedown", handleClick)
         }
-    }, [])
+    }, [callback, clearRecord, clearRecords])
 
     return ref
 }
 
-export function useKeyDown(
-    keyId: string,
-    callbackfn: (e: HTMLButtonElement | null) => void
-) {
-    const ref = useRef<HTMLButtonElement>(null)
+// Hook para detectar pressionamento de tecla em qualquer elemento
+export function useKeyDown<T extends HTMLElement = HTMLButtonElement>(
+    key: KeyboardEvent["key"],
+    callback: (element: T | null) => void
+): RefObject<T> {
+    const { clearRecord, clearRecords } = useAPI()
+    const ref = useRef<T>(null)
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === keyId) {
-                if (callbackfn) callbackfn(ref.current)
+            if (e.key === key) {
+                callback(ref.current)
+                clearRecord()
+                clearRecords()
             }
         }
 
@@ -38,7 +47,7 @@ export function useKeyDown(
         return () => {
             window.removeEventListener("keydown", handleKeyDown)
         }
-    }, [])
+    }, [key, callback, clearRecord, clearRecords])
 
     return ref
 }
