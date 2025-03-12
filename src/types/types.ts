@@ -1,11 +1,16 @@
 import type { z } from "zod"
 import type {
     addressSchema,
+    appointmentListSchema,
     cep,
+    createAppointmentSchema,
     createPatientSchema,
     createRecordSchema,
+    getSinglePatientAppointments,
     loginSchema,
     patientListSchema,
+    repeatAppointmentSchema,
+    updateAppointmentSchema,
     updatePatientSchema,
 } from "../schema/schema"
 
@@ -17,6 +22,11 @@ export type TypePatientList = z.infer<typeof patientListSchema>
 export type TypeCep = z.infer<typeof cep>
 export type AddressSchema = z.infer<typeof addressSchema>
 export type TypeCreateRecord = z.infer<typeof createRecordSchema>
+export type TypeCreateAppointment = z.infer<typeof createAppointmentSchema>
+export type TypeAppointment = z.infer<typeof getSinglePatientAppointments>
+export type TypeAppointmentRepeat = z.infer<typeof repeatAppointmentSchema>
+export type TypeAppointmentUpdate = z.infer<typeof updateAppointmentSchema>
+export type TypeAppointmentList = z.infer<typeof appointmentListSchema>
 
 // Tipo do retorno da API ViaCEP
 export interface TypeAddress {
@@ -96,8 +106,12 @@ export interface Modal {
     closeModal: () => void
     isCreatePatientModalOpen: boolean
     isSinglePatientModalOpen: boolean
+    isCreateAppointmentModalOpen: boolean
+    isSingleAppointmentModalOpen: boolean
     openCreatePatientModal: () => void
     openSinglePatientModal: () => void
+    openCreateAppointmentModal: () => void
+    openSingleAppointmentModal: () => void
 }
 
 // SearchFilter
@@ -132,10 +146,13 @@ export interface TypeAPI {
         patientId: string
     } | null // Reflete o retorno de /dashboard/patients/:id/clinical
     clinicalRecord: ClinicalData | null
+    appointmentList: TypeAppointmentList[] | null
+    appointmentData: TypeAppointment | null
 
     // Funções de limpeza
     clearRecords: () => void
     clearRecord: () => void
+    clearAppointment: () => void
     clearError: () => void
     clearToken: () => void
 
@@ -180,4 +197,31 @@ export interface TypeAPI {
         id: string,
         recordId: string
     ) => Promise<{ success: boolean; error?: unknown }>
+    createAppointment: (data: TypeCreateAppointment) => Promise<{
+        success: boolean
+        appointmentId?: string
+        status?: number
+        error?: unknown
+    }>
+    getAppointments: () => Promise<{ success: boolean; error?: unknown }>
+    getSingleAppointment: (appointmentId: string) => Promise<{
+        success: boolean
+        appointment?: TypeAppointment
+        error?: unknown
+    }>
+    repeatAppointment: (
+        data: TypeAppointmentRepeat,
+        appointmentId: string
+    ) => Promise<{
+        success: boolean
+        appointmentIds?: string[]
+        error?: unknown
+    }>
+    updateAppointment: (
+        data: TypeAppointmentUpdate,
+        appointmentId: string
+    ) => Promise<{ success: boolean; status?: number; error?: unknown }>
+    deleteAppointment: (
+        appointmentId: string
+    ) => Promise<{ success: boolean; status?: number; error?: unknown }>
 }

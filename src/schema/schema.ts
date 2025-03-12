@@ -105,3 +105,125 @@ export const createRecordSchema = z.object({
     allegation: z.string().min(1, "Insira a queixa do paciente"),
     diagnosis: z.string().min(1, "Forneça um diagnóstico"),
 })
+
+// Criar Agendamento Clínico (alinhado com backend createAppointmentSchema)
+export const createAppointmentSchema = z.object({
+    appointmentDate: z.coerce.date(),
+    status: z.union([z.literal("SOLICITADO"), z.literal("CONFIRMADO")]),
+    patient: z.object({
+        id: z.string().uuid("ID do paciente deve ser um UUID"),
+        name: z.string(),
+        cpf: z.string(),
+    }),
+    employee: z.object({
+        name: z.string(),
+        id: z.string().uuid("ID do funcionário deve ser um UUID"),
+    }),
+    reason: z.object({
+        cid: z.string(),
+    }),
+    duration: z
+        .number()
+        .min(30, "A duração mínima é 30 minutos")
+        .multipleOf(30, "A duração deve ser em intervalos de 30 minutos"),
+    clinicalRecordId: z
+        .string()
+        .uuid("ID do registro clínico deve ser um UUID"),
+})
+
+// Buscar Agendamentos Filtrados (alinhado com backend getAppointmentsQuerySchema)
+export const appointmentListSchema = z.object({
+    status: z.union([
+        z.literal("SOLICITADO"),
+        z.literal("CONFIRMADO"),
+        z.literal("CANCELADO"),
+        z.literal("FINALIZADO"),
+    ]),
+    id: z.string().uuid("ID do agendamento deve ser um UUID"),
+    appointmentDate: z.string(),
+    duration: z.number(),
+    employee: z.object({
+        name: z.string(),
+    }),
+    patient: z.object({
+        id: z.string().uuid("ID do paciente deve ser um UUID"),
+        name: z.string(),
+        phone: z.string().nullable(),
+    }),
+    appointmentReason: z.object({
+        cid: z.string(),
+        allegation: z.string(),
+        diagnosis: z.string(),
+    }),
+})
+
+// Buscar Agendamento Específico (alinhado com backend getSinglePatientAppointments)
+export const getSinglePatientAppointments = z.object({
+    id: z.string().uuid("ID do agendamento deve ser um UUID"),
+    appointmentDate: z.string(),
+    duration: z.number(),
+    status: z.union([
+        z.literal("SOLICITADO"),
+        z.literal("CONFIRMADO"),
+        z.literal("CANCELADO"),
+        z.literal("FINALIZADO"),
+    ]),
+    employee: z.object({
+        employeeName: z.string(),
+        employeeId: z.string().uuid("ID do funcionário deve ser um UUID"),
+    }),
+    appointmentReason: z.object({
+        cid: z.string(),
+        allegation: z.string(),
+        diagnosis: z.string(),
+    }),
+    patient: z.object({
+        name: z.string(),
+        phone: z.string().nullable(),
+        email: z.string().email().nullable(),
+        patientId: z.string().uuid("ID do paciente deve ser um UUID"),
+    }),
+})
+
+// Repetir Agendamento Específico (alinhado com backend repeatAppointmentSchema)
+export const repeatAppointmentSchema = z.object({
+    sessionCount: z
+        .number()
+        .min(1, "Deve haver pelo menos 1 sessão")
+        .int("A quantidade de sessões deve ser um número inteiro"),
+    daysOfWeek: z
+        .array(
+            z
+                .number()
+                .min(0)
+                .max(
+                    6,
+                    "Os dias da semana devem ser de 0 a 6 (domingo a sábado)"
+                )
+        )
+        .min(1, "Selecione pelo menos um dia da semana"),
+})
+
+// Atualizar Agendamento Específico (alinhado com backend updateAppointmentSchema)
+export const updateAppointmentSchema = z.object({
+    appointmentDate: z.coerce.date().optional(),
+    duration: z
+        .number()
+        .min(30, "A duração mínima é 30 minutos")
+        .multipleOf(30, "A duração deve ser em intervalos de 30 minutos")
+        .optional(),
+    status: z
+        .union([
+            z.literal("SOLICITADO"),
+            z.literal("CONFIRMADO"),
+            z.literal("CANCELADO"),
+            z.literal("FINALIZADO"),
+        ])
+        .optional(),
+    employee: z
+        .object({
+            employeeName: z.string(),
+            employeeId: z.string().uuid("ID do funcionário deve ser um UUID"),
+        })
+        .optional(),
+})

@@ -7,18 +7,29 @@ import type {
     TypeCreatePatient,
     TypeUpdatePatient,
     TypeCreateRecord,
+    TypeCreateAppointment,
+    TypeAppointmentUpdate,
+    TypeAppointmentRepeat,
 } from "../types/types"
 import { api } from "../api/api"
 
 export const useModal = create<Modal>(set => ({
     isCreatePatientModalOpen: false,
     isSinglePatientModalOpen: false,
+    isCreateAppointmentModalOpen: false,
+    isSingleAppointmentModalOpen: false,
     openCreatePatientModal: () => set({ isCreatePatientModalOpen: true }),
     openSinglePatientModal: () => set({ isSinglePatientModalOpen: true }),
+    openCreateAppointmentModal: () =>
+        set({ isCreateAppointmentModalOpen: true }),
+    openSingleAppointmentModal: () =>
+        set({ isSingleAppointmentModalOpen: true }),
     closeModal: () =>
         set({
             isCreatePatientModalOpen: false,
             isSinglePatientModalOpen: false,
+            isCreateAppointmentModalOpen: false,
+            isSingleAppointmentModalOpen: false,
         }),
 }))
 
@@ -39,11 +50,14 @@ export const useAPI = create<TypeAPI>((set, get) => ({
     patientData: null,
     clinicalRecords: null,
     clinicalRecord: null,
+    appointmentList: null,
+    appointmentData: null,
     error: null,
 
     // Funções de limpeza
     clearRecords: () => set({ clinicalRecords: null }),
     clearRecord: () => set({ clinicalRecord: null }),
+    clearAppointment: () => set({ appointmentData: null }),
     clearError: () => set({ error: null }),
     clearToken: () => set({ token: null }),
 
@@ -142,6 +156,7 @@ export const useAPI = create<TypeAPI>((set, get) => ({
                     headers: { Authorization: `Bearer ${token}` },
                 }
             )
+            set({ error: null })
             return { success: true, status }
         } catch (error) {
             set({ error: "Erro ao editar paciente" })
@@ -228,6 +243,116 @@ export const useAPI = create<TypeAPI>((set, get) => ({
             return { success: true }
         } catch (error) {
             set({ error: "Erro ao deletar registro clínico" })
+            return { success: false, error }
+        }
+    },
+    createAppointment: async (data: TypeCreateAppointment) => {
+        try {
+            const token = localStorage.getItem("@authToken")
+            if (!token) throw new Error("Token não encontrado")
+            const { data: response, status } = await api.post(
+                "/dashboard/appointments",
+                data,
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            )
+            set({ error: null })
+            return {
+                success: true,
+                appointmentId: response.appointmentId,
+                status,
+            }
+        } catch (error) {
+            set({ error: "Erro ao criar agendamento" })
+            return { success: false, error }
+        }
+    },
+    getAppointments: async () => {
+        try {
+            const token = localStorage.getItem("@authToken")
+            if (!token) throw new Error("Token não encontrado")
+            const { data } = await api.get("/dashboard/appointments", {
+                headers: { Authorization: `Bearer ${token}` },
+            })
+            set({ appointmentList: data.appointments, error: null })
+            return { success: true }
+        } catch (error) {
+            set({ error: "Erro ao buscar agendamentos" })
+            return { success: false, error }
+        }
+    },
+    getSingleAppointment: async (appointmentId: string) => {
+        try {
+            const token = localStorage.getItem("@authToken")
+            if (!token) throw new Error("Token não encontrado")
+            set({ appointmentData: null })
+            const { data } = await api.get(
+                `/dashboard/appointments/${appointmentId}`,
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            )
+            set({ appointmentData: data.appointment, error: null })
+            return { success: true, appointment: data.appointment }
+        } catch (error) {
+            set({ error: "Erro ao buscar agendamento" })
+            return { success: false, error }
+        }
+    },
+    repeatAppointment: async (
+        data: TypeAppointmentRepeat,
+        appointmentId: string
+    ) => {
+        try {
+            const token = localStorage.getItem("@authToken")
+            if (!token) throw new Error("Token não encontrado")
+            const { data: response } = await api.post(
+                `/dashboard/appointments/${appointmentId}/repeat`,
+                data,
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            )
+            set({ error: null })
+            return { success: true, appointmentIds: response.appointmentIds }
+        } catch (error) {
+            set({ error: "Erro ao repetir agendamento" })
+            return { success: false, error }
+        }
+    },
+    updateAppointment: async (
+        data: TypeAppointmentUpdate,
+        appointmentId: string
+    ) => {
+        try {
+            const token = localStorage.getItem("@authToken")
+            if (!token) throw new Error("Token não encontrado")
+            const { status } = await api.put(
+                `/dashboard/appointments/${appointmentId}`,
+                data,
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            )
+            set({ error: null })
+            return { success: true, status }
+        } catch (error) {
+            set({ error: "Erro ao editar agendamento" })
+            return { success: false, error }
+        }
+    },
+    deleteAppointment: async (appointmentId: string) => {
+        try {
+            const token = localStorage.getItem("@authToken")
+            if (!token) throw new Error("Token não encontrado")
+            await api.delete(`/dashboard/appointments/${appointmentId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            })
+            set({ error: null })
+            return { success: true }
+        } catch (error) {
+            set({ error: "Erro ao deletar agendamento" })
             return { success: false, error }
         }
     },
