@@ -108,24 +108,16 @@ export const createRecordSchema = z.object({
 
 // Criar Agendamento Clínico (alinhado com backend createAppointmentSchema)
 export const createAppointmentSchema = z.object({
-    appointmentDate: z.coerce.date(),
-    status: z.union([z.literal("SOLICITADO"), z.literal("CONFIRMADO")]),
-    patient: z.object({
-        id: z.string().uuid("ID do paciente deve ser um UUID"),
-        name: z.string(),
-        cpf: z.string(),
-    }),
-    employee: z.object({
-        name: z.string(),
-        id: z.string().uuid("ID do funcionário deve ser um UUID"),
-    }),
-    reason: z.object({
-        cid: z.string(),
-    }),
+    appointmentDate: z.preprocess(
+        val => (typeof val === "string" ? new Date(val).toISOString() : val),
+        z.string().datetime()
+    ),
     duration: z
         .number()
         .min(30, "A duração mínima é 30 minutos")
         .multipleOf(30, "A duração deve ser em intervalos de 30 minutos"),
+    patientId: z.string().uuid("ID do paciente deve ser um UUID"),
+    employeeId: z.string().uuid("ID do funcionário deve ser um UUID"),
     clinicalRecordId: z
         .string()
         .uuid("ID do registro clínico deve ser um UUID"),
@@ -140,10 +132,16 @@ export const appointmentListSchema = z.object({
         z.literal("FINALIZADO"),
     ]),
     id: z.string().uuid("ID do agendamento deve ser um UUID"),
-    appointmentDate: z.string(),
+    appointmentDate: z.preprocess(
+        val => (typeof val === "string" ? new Date(val).toISOString() : val),
+        z.string().datetime()
+    ),
+    createdAt: z.coerce.date(),
+    updatedAt: z.coerce.date(),
     duration: z.number(),
     employee: z.object({
         name: z.string(),
+        id: z.string().uuid("ID do funcionário deve ser um UUID"),
     }),
     patient: z.object({
         id: z.string().uuid("ID do paciente deve ser um UUID"),
@@ -151,6 +149,7 @@ export const appointmentListSchema = z.object({
         phone: z.string().nullable(),
     }),
     appointmentReason: z.object({
+        id: z.string().uuid(),
         cid: z.string(),
         allegation: z.string(),
         diagnosis: z.string(),
@@ -160,7 +159,12 @@ export const appointmentListSchema = z.object({
 // Buscar Agendamento Específico (alinhado com backend getSinglePatientAppointments)
 export const getSinglePatientAppointments = z.object({
     id: z.string().uuid("ID do agendamento deve ser um UUID"),
-    appointmentDate: z.string(),
+    appointmentDate: z.preprocess(
+        val => (typeof val === "string" ? new Date(val).toISOString() : val),
+        z.string().datetime()
+    ),
+    createdAt: z.coerce.date(),
+    updatedAt: z.coerce.date(),
     duration: z.number(),
     status: z.union([
         z.literal("SOLICITADO"),
@@ -173,6 +177,7 @@ export const getSinglePatientAppointments = z.object({
         employeeId: z.string().uuid("ID do funcionário deve ser um UUID"),
     }),
     appointmentReason: z.object({
+        id: z.string().uuid(),
         cid: z.string(),
         allegation: z.string(),
         diagnosis: z.string(),
@@ -187,7 +192,7 @@ export const getSinglePatientAppointments = z.object({
 
 // Repetir Agendamento Específico (alinhado com backend repeatAppointmentSchema)
 export const repeatAppointmentSchema = z.object({
-    sessionCount: z
+    sessionCount: z.coerce
         .number()
         .min(1, "Deve haver pelo menos 1 sessão")
         .int("A quantidade de sessões deve ser um número inteiro"),
@@ -206,7 +211,10 @@ export const repeatAppointmentSchema = z.object({
 
 // Atualizar Agendamento Específico (alinhado com backend updateAppointmentSchema)
 export const updateAppointmentSchema = z.object({
-    appointmentDate: z.coerce.date().optional(),
+    appointmentDate: z.preprocess(
+        val => (typeof val === "string" ? new Date(val).toISOString() : val),
+        z.string().datetime()
+    ),
     duration: z
         .number()
         .min(30, "A duração mínima é 30 minutos")
@@ -220,10 +228,8 @@ export const updateAppointmentSchema = z.object({
             z.literal("FINALIZADO"),
         ])
         .optional(),
-    employee: z
-        .object({
-            employeeName: z.string(),
-            employeeId: z.string().uuid("ID do funcionário deve ser um UUID"),
-        })
+    employeeId: z
+        .string()
+        .uuid("ID do funcionário deve ser um UUID")
         .optional(),
 })

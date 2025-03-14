@@ -1,28 +1,43 @@
 import {
-    CalendarPlus,
     Filter,
     Calendar1,
     CalendarRange,
     CalendarDays,
+    Calendar,
 } from "lucide-react"
-import { useModal } from "../../store/store"
+import { useAPI } from "../../store/store"
 
 export function AppointmentFilter() {
-    const { openCreateAppointmentModal } = useModal()
+    const { getAppointments } = useAPI()
+
+    const handleFilter = async (
+        filter: "today" | "tomorrow" | "week" | "month"
+    ) => {
+        const result = await getAppointments({ filter })
+        if (!result.success) {
+            console.error("Erro ao aplicar o filtro: ", result.error)
+        }
+    }
+
+    const filterByToday = () => {
+        handleFilter("today")
+    }
+
+    const filterByTomorrow = () => {
+        handleFilter("tomorrow")
+    }
+
+    const filterByWeek = () => {
+        handleFilter("week")
+    }
+
+    const filterByMonth = () => {
+        handleFilter("month")
+    }
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <h1 className="font-bold text-2xl">Agendamentos</h1>
-                <button
-                    onClick={openCreateAppointmentModal}
-                    type="button"
-                    className="flex items-center gap-2 rounded-md bg-fisioblue text-slate-100 hover:bg-fisioblue2 px-3 py-1 shadow-shape font-semibold transition-colors"
-                >
-                    <CalendarPlus size={20} />
-                    Criar Agendamento
-                </button>
-            </div>
+            <h1 className="font-bold text-2xl">Agendamentos</h1>
 
             <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-2">
@@ -38,16 +53,28 @@ export function AppointmentFilter() {
                     <div className="flex items-center gap-2">
                         <button
                             type="button"
-                            className="flex items-center gap-2 rounded-md bg-fisioblue text-slate-100 hover:bg-fisioblue2 px-3 py-1 shadow-shape font-semibold transition-colors"
+                            className="flex items-center gap-2 rounded-md border border-fisioblue bg-transparent text-fisioblue hover:bg-fisioblue2 hover:text-slate-100 focus:text-slate-100 focus:bg-fisioblue px-3 py-1 shadow-shape font-semibold transition-colors"
+                            onClick={filterByToday}
                         >
-                            <Calendar1 size={20} aria-hidden="true" />
+                            <Calendar size={20} aria-hidden="true" />
                             Hoje
                         </button>
                     </div>
                     <div className="flex items-center gap-2">
                         <button
                             type="button"
-                            className="flex items-center gap-2 rounded-md bg-fisioblue text-slate-100 hover:bg-fisioblue2 px-3 py-1 shadow-shape font-semibold transition-colors"
+                            className="flex items-center gap-2 rounded-md border border-fisioblue bg-transparent text-fisioblue hover:bg-fisioblue2 hover:text-slate-100 focus:text-slate-100 focus:bg-fisioblue px-3 py-1 shadow-shape font-semibold transition-colors"
+                            onClick={filterByTomorrow}
+                        >
+                            <Calendar1 size={20} aria-hidden="true" />
+                            Amanhã
+                        </button>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <button
+                            type="button"
+                            className="flex items-center gap-2 rounded-md border border-fisioblue bg-transparent text-fisioblue hover:bg-fisioblue2 hover:text-slate-100 focus:text-slate-100 focus:bg-fisioblue px-3 py-1 shadow-shape font-semibold transition-colors"
+                            onClick={filterByWeek}
                         >
                             <CalendarRange size={20} aria-hidden="true" />
                             Semana
@@ -56,7 +83,8 @@ export function AppointmentFilter() {
                     <div className="flex items-center gap-2">
                         <button
                             type="button"
-                            className="flex items-center gap-2 rounded-md bg-fisioblue text-slate-100 hover:bg-fisioblue2 px-3 py-1 shadow-shape font-semibold transition-colors"
+                            className="flex items-center gap-2 rounded-md border border-fisioblue bg-transparent text-fisioblue hover:bg-fisioblue2 hover:text-slate-100 focus:text-slate-100 focus:bg-fisioblue px-3 py-1 shadow-shape font-semibold transition-colors"
+                            onClick={filterByMonth}
                         >
                             <CalendarDays size={20} aria-hidden="true" />
                             Mês

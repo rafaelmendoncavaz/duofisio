@@ -106,11 +106,9 @@ export interface Modal {
     closeModal: () => void
     isCreatePatientModalOpen: boolean
     isSinglePatientModalOpen: boolean
-    isCreateAppointmentModalOpen: boolean
     isSingleAppointmentModalOpen: boolean
     openCreatePatientModal: () => void
     openSinglePatientModal: () => void
-    openCreateAppointmentModal: () => void
     openSingleAppointmentModal: () => void
 }
 
@@ -122,6 +120,13 @@ export interface SearchFilter {
     setSearchName: (name: string) => void
     setSearchPhone: (phone: string) => void
     setSearchCPF: (cpf: string) => void
+}
+
+// QueryFilter
+export interface QueryFilter {
+    filter?: "today" | "tomorrow" | "week" | "month"
+    startDate?: string
+    endDate?: string
 }
 
 export interface TypeAPI {
@@ -138,6 +143,14 @@ export interface TypeAPI {
             appointmentDate: string
         }[]
     } | null // Reflete o retorno de /auth/verify
+    employees:
+        | {
+              name: string
+              id: string
+          }[]
+        | null
+
+    // Armazenamento de Requisições
     patientList: TypePatientList[]
     patientData: TypePatient | null
     clinicalRecords: {
@@ -163,6 +176,7 @@ export interface TypeAPI {
     verifyAuth: () => Promise<{
         success: boolean
         user?: TypeAPI["user"]
+        employees?: TypeAPI["employees"]
         error?: unknown
     }>
     createPatient: (data: TypeCreatePatient) => Promise<{
@@ -203,7 +217,9 @@ export interface TypeAPI {
         status?: number
         error?: unknown
     }>
-    getAppointments: () => Promise<{ success: boolean; error?: unknown }>
+    getAppointments: (
+        filterParams?: QueryFilter
+    ) => Promise<{ success: boolean; error?: unknown }>
     getSingleAppointment: (appointmentId: string) => Promise<{
         success: boolean
         appointment?: TypeAppointment

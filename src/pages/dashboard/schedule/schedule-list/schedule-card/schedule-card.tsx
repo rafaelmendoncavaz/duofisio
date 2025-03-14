@@ -3,14 +3,19 @@ import type { TypeAppointmentList } from "../../../../../types/types"
 
 interface PatientCardProps {
     appointment: TypeAppointmentList
-    onClick: (appointment: TypeAppointmentList) => void
+    onAppointmentClick: (appointment: TypeAppointmentList) => void
 }
 
-export function ScheduleCard({ appointment, onClick }: PatientCardProps) {
+export function ScheduleCard({
+    appointment,
+    onAppointmentClick,
+}: PatientCardProps) {
     return (
         <li
-            onClick={() => onClick(appointment)}
-            onKeyDown={e => e.key === "Enter" && onClick(appointment)}
+            onClick={() => onAppointmentClick(appointment)}
+            onKeyDown={e =>
+                e.key === "Enter" && onAppointmentClick(appointment)
+            }
             tabIndex={0}
             // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: <explanation>
             // biome-ignore lint/a11y/useSemanticElements: <explanation>

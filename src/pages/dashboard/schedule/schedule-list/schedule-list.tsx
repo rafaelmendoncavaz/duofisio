@@ -3,12 +3,12 @@ import { ScheduleCard } from "./schedule-card/schedule-card"
 
 interface AppointmentListProps {
     appointments: TypeAppointmentList[]
-    handleClick: (appointment: TypeAppointmentList) => void
+    onAppointmentClick: (appointment: TypeAppointmentList) => void
 }
 
 export function ScheduleList({
     appointments,
-    handleClick,
+    onAppointmentClick,
 }: AppointmentListProps) {
     return (
         <ul className="grid grid-cols-5 grid-rows-4 gap-4">
@@ -16,7 +16,7 @@ export function ScheduleList({
                 <ScheduleCard
                     key={appointment.id}
                     appointment={appointment}
-                    onClick={handleClick}
+                    onAppointmentClick={onAppointmentClick}
                 />
             ))}
         </ul>

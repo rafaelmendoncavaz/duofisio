@@ -1,10 +1,10 @@
-import { PatientInfoForm } from "../../forms/patient-info-form"
 import { Modal } from "../../global/modal"
+import { PatientInfo } from "./patient-info"
 
 export function GetPatientInfoModal() {
     return (
         <Modal title="Dados do Paciente">
-            <PatientInfoForm />
+            <PatientInfo />
         </Modal>
     )
 }

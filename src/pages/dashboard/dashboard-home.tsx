@@ -1,3 +1,4 @@
+import { isSameDay } from "date-fns"
 import { DashboardTemplate } from "../../components/dashboard/dashboard-template"
 import { useAPI } from "../../store/store"
 
@@ -6,16 +7,17 @@ export function DashboardHome() {
     if (!user) return
     const { appointments } = user
     const currentDate = new Date()
-    const futureAppointments = appointments.filter(appointment => {
+    const todaysAppointments = appointments.filter(appointment => {
         const appointmentDate = new Date(appointment.appointmentDate)
-        return appointmentDate === currentDate
+        if (isSameDay(currentDate, appointmentDate)) return appointmentDate
     }).length
-    console.log(user)
+
+    console.log(todaysAppointments)
 
     return (
         <DashboardTemplate>
             <h1>Seja bem-vindo, {user.name}</h1>
-            <p>Há {futureAppointments} atendimento(s) para hoje!</p>
+            <p>Há {todaysAppointments} atendimento(s) para hoje!</p>
         </DashboardTemplate>
     )
 }

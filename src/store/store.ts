@@ -20,15 +20,12 @@ export const useModal = create<Modal>(set => ({
     isSingleAppointmentModalOpen: false,
     openCreatePatientModal: () => set({ isCreatePatientModalOpen: true }),
     openSinglePatientModal: () => set({ isSinglePatientModalOpen: true }),
-    openCreateAppointmentModal: () =>
-        set({ isCreateAppointmentModalOpen: true }),
     openSingleAppointmentModal: () =>
         set({ isSingleAppointmentModalOpen: true }),
     closeModal: () =>
         set({
             isCreatePatientModalOpen: false,
             isSinglePatientModalOpen: false,
-            isCreateAppointmentModalOpen: false,
             isSingleAppointmentModalOpen: false,
         }),
 }))
@@ -46,6 +43,9 @@ export const useAPI = create<TypeAPI>((set, get) => ({
     // Estados
     token: localStorage.getItem("@authToken") || null,
     user: null,
+    employees: null,
+
+    // Armazenamento de requisições
     patientList: [],
     patientData: null,
     clinicalRecords: null,
@@ -83,7 +83,12 @@ export const useAPI = create<TypeAPI>((set, get) => ({
             const { data } = await api.get("/auth/verify", {
                 headers: { Authorization: `Bearer ${token}` },
             })
-            set({ token, user: data.user, error: null })
+            set({
+                token,
+                user: data.user,
+                employees: data.employees,
+                error: null,
+            })
             return { success: true, user: data.user }
         } catch (error) {
             set({
@@ -268,12 +273,13 @@ export const useAPI = create<TypeAPI>((set, get) => ({
             return { success: false, error }
         }
     },
-    getAppointments: async () => {
+    getAppointments: async (filterParams = {}) => {
         try {
             const token = localStorage.getItem("@authToken")
             if (!token) throw new Error("Token não encontrado")
             const { data } = await api.get("/dashboard/appointments", {
                 headers: { Authorization: `Bearer ${token}` },
+                params: filterParams,
             })
             set({ appointmentList: data.appointments, error: null })
             return { success: true }

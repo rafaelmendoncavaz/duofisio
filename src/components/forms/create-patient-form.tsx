@@ -14,7 +14,7 @@ export function CreatePatientForm() {
         adult: false,
     })
 
-    const { createPatient } = useAPI()
+    const { createPatient, getPatients } = useAPI()
     const { closeModal } = useModal()
 
     const {
@@ -58,7 +58,8 @@ export function CreatePatientForm() {
             ? data
             : { ...data, adultResponsible: null }
         const response = await createPatient(payload)
-        if (response?.success && response.status === 201) {
+        if (response.success && response.status === 201) {
+            getPatients()
             reset()
             closeModal()
         }

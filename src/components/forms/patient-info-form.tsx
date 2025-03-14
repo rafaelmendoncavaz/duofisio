@@ -5,7 +5,13 @@ import type { TypeUpdatePatient } from "../../types/types"
 import { Input } from "../global/input"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useEffect, useState, useCallback } from "react"
-import { Hospital, UserRoundPen, UserRoundX, X } from "lucide-react"
+import {
+    CalendarPlus,
+    Hospital,
+    UserRoundPen,
+    UserRoundX,
+    X,
+} from "lucide-react"
 import { viacep } from "../../api/api"
 import { CreateRecord } from "../modal/patient/record/create-record"
 
@@ -185,7 +191,14 @@ export function PatientInfoForm() {
                                 <button
                                     onClick={openClinicalHistory}
                                     type="button"
-                                    className="rounded-md bg-fisioblue text-slate-100 hover:bg-fisiolightgray p-2"
+                                    className="rounded-md bg-emerald-800 text-slate-100 hover:bg-emerald-900 p-2"
+                                >
+                                    <CalendarPlus size={20} />
+                                </button>
+                                <button
+                                    onClick={openClinicalHistory}
+                                    type="button"
+                                    className="rounded-md bg-fisioblue text-slate-100 hover:bg-sky-900 p-2"
                                 >
                                     <Hospital size={20} />
                                 </button>

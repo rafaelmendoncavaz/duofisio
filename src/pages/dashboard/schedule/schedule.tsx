@@ -3,16 +3,12 @@ import { AppointmentFilter } from "../../../components/appointment-filter/appoin
 import { DashboardTemplate } from "../../../components/dashboard/dashboard-template"
 import { useAPI, useModal } from "../../../store/store"
 import { AppointmentInfoModal } from "./modal/appointment-info-modal"
-import { CreateAppointmentModal } from "./modal/create-appointment-modal"
 import type { TypeAppointmentList } from "../../../types/types"
 import { ScheduleList } from "./schedule-list/schedule-list"
 
 export function DashboardSchedule() {
-    const {
-        isCreateAppointmentModalOpen,
-        isSingleAppointmentModalOpen,
-        openSingleAppointmentModal,
-    } = useModal()
+    const { isSingleAppointmentModalOpen, openSingleAppointmentModal } =
+        useModal()
     const { appointmentList, getAppointments, getSingleAppointment } = useAPI()
 
     // Carregamento da lista de agendamentos no componente
@@ -22,10 +18,8 @@ export function DashboardSchedule() {
         }
     }, [appointmentList, getAppointments])
 
-    // console.log(appointmentList)
-
     // Função de carregamento dos dados do agendamento no modal
-    async function handleClick(appointment: TypeAppointmentList) {
+    async function onAppointmentClick(appointment: TypeAppointmentList) {
         await getSingleAppointment(appointment.id)
         openSingleAppointmentModal()
     }
@@ -41,13 +35,12 @@ export function DashboardSchedule() {
             {appointmentList ? (
                 <ScheduleList
                     appointments={appointmentList}
-                    handleClick={handleClick}
+                    onAppointmentClick={onAppointmentClick}
                 />
             ) : (
                 <p>Nenhum agendamento encontrado</p>
             )}
 
-            {isCreateAppointmentModalOpen && <CreateAppointmentModal />}
             {isSingleAppointmentModalOpen && <AppointmentInfoModal />}
         </DashboardTemplate>
     )
