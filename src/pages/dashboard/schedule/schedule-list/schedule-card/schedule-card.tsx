@@ -20,7 +20,7 @@ export function ScheduleCard({
             // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: <explanation>
             // biome-ignore lint/a11y/useSemanticElements: <explanation>
             role="button"
-            className="border border-fisioblue rounded-md shadow-shape cursor-pointer p-2 hover:bg-fisioblue hover:text-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-fisioblue2"
+            className="w-full max-w-xs border border-fisioblue rounded-md shadow-shape cursor-pointer p-2 hover:bg-fisioblue hover:text-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-fisioblue2"
             aria-label={`Ver detalhes do agendamento de ${appointment.patient.name}`}
         >
             <div className="flex items-center gap-2">
@@ -32,7 +32,9 @@ export function ScheduleCard({
 
             <div className="flex items-center gap-2 mt-1">
                 <Flag size={20} />
-                <span className="font-normal">{appointment.status}</span>
+                <span className="font-normal truncate">
+                    {appointment.status}
+                </span>
             </div>
 
             <div className="flex items-center justify-between mt-1 px-2 py-1 text-sm bg-fisioblue text-slate-100 rounded">

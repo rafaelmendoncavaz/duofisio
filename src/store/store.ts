@@ -1,8 +1,8 @@
 import { create } from "zustand"
 import type {
-    SearchFilter,
+    TypeSearchFilter,
     TypeLoginData,
-    Modal,
+    TypeModal,
     TypeAPI,
     TypeCreatePatient,
     TypeUpdatePatient,
@@ -13,7 +13,7 @@ import type {
 } from "../types/types"
 import { api } from "../api/api"
 
-export const useModal = create<Modal>(set => ({
+export const useModal = create<TypeModal>(set => ({
     isCreatePatientModalOpen: false,
     isSinglePatientModalOpen: false,
     isCreateAppointmentModalOpen: false,
@@ -30,7 +30,7 @@ export const useModal = create<Modal>(set => ({
         }),
 }))
 
-export const useSearchFilter = create<SearchFilter>(set => ({
+export const useSearchFilter = create<TypeSearchFilter>(set => ({
     searchName: "",
     searchPhone: "",
     searchCPF: "",
@@ -44,6 +44,7 @@ export const useAPI = create<TypeAPI>((set, get) => ({
     token: localStorage.getItem("@authToken") || null,
     user: null,
     employees: null,
+    activeFilter: null,
 
     // Armazenamento de requisições
     patientList: [],
@@ -61,7 +62,7 @@ export const useAPI = create<TypeAPI>((set, get) => ({
     clearError: () => set({ error: null }),
     clearToken: () => set({ token: null }),
 
-    // Funções
+    // Funções assíncronas
     userLogin: async (loginData: TypeLoginData) => {
         try {
             const { data } = await api.post("/auth/login", loginData)
@@ -288,6 +289,7 @@ export const useAPI = create<TypeAPI>((set, get) => ({
             return { success: false, error }
         }
     },
+    setActiveFilter: filter => set({ activeFilter: filter }),
     getSingleAppointment: async (appointmentId: string) => {
         try {
             const token = localStorage.getItem("@authToken")
@@ -299,8 +301,8 @@ export const useAPI = create<TypeAPI>((set, get) => ({
                     headers: { Authorization: `Bearer ${token}` },
                 }
             )
-            set({ appointmentData: data.appointment, error: null })
-            return { success: true, appointment: data.appointment }
+            set({ appointmentData: data.session, error: null })
+            return { success: true, appointment: data.session }
         } catch (error) {
             set({ error: "Erro ao buscar agendamento" })
             return { success: false, error }
@@ -321,7 +323,7 @@ export const useAPI = create<TypeAPI>((set, get) => ({
                 }
             )
             set({ error: null })
-            return { success: true, appointmentIds: response.appointmentIds }
+            return { success: true, appointmentIds: response.sessionIds }
         } catch (error) {
             set({ error: "Erro ao repetir agendamento" })
             return { success: false, error }

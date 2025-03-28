@@ -138,291 +138,67 @@ export function EditPatientForm({
     }
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="gap-2">
-            {/* Dados Pessoais */}
-            <section className="space-y-4">
-                <h2 className="text-lg font-semibold">Dados Pessoais</h2>
-                <div className="w-full h-px bg-fisioblue shadow-shape" />
-
-                <div className="space-y-2">
-                    <label className="block" htmlFor="">
-                        Nome <span className="text-red-500">*</span>
-                    </label>
-                    <Input
-                        type="text"
-                        {...register("name")}
-                        disabled={!isEditing}
-                        colorVariant={isEditing ? "enabled" : "disabled"}
-                    />
-                    {errors.name && (
-                        <span className="text-sm text-red-500">
-                            {errors.name.message}
-                        </span>
-                    )}
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <label className="block" htmlFor="">
-                            CPF <span className="text-red-500">*</span>
-                        </label>
-                        <Input
-                            type="text"
-                            {...register("cpf")}
-                            disabled={!isEditing}
-                            colorVariant={isEditing ? "enabled" : "disabled"}
-                        />
-                        {errors.cpf && (
-                            <span className="text-sm text-red-500">
-                                {errors.cpf.message}
-                            </span>
-                        )}
-                    </div>
-                    <div className="space-y-2">
-                        <label className="block" htmlFor="">
-                            Data de Nascimento
-                        </label>
-                        <Input
-                            type="date"
-                            {...register("dateOfBirth")}
-                            disabled={!isEditing}
-                            colorVariant={isEditing ? "enabled" : "disabled"}
-                        />
-                        {errors.dateOfBirth && (
-                            <span className="text-sm text-red-500">
-                                {errors.dateOfBirth.message}
-                            </span>
-                        )}
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <label className="block" htmlFor="">
-                            Telefone
-                        </label>
-                        <Input
-                            type="text"
-                            {...register("phone")}
-                            disabled={!isEditing}
-                            colorVariant={isEditing ? "enabled" : "disabled"}
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="block" htmlFor="">
-                            Email
-                        </label>
-                        <Input
-                            type="email"
-                            {...register("email")}
-                            disabled={!isEditing}
-                            colorVariant={isEditing ? "enabled" : "disabled"}
-                        />
-                        {errors.email && (
-                            <span className="text-sm text-red-500">
-                                {errors.email.message}
-                            </span>
-                        )}
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <label className="block" htmlFor="">
-                            Sexo
-                        </label>
-                        <select
-                            {...register("sex")}
-                            className={
-                                isEditing
-                                    ? "w-full bg-transparent border rounded-md p-2 focus:border-fisioblue shadow-shape"
-                                    : "w-full bg-slate-200 text-gray-500 border rounded-md p-2 shadow-shape cursor-not-allowed"
-                            }
-                            disabled={!isEditing}
-                        >
-                            <option value="">Selecione</option>
-                            <option value="Masculino">Masculino</option>
-                            <option value="Feminino">Feminino</option>
-                        </select>
-                    </div>
-                    <div className="space-y-2">
-                        <label className="block" htmlFor="">
-                            Ocupação
-                        </label>
-                        <Input
-                            type="text"
-                            {...register("profession")}
-                            disabled={!isEditing}
-                            colorVariant={isEditing ? "enabled" : "disabled"}
-                        />
-                    </div>
-                </div>
-            </section>
-
-            {/* Endereço do Paciente */}
-            <section className="space-y-4">
-                <h2 className="text-lg font-semibold">Endereço</h2>
-                <div className="w-full h-px bg-fisioblue shadow-shape" />
-
-                <div className="space-y-2">
-                    <label className="block" htmlFor="">
-                        CEP <span className="text-red-500">*</span>
-                    </label>
-                    <Input
-                        type="text"
-                        {...register("address.cep", {
-                            onChange: e =>
-                                isEditing &&
-                                fetchAddress(e.target.value, "patient"),
-                        })}
-                        disabled={!isEditing || isLoadingCEP.patient}
-                        colorVariant={isEditing ? "enabled" : "disabled"}
-                    />
-                    {errors.address?.cep && (
-                        <span className="text-sm text-red-500">
-                            {errors.address.cep.message}
-                        </span>
-                    )}
-                    {isLoadingCEP.patient && (
-                        <span className="text-sm text-gray-500">
-                            Buscando...
-                        </span>
-                    )}
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <label className="block" htmlFor="">
-                            Rua <span className="text-red-500">*</span>
-                        </label>
-                        <Input
-                            type="text"
-                            {...register("address.street")}
-                            disabled={!isEditing}
-                            colorVariant={isEditing ? "enabled" : "disabled"}
-                        />
-                        {errors.address?.street && (
-                            <span className="text-sm text-red-500">
-                                {errors.address.street.message}
-                            </span>
-                        )}
-                    </div>
-                    <div className="space-y-2">
-                        <label className="block" htmlFor="">
-                            Número <span className="text-red-500">*</span>
-                        </label>
-                        <Input
-                            type="number"
-                            {...register("address.number")}
-                            disabled={!isEditing}
-                            colorVariant={isEditing ? "enabled" : "disabled"}
-                        />
-                        {errors.address?.number && (
-                            <span className="text-sm text-red-500">
-                                {errors.address.number.message}
-                            </span>
-                        )}
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <label className="block" htmlFor="">
-                            Complemento
-                        </label>
-                        <Input
-                            type="text"
-                            {...register("address.complement")}
-                            disabled={!isEditing}
-                            colorVariant={isEditing ? "enabled" : "disabled"}
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="block" htmlFor="">
-                            Bairro <span className="text-red-500">*</span>
-                        </label>
-                        <Input
-                            type="text"
-                            {...register("address.neighborhood")}
-                            disabled={!isEditing}
-                            colorVariant={isEditing ? "enabled" : "disabled"}
-                        />
-                        {errors.address?.neighborhood && (
-                            <span className="text-sm text-red-500">
-                                {errors.address.neighborhood.message}
-                            </span>
-                        )}
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <label className="block" htmlFor="">
-                            Cidade <span className="text-red-500">*</span>
-                        </label>
-                        <Input
-                            type="text"
-                            {...register("address.city")}
-                            disabled={!isEditing}
-                            colorVariant={isEditing ? "enabled" : "disabled"}
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="block" htmlFor="">
-                            Estado <span className="text-red-500">*</span>
-                        </label>
-                        <Input
-                            type="text"
-                            {...register("address.state")}
-                            disabled={!isEditing}
-                            colorVariant={isEditing ? "enabled" : "disabled"}
-                        />
-                    </div>
-                </div>
-            </section>
-
-            {/* Responsável Adulto */}
-            {patientData.adultResponsible && (
+        <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="w-full flex flex-col items-center gap-4"
+        >
+            <div className="w-full space-y-6">
+                {/* Dados Pessoais */}
                 <section className="space-y-4">
-                    <h2 className="text-lg font-semibold">
-                        Dados do Responsável
-                    </h2>
+                    <h2 className="text-lg font-semibold">Dados Pessoais</h2>
                     <div className="w-full h-px bg-fisioblue shadow-shape" />
 
+                    <div className="space-y-2">
+                        <label className="block" htmlFor="">
+                            Nome <span className="text-red-500">*</span>
+                        </label>
+                        <Input
+                            type="text"
+                            {...register("name")}
+                            disabled={!isEditing}
+                            colorVariant={isEditing ? "enabled" : "disabled"}
+                        />
+                        {errors.name && (
+                            <span className="text-sm text-red-500">
+                                {errors.name.message}
+                            </span>
+                        )}
+                    </div>
+
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label className="block" htmlFor="">
-                                Nome <span className="text-red-500">*</span>
-                            </label>
-                            <Input
-                                type="text"
-                                {...register("adultResponsible.name")}
-                                disabled={!isEditing}
-                                colorVariant={
-                                    isEditing ? "enabled" : "disabled"
-                                }
-                            />
-                            {errors.adultResponsible?.name && (
-                                <span className="text-sm text-red-500">
-                                    {errors.adultResponsible.name.message}
-                                </span>
-                            )}
-                        </div>
                         <div className="space-y-2">
                             <label className="block" htmlFor="">
                                 CPF <span className="text-red-500">*</span>
                             </label>
                             <Input
                                 type="text"
-                                {...register("adultResponsible.cpf")}
+                                {...register("cpf")}
                                 disabled={!isEditing}
                                 colorVariant={
                                     isEditing ? "enabled" : "disabled"
                                 }
                             />
-                            {errors.adultResponsible?.cpf && (
+                            {errors.cpf && (
                                 <span className="text-sm text-red-500">
-                                    {errors.adultResponsible.cpf.message}
+                                    {errors.cpf.message}
+                                </span>
+                            )}
+                        </div>
+                        <div className="space-y-2">
+                            <label className="block" htmlFor="">
+                                Data de Nascimento
+                            </label>
+                            <Input
+                                type="date"
+                                {...register("dateOfBirth")}
+                                disabled={!isEditing}
+                                colorVariant={
+                                    isEditing ? "enabled" : "disabled"
+                                }
+                            />
+                            {errors.dateOfBirth && (
+                                <span className="text-sm text-red-500">
+                                    {errors.dateOfBirth.message}
                                 </span>
                             )}
                         </div>
@@ -431,41 +207,76 @@ export function EditPatientForm({
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <label className="block" htmlFor="">
-                                Telefone <span className="text-red-500">*</span>
+                                Telefone
                             </label>
                             <Input
                                 type="text"
-                                {...register("adultResponsible.phone")}
+                                {...register("phone")}
                                 disabled={!isEditing}
                                 colorVariant={
                                     isEditing ? "enabled" : "disabled"
                                 }
                             />
-                            {errors.adultResponsible?.phone && (
-                                <span className="text-sm text-red-500">
-                                    {errors.adultResponsible.phone.message}
-                                </span>
-                            )}
                         </div>
                         <div className="space-y-2">
                             <label className="block" htmlFor="">
-                                Email <span className="text-red-500">*</span>
+                                Email
                             </label>
                             <Input
                                 type="email"
-                                {...register("adultResponsible.email")}
+                                {...register("email")}
                                 disabled={!isEditing}
                                 colorVariant={
                                     isEditing ? "enabled" : "disabled"
                                 }
                             />
-                            {errors.adultResponsible?.email && (
+                            {errors.email && (
                                 <span className="text-sm text-red-500">
-                                    {errors.adultResponsible.email.message}
+                                    {errors.email.message}
                                 </span>
                             )}
                         </div>
                     </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="block" htmlFor="">
+                                Sexo
+                            </label>
+                            <select
+                                {...register("sex")}
+                                className={
+                                    isEditing
+                                        ? "w-full bg-transparent border rounded-md p-2 focus:border-fisioblue shadow-shape"
+                                        : "w-full bg-slate-200 text-gray-500 border rounded-md p-2 shadow-shape cursor-not-allowed"
+                                }
+                                disabled={!isEditing}
+                            >
+                                <option value="">Selecione</option>
+                                <option value="Masculino">Masculino</option>
+                                <option value="Feminino">Feminino</option>
+                            </select>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="block" htmlFor="">
+                                Ocupação
+                            </label>
+                            <Input
+                                type="text"
+                                {...register("profession")}
+                                disabled={!isEditing}
+                                colorVariant={
+                                    isEditing ? "enabled" : "disabled"
+                                }
+                            />
+                        </div>
+                    </div>
+                </section>
+
+                {/* Endereço do Paciente */}
+                <section className="space-y-4">
+                    <h2 className="text-lg font-semibold">Endereço</h2>
+                    <div className="w-full h-px bg-fisioblue shadow-shape" />
 
                     <div className="space-y-2">
                         <label className="block" htmlFor="">
@@ -473,20 +284,20 @@ export function EditPatientForm({
                         </label>
                         <Input
                             type="text"
-                            {...register("adultResponsible.address.cep", {
+                            {...register("address.cep", {
                                 onChange: e =>
                                     isEditing &&
-                                    fetchAddress(e.target.value, "adult"),
+                                    fetchAddress(e.target.value, "patient"),
                             })}
-                            disabled={!isEditing || isLoadingCEP.adult}
+                            disabled={!isEditing || isLoadingCEP.patient}
                             colorVariant={isEditing ? "enabled" : "disabled"}
                         />
-                        {errors.adultResponsible?.address?.cep && (
+                        {errors.address?.cep && (
                             <span className="text-sm text-red-500">
-                                {errors.adultResponsible.address.cep.message}
+                                {errors.address.cep.message}
                             </span>
                         )}
-                        {isLoadingCEP.adult && (
+                        {isLoadingCEP.patient && (
                             <span className="text-sm text-gray-500">
                                 Buscando...
                             </span>
@@ -500,18 +311,15 @@ export function EditPatientForm({
                             </label>
                             <Input
                                 type="text"
-                                {...register("adultResponsible.address.street")}
+                                {...register("address.street")}
                                 disabled={!isEditing}
                                 colorVariant={
                                     isEditing ? "enabled" : "disabled"
                                 }
                             />
-                            {errors.adultResponsible?.address?.street && (
+                            {errors.address?.street && (
                                 <span className="text-sm text-red-500">
-                                    {
-                                        errors.adultResponsible.address.street
-                                            .message
-                                    }
+                                    {errors.address.street.message}
                                 </span>
                             )}
                         </div>
@@ -521,18 +329,15 @@ export function EditPatientForm({
                             </label>
                             <Input
                                 type="number"
-                                {...register("adultResponsible.address.number")}
+                                {...register("address.number")}
                                 disabled={!isEditing}
                                 colorVariant={
                                     isEditing ? "enabled" : "disabled"
                                 }
                             />
-                            {errors.adultResponsible?.address?.number && (
+                            {errors.address?.number && (
                                 <span className="text-sm text-red-500">
-                                    {
-                                        errors.adultResponsible.address.number
-                                            .message
-                                    }
+                                    {errors.address.number.message}
                                 </span>
                             )}
                         </div>
@@ -545,9 +350,7 @@ export function EditPatientForm({
                             </label>
                             <Input
                                 type="text"
-                                {...register(
-                                    "adultResponsible.address.complement"
-                                )}
+                                {...register("address.complement")}
                                 disabled={!isEditing}
                                 colorVariant={
                                     isEditing ? "enabled" : "disabled"
@@ -560,20 +363,15 @@ export function EditPatientForm({
                             </label>
                             <Input
                                 type="text"
-                                {...register(
-                                    "adultResponsible.address.neighborhood"
-                                )}
+                                {...register("address.neighborhood")}
                                 disabled={!isEditing}
                                 colorVariant={
                                     isEditing ? "enabled" : "disabled"
                                 }
                             />
-                            {errors.adultResponsible?.address?.neighborhood && (
+                            {errors.address?.neighborhood && (
                                 <span className="text-sm text-red-500">
-                                    {
-                                        errors.adultResponsible.address
-                                            .neighborhood.message
-                                    }
+                                    {errors.address.neighborhood.message}
                                 </span>
                             )}
                         </div>
@@ -586,7 +384,7 @@ export function EditPatientForm({
                             </label>
                             <Input
                                 type="text"
-                                {...register("adultResponsible.address.city")}
+                                {...register("address.city")}
                                 disabled={!isEditing}
                                 colorVariant={
                                     isEditing ? "enabled" : "disabled"
@@ -599,7 +397,7 @@ export function EditPatientForm({
                             </label>
                             <Input
                                 type="text"
-                                {...register("adultResponsible.address.state")}
+                                {...register("address.state")}
                                 disabled={!isEditing}
                                 colorVariant={
                                     isEditing ? "enabled" : "disabled"
@@ -608,7 +406,257 @@ export function EditPatientForm({
                         </div>
                     </div>
                 </section>
-            )}
+
+                {/* Responsável Adulto */}
+                {patientData.adultResponsible && (
+                    <section className="space-y-4">
+                        <h2 className="text-lg font-semibold">
+                            Dados do Responsável
+                        </h2>
+                        <div className="w-full h-px bg-fisioblue shadow-shape" />
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="block" htmlFor="">
+                                    Nome <span className="text-red-500">*</span>
+                                </label>
+                                <Input
+                                    type="text"
+                                    {...register("adultResponsible.name")}
+                                    disabled={!isEditing}
+                                    colorVariant={
+                                        isEditing ? "enabled" : "disabled"
+                                    }
+                                />
+                                {errors.adultResponsible?.name && (
+                                    <span className="text-sm text-red-500">
+                                        {errors.adultResponsible.name.message}
+                                    </span>
+                                )}
+                            </div>
+                            <div className="space-y-2">
+                                <label className="block" htmlFor="">
+                                    CPF <span className="text-red-500">*</span>
+                                </label>
+                                <Input
+                                    type="text"
+                                    {...register("adultResponsible.cpf")}
+                                    disabled={!isEditing}
+                                    colorVariant={
+                                        isEditing ? "enabled" : "disabled"
+                                    }
+                                />
+                                {errors.adultResponsible?.cpf && (
+                                    <span className="text-sm text-red-500">
+                                        {errors.adultResponsible.cpf.message}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="block" htmlFor="">
+                                    Telefone{" "}
+                                    <span className="text-red-500">*</span>
+                                </label>
+                                <Input
+                                    type="text"
+                                    {...register("adultResponsible.phone")}
+                                    disabled={!isEditing}
+                                    colorVariant={
+                                        isEditing ? "enabled" : "disabled"
+                                    }
+                                />
+                                {errors.adultResponsible?.phone && (
+                                    <span className="text-sm text-red-500">
+                                        {errors.adultResponsible.phone.message}
+                                    </span>
+                                )}
+                            </div>
+                            <div className="space-y-2">
+                                <label className="block" htmlFor="">
+                                    Email{" "}
+                                    <span className="text-red-500">*</span>
+                                </label>
+                                <Input
+                                    type="email"
+                                    {...register("adultResponsible.email")}
+                                    disabled={!isEditing}
+                                    colorVariant={
+                                        isEditing ? "enabled" : "disabled"
+                                    }
+                                />
+                                {errors.adultResponsible?.email && (
+                                    <span className="text-sm text-red-500">
+                                        {errors.adultResponsible.email.message}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="block" htmlFor="">
+                                CEP <span className="text-red-500">*</span>
+                            </label>
+                            <Input
+                                type="text"
+                                {...register("adultResponsible.address.cep", {
+                                    onChange: e =>
+                                        isEditing &&
+                                        fetchAddress(e.target.value, "adult"),
+                                })}
+                                disabled={!isEditing || isLoadingCEP.adult}
+                                colorVariant={
+                                    isEditing ? "enabled" : "disabled"
+                                }
+                            />
+                            {errors.adultResponsible?.address?.cep && (
+                                <span className="text-sm text-red-500">
+                                    {
+                                        errors.adultResponsible.address.cep
+                                            .message
+                                    }
+                                </span>
+                            )}
+                            {isLoadingCEP.adult && (
+                                <span className="text-sm text-gray-500">
+                                    Buscando...
+                                </span>
+                            )}
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="block" htmlFor="">
+                                    Rua <span className="text-red-500">*</span>
+                                </label>
+                                <Input
+                                    type="text"
+                                    {...register(
+                                        "adultResponsible.address.street"
+                                    )}
+                                    disabled={!isEditing}
+                                    colorVariant={
+                                        isEditing ? "enabled" : "disabled"
+                                    }
+                                />
+                                {errors.adultResponsible?.address?.street && (
+                                    <span className="text-sm text-red-500">
+                                        {
+                                            errors.adultResponsible.address
+                                                .street.message
+                                        }
+                                    </span>
+                                )}
+                            </div>
+                            <div className="space-y-2">
+                                <label className="block" htmlFor="">
+                                    Número{" "}
+                                    <span className="text-red-500">*</span>
+                                </label>
+                                <Input
+                                    type="number"
+                                    {...register(
+                                        "adultResponsible.address.number"
+                                    )}
+                                    disabled={!isEditing}
+                                    colorVariant={
+                                        isEditing ? "enabled" : "disabled"
+                                    }
+                                />
+                                {errors.adultResponsible?.address?.number && (
+                                    <span className="text-sm text-red-500">
+                                        {
+                                            errors.adultResponsible.address
+                                                .number.message
+                                        }
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="block" htmlFor="">
+                                    Complemento
+                                </label>
+                                <Input
+                                    type="text"
+                                    {...register(
+                                        "adultResponsible.address.complement"
+                                    )}
+                                    disabled={!isEditing}
+                                    colorVariant={
+                                        isEditing ? "enabled" : "disabled"
+                                    }
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="block" htmlFor="">
+                                    Bairro{" "}
+                                    <span className="text-red-500">*</span>
+                                </label>
+                                <Input
+                                    type="text"
+                                    {...register(
+                                        "adultResponsible.address.neighborhood"
+                                    )}
+                                    disabled={!isEditing}
+                                    colorVariant={
+                                        isEditing ? "enabled" : "disabled"
+                                    }
+                                />
+                                {errors.adultResponsible?.address
+                                    ?.neighborhood && (
+                                    <span className="text-sm text-red-500">
+                                        {
+                                            errors.adultResponsible.address
+                                                .neighborhood.message
+                                        }
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="block" htmlFor="">
+                                    Cidade{" "}
+                                    <span className="text-red-500">*</span>
+                                </label>
+                                <Input
+                                    type="text"
+                                    {...register(
+                                        "adultResponsible.address.city"
+                                    )}
+                                    disabled={!isEditing}
+                                    colorVariant={
+                                        isEditing ? "enabled" : "disabled"
+                                    }
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="block" htmlFor="">
+                                    Estado{" "}
+                                    <span className="text-red-500">*</span>
+                                </label>
+                                <Input
+                                    type="text"
+                                    {...register(
+                                        "adultResponsible.address.state"
+                                    )}
+                                    disabled={!isEditing}
+                                    colorVariant={
+                                        isEditing ? "enabled" : "disabled"
+                                    }
+                                />
+                            </div>
+                        </div>
+                    </section>
+                )}
+            </div>
+
             <button
                 type="submit"
                 className={`w-full rounded-md py-2 text-white font-semibold ${isEditing ? "bg-fisioblue hover:bg-fisioblue2" : "bg-gray-400 cursor-not-allowed"}`}

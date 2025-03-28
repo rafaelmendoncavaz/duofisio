@@ -4,19 +4,31 @@ import { DashboardTemplate } from "../../../components/dashboard/dashboard-templ
 import { useAPI, useModal } from "../../../store/store"
 import { AppointmentInfoModal } from "./modal/appointment-info-modal"
 import type { TypeAppointmentList } from "../../../types/types"
-import { ScheduleList } from "./schedule-list/schedule-list"
+import { MonthlySchedule } from "./schedule-list/monthly-schedule"
+import { WeeklySchedule } from "./schedule-list/weekly-schedule"
+import { DailySchedule } from "./schedule-list/daily-schedule"
 
 export function DashboardSchedule() {
     const { isSingleAppointmentModalOpen, openSingleAppointmentModal } =
         useModal()
-    const { appointmentList, getAppointments, getSingleAppointment } = useAPI()
+    const {
+        appointmentList,
+        getAppointments,
+        getSingleAppointment,
+        activeFilter,
+        setActiveFilter,
+    } = useAPI()
 
     // Carregamento da lista de agendamentos no componente
     useEffect(() => {
-        if (!appointmentList) {
-            getAppointments()
+        const loadTodaysAppointments = async () => {
+            if (!appointmentList && !activeFilter) {
+                setActiveFilter("today")
+                await getAppointments({ filter: "today" })
+            }
         }
-    }, [appointmentList, getAppointments])
+        loadTodaysAppointments()
+    }, [appointmentList, getAppointments, activeFilter, setActiveFilter])
 
     // Função de carregamento dos dados do agendamento no modal
     async function onAppointmentClick(appointment: TypeAppointmentList) {
@@ -30,13 +42,31 @@ export function DashboardSchedule() {
 
             <div className="w-full h-px bg-fisioblue shadow-shape" />
 
-            <h1>Os agendamentos/calendário renderizarão aqui</h1>
-
             {appointmentList ? (
-                <ScheduleList
-                    appointments={appointmentList}
-                    onAppointmentClick={onAppointmentClick}
-                />
+                <div className="overflow-hidden scrollbar-hidden overflow-y-auto flex-1">
+                    {activeFilter === "today" || activeFilter === "tomorrow" ? (
+                        <DailySchedule
+                            appointments={appointmentList}
+                            onAppointmentClick={onAppointmentClick}
+                            isToday={activeFilter === "today"}
+                        />
+                    ) : activeFilter === "week" ? (
+                        <WeeklySchedule
+                            appointments={appointmentList}
+                            onAppointmentClick={onAppointmentClick}
+                        />
+                    ) : activeFilter === "month" ? (
+                        <MonthlySchedule
+                            appointments={appointmentList}
+                            onAppointmentClick={onAppointmentClick}
+                        />
+                    ) : (
+                        <p>
+                            Selecione um filtro para visualizar os agendamentos
+                            em formato de calendário.
+                        </p>
+                    )}
+                </div>
             ) : (
                 <p>Nenhum agendamento encontrado</p>
             )}

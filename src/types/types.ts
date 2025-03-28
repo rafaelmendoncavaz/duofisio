@@ -8,6 +8,7 @@ import type {
     createRecordSchema,
     getSinglePatientAppointments,
     loginSchema,
+    patientDataSchema,
     patientListSchema,
     repeatAppointmentSchema,
     updateAppointmentSchema,
@@ -19,6 +20,7 @@ export type TypeLoginData = z.infer<typeof loginSchema>
 export type TypeCreatePatient = z.infer<typeof createPatientSchema>
 export type TypeUpdatePatient = z.infer<typeof updatePatientSchema>
 export type TypePatientList = z.infer<typeof patientListSchema>
+export type TypePatient = z.infer<typeof patientDataSchema>
 export type TypeCep = z.infer<typeof cep>
 export type AddressSchema = z.infer<typeof addressSchema>
 export type TypeCreateRecord = z.infer<typeof createRecordSchema>
@@ -27,23 +29,6 @@ export type TypeAppointment = z.infer<typeof getSinglePatientAppointments>
 export type TypeAppointmentRepeat = z.infer<typeof repeatAppointmentSchema>
 export type TypeAppointmentUpdate = z.infer<typeof updateAppointmentSchema>
 export type TypeAppointmentList = z.infer<typeof appointmentListSchema>
-
-// Tipo do retorno da API ViaCEP
-export interface TypeAddress {
-    bairro: string
-    cep: string
-    complemento: string
-    ddd: string
-    estado: string
-    gia: string
-    ibge: string
-    localidade: string
-    logradouro: string
-    regiao: string
-    siafi: string
-    uf: string
-    unidade: string
-}
 
 // ClinicalData (alinhado com schema.prisma e /dashboard/patients/:id/clinical)
 export interface ClinicalData {
@@ -57,43 +42,6 @@ export interface ClinicalData {
     patientId?: string
 }
 
-// AdultResponsible (alinhado com schema.prisma e statusPatientDataSchema)
-export interface AdultResponsible {
-    id: string // UUID
-    name: string
-    cpf: string
-    phone: string
-    email: string
-    address: AddressSchema
-}
-
-// Appointments (alinhado com schema.prisma e statusPatientDataSchema)
-export interface Appointments {
-    id: string // UUID
-    appointmentDate: string // ISO string
-    status: "SOLICITADO" | "CONFIRMADO" | "CANCELADO" | "FINALIZADO" // Enum do backend
-    createdAt: string // ISO string
-    updatedAt: string // ISO string
-}
-
-// TypePatient (alinhado com statusPatientDataSchema de GET /dashboard/patients/:id)
-export interface TypePatient {
-    id: string // UUID
-    name: string
-    cpf: string
-    dateOfBirth: string // ISO string
-    email: string | null // Nullable
-    phone: string | null // Nullable
-    sex: "Masculino" | "Feminino" | null // Enum nullable
-    profession: string | null // Nullable
-    createdAt: string // ISO string
-    updatedAt: string // ISO string
-    address: AddressSchema
-    clinicalData: ClinicalData[]
-    adultResponsible: AdultResponsible | null // Nullable no backend
-    appointments: Appointments[]
-}
-
 // TypeClinicalRecord (alinhado com resposta de GET /dashboard/patients/:id/clinical)
 export interface TypeClinicalRecord {
     patientName: string
@@ -102,7 +50,7 @@ export interface TypeClinicalRecord {
 }
 
 // Modal
-export interface Modal {
+export interface TypeModal {
     closeModal: () => void
     isCreatePatientModalOpen: boolean
     isSinglePatientModalOpen: boolean
@@ -113,7 +61,7 @@ export interface Modal {
 }
 
 // SearchFilter
-export interface SearchFilter {
+export interface TypeSearchFilter {
     searchName: string
     searchPhone: string
     searchCPF: string
@@ -129,20 +77,27 @@ export interface QueryFilter {
     endDate?: string
 }
 
+export interface TypeUser {
+    id: string
+    name: string
+    appointments: {
+        id: string
+        patient: { id: string; name: string }
+        sessions: {
+            id: string
+            sessionNumber: number
+            appointmentDate: string
+            status: "SOLICITADO" | "CONFIRMADO" | "CANCELADO" | "FINALIZADO"
+        }[]
+    }[]
+}
+
 export interface TypeAPI {
     // Estados
     error: string | null
     token: string | null // Token é string ou null
-    user: {
-        id: string // UUID do backend
-        name: string
-        appointments: {
-            id: string
-            patient: { id: string; name: string }
-            status: "SOLICITADO" | "CONFIRMADO" | "CANCELADO" | "FINALIZADO"
-            appointmentDate: string
-        }[]
-    } | null // Reflete o retorno de /auth/verify
+    user: TypeUser | null // Reflete o retorno de /auth/verify
+    activeFilter: "today" | "tomorrow" | "week" | "month" | null
     employees:
         | {
               name: string
@@ -153,11 +108,7 @@ export interface TypeAPI {
     // Armazenamento de Requisições
     patientList: TypePatientList[]
     patientData: TypePatient | null
-    clinicalRecords: {
-        clinicalRecordList: ClinicalData[]
-        patientName: string
-        patientId: string
-    } | null // Reflete o retorno de /dashboard/patients/:id/clinical
+    clinicalRecords: TypeClinicalRecord | null
     clinicalRecord: ClinicalData | null
     appointmentList: TypeAppointmentList[] | null
     appointmentData: TypeAppointment | null
@@ -220,9 +171,10 @@ export interface TypeAPI {
     getAppointments: (
         filterParams?: QueryFilter
     ) => Promise<{ success: boolean; error?: unknown }>
+    setActiveFilter: (filter: TypeAPI["activeFilter"]) => void
     getSingleAppointment: (appointmentId: string) => Promise<{
         success: boolean
-        appointment?: TypeAppointment
+        session?: TypeAppointment
         error?: unknown
     }>
     repeatAppointment: (

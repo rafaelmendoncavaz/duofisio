@@ -8,11 +8,12 @@ import {
 import { useAPI } from "../../store/store"
 
 export function AppointmentFilter() {
-    const { getAppointments } = useAPI()
+    const { getAppointments, setActiveFilter } = useAPI()
 
     const handleFilter = async (
         filter: "today" | "tomorrow" | "week" | "month"
     ) => {
+        setActiveFilter(filter)
         const result = await getAppointments({ filter })
         if (!result.success) {
             console.error("Erro ao aplicar o filtro: ", result.error)

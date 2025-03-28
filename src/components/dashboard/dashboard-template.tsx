@@ -12,7 +12,7 @@ export function DashboardTemplate({ children }: DashboardTemplateProps) {
             <DashboardNavigation />
             <div className="flex-1 flex flex-col">
                 <DashboardMenu />
-                <main className="flex-1 p-6 md:p-10 flex flex-col gap-6">
+                <main className="flex-1 p-6 md:p-10 flex flex-col gap-6 overflow-hidden">
                     {children}
                 </main>
             </div>

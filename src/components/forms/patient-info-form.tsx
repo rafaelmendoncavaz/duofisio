@@ -189,6 +189,7 @@ export function PatientInfoForm() {
                         <>
                             <div className="flex items-center gap-4">
                                 <button
+                                    title="Criar Agendamento"
                                     onClick={openClinicalHistory}
                                     type="button"
                                     className="rounded-md bg-emerald-800 text-slate-100 hover:bg-emerald-900 p-2"
@@ -196,6 +197,7 @@ export function PatientInfoForm() {
                                     <CalendarPlus size={20} />
                                 </button>
                                 <button
+                                    title="Abrir Histórico Clínico"
                                     onClick={openClinicalHistory}
                                     type="button"
                                     className="rounded-md bg-fisioblue text-slate-100 hover:bg-sky-900 p-2"
@@ -203,6 +205,7 @@ export function PatientInfoForm() {
                                     <Hospital size={20} />
                                 </button>
                                 <button
+                                    title="Editar Paciente"
                                     type="button"
                                     onClick={toggleEdit}
                                     className={`rounded-md p-2 text-white ${isEditing ? "bg-red-500 hover:bg-red-600" : "bg-blue-500 hover:bg-blue-600"}`}
@@ -214,6 +217,7 @@ export function PatientInfoForm() {
                                     )}
                                 </button>
                                 <button
+                                    title="Deletar Paciente"
                                     type="button"
                                     onClick={handleDelete}
                                     className="rounded-md bg-red-600 text-white p-2 hover:bg-red-700"
@@ -230,7 +234,7 @@ export function PatientInfoForm() {
                         setIsClinicalHistoryOpen={setIsClinicalHistoryOpen}
                     />
                 ) : (
-                    <form onSubmit={handleSubmit(onSubmit)} className="gap-2">
+                    <form onSubmit={handleSubmit(onSubmit)} className="gap-10">
                         {/* Dados Pessoais */}
                         <section className="space-y-4">
                             <h2 className="text-lg font-semibold">

@@ -38,6 +38,7 @@ export function Modal({ children, title }: ModalProps) {
                         ref={btnRef}
                         onClick={closeModal}
                         type="button"
+                        title="Fechar Janela"
                         className="text-slate-100 hover:text-white focus:outline-none focus:ring-2 focus:ring-fisioblue"
                         aria-label="Fechar modal"
                     >

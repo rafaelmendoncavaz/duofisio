@@ -1,11 +1,11 @@
 import { ArrowLeftCircle } from "lucide-react"
 import { useAPI, useModal } from "../../store/store"
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import type { TypeCreateAppointment } from "../../types/types"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { createAppointmentSchema } from "../../schema/schema"
 import { Input } from "../global/input"
-import { startOfDay, isBefore, isSameDay } from "date-fns"
+import { startOfDay, isBefore, isSameDay, format } from "date-fns"
 
 interface CreateAppointmentFormProps {
     closeCreateAppointment: () => void
@@ -27,15 +27,18 @@ export function CreateAppointmentForm({
     const {
         register,
         handleSubmit,
+        control,
         formState: { errors, isSubmitting },
     } = useForm<TypeCreateAppointment>({
         resolver: zodResolver(createAppointmentSchema),
         defaultValues: {
             patientId: patientData?.id,
             employeeId: user?.id,
-            appointmentDate: "",
-            duration: 30, // Valor padrão
             clinicalRecordId: "",
+            appointmentDate: "",
+            duration: 30,
+            daysOfWeek: [],
+            totalSessions: 1,
         },
     })
 
@@ -50,29 +53,40 @@ export function CreateAppointmentForm({
     const onSubmit = async (data: TypeCreateAppointment) => {
         if (!patientData?.id) return
 
-        // Converte appointmentDate para ISO com timezone local
-        const formattedDate = new Date(data.appointmentDate).toISOString()
-
+        // Ajustar "now" para UTC-3
         const now = new Date()
+        const nowInUtcMinus3 = new Date(now.getTime() - 3 * 60 * 60 * 1000)
+        const appointmentDate = new Date(data.appointmentDate)
+
         if (
-            isBefore(new Date(formattedDate), now) &&
-            !isSameDay(new Date(formattedDate), now)
+            isBefore(appointmentDate, nowInUtcMinus3) &&
+            !isSameDay(appointmentDate, nowInUtcMinus3)
         ) {
             alert("A data do agendamento deve ser hoje ou no futuro")
             return
         }
 
-        const createData = {
-            ...data,
-            appointmentDate: formattedDate,
-        }
-
-        const result = await createAppointment(createData)
+        const result = await createAppointment(data)
         if (result.success) {
-            await getAppointments() // Atualiza a lista de pacientes para refletir o novo agendamento
+            await getAppointments() // Atualiza a lista de agendamentos com o novo agendamento criado
             closeModal()
         }
     }
+
+    // Ajustar o min para UTC-3 no formato correto
+    const now = new Date()
+    const nowInUtcMinus3 = new Date(now.getTime() - 3 * 60 * 60 * 1000)
+    const minDateTime = format(startOfDay(nowInUtcMinus3), "yyyy-MM-dd'T'HH:mm")
+
+    const days = [
+        { value: 0, label: "Domingo" },
+        { value: 1, label: "Segunda" },
+        { value: 2, label: "Terça" },
+        { value: 3, label: "Quarta" },
+        { value: 4, label: "Quinta" },
+        { value: 5, label: "Sexta" },
+        { value: 6, label: "Sábado" },
+    ]
 
     return (
         <div className="flex flex-col gap-6 py-2 w-full mx-auto">
@@ -101,7 +115,7 @@ export function CreateAppointmentForm({
             </p>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
+                <section className="flex flex-col gap-4">
                     <div className="space-y-2">
                         <label className="block" htmlFor="employeeId">
                             Funcionário <span className="text-red-500">*</span>
@@ -124,7 +138,9 @@ export function CreateAppointmentForm({
                             </span>
                         )}
                     </div>
+                </section>
 
+                <section className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <label className="block" htmlFor="appointmentDate">
                             Data e Hora <span className="text-red-500">*</span>
@@ -132,9 +148,7 @@ export function CreateAppointmentForm({
                         <Input
                             type="datetime-local"
                             {...register("appointmentDate")}
-                            min={startOfDay(new Date())
-                                .toISOString()
-                                .slice(0, 16)} // Hoje em diante
+                            min={minDateTime}
                         />
                         {errors.appointmentDate && (
                             <span className="text-sm text-red-500">
@@ -142,9 +156,7 @@ export function CreateAppointmentForm({
                             </span>
                         )}
                     </div>
-                </div>
 
-                <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <label className="block" htmlFor="duration">
                             Duração (minutos){" "}
@@ -165,7 +177,9 @@ export function CreateAppointmentForm({
                             </span>
                         )}
                     </div>
+                </section>
 
+                <section className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <label className="block" htmlFor="clinicalRecordId">
                             CID <span className="text-red-500">*</span>
@@ -187,7 +201,86 @@ export function CreateAppointmentForm({
                             </span>
                         )}
                     </div>
-                </div>
+
+                    <div className="space-y-2">
+                        <label className="block" htmlFor="sessionCount">
+                            Quantidade de Sessões{" "}
+                            <span className="text-red-500">*</span>
+                        </label>
+                        <Input
+                            type="number"
+                            {...register("totalSessions", {
+                                valueAsNumber: true,
+                            })}
+                            min={1}
+                        />
+                        {errors.totalSessions && (
+                            <span className="text-sm text-red-500">
+                                {errors.totalSessions.message}
+                            </span>
+                        )}
+                    </div>
+                </section>
+
+                <section className="flex flex-col gap-4">
+                    <div className="space-y-2">
+                        <label className="block" htmlFor="daysOfWeek">
+                            Dias da Semana{" "}
+                            <span className="text-red-500">*</span>
+                        </label>
+                        {errors.daysOfWeek && (
+                            <span className="text-sm text-red-500">
+                                {errors.daysOfWeek.message}
+                            </span>
+                        )}
+                        <div className="flex justify-center items-center gap-4">
+                            <Controller
+                                name="daysOfWeek"
+                                control={control}
+                                render={({ field }) => (
+                                    <>
+                                        {days.map(day => (
+                                            <label
+                                                htmlFor="daysOfWeek"
+                                                key={day.value}
+                                                className="flex items-center gap-1"
+                                            >
+                                                <div>
+                                                    <span>{day.label}</span>
+                                                    <Input
+                                                        type="checkbox"
+                                                        value={day.value}
+                                                        checked={field.value.includes(
+                                                            day.value
+                                                        )}
+                                                        onChange={e => {
+                                                            const newValue = e
+                                                                .target.checked
+                                                                ? [
+                                                                      ...field.value,
+                                                                      day.value,
+                                                                  ]
+                                                                : field.value.filter(
+                                                                      (
+                                                                          d: number
+                                                                      ) =>
+                                                                          d !==
+                                                                          day.value
+                                                                  )
+                                                            field.onChange(
+                                                                newValue
+                                                            )
+                                                        }}
+                                                    />
+                                                </div>
+                                            </label>
+                                        ))}
+                                    </>
+                                )}
+                            />
+                        </div>
+                    </div>
+                </section>
 
                 <button
                     type="submit"

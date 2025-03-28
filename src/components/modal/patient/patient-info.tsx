@@ -91,6 +91,7 @@ export function PatientInfo() {
                         <>
                             <div className="flex items-center gap-4">
                                 <button
+                                    title="Criar Agendamento"
                                     onClick={openCreateAppointment}
                                     type="button"
                                     className="rounded-md bg-emerald-800 text-slate-100 hover:bg-emerald-900 p-2"
@@ -98,6 +99,7 @@ export function PatientInfo() {
                                     <CalendarPlus size={20} />
                                 </button>
                                 <button
+                                    title="Abrir Histórico Clínico"
                                     onClick={openClinicalHistory}
                                     type="button"
                                     className="rounded-md bg-fisioblue text-slate-100 hover:bg-sky-900 p-2"
@@ -105,6 +107,7 @@ export function PatientInfo() {
                                     <Hospital size={20} />
                                 </button>
                                 <button
+                                    title="Editar Paciente"
                                     type="button"
                                     onClick={toggleEdit}
                                     className={`rounded-md p-2 text-white ${isEditing ? "bg-red-500 hover:bg-red-600" : "bg-blue-500 hover:bg-blue-600"}`}
@@ -116,6 +119,7 @@ export function PatientInfo() {
                                     )}
                                 </button>
                                 <button
+                                    title="Deletar Paciente"
                                     type="button"
                                     onClick={handleDelete}
                                     className="rounded-md bg-red-600 text-white p-2 hover:bg-red-700"

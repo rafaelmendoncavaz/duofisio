@@ -18,7 +18,7 @@ export function RepeatAppointmentForm() {
         resolver: zodResolver(repeatAppointmentSchema),
         defaultValues: {
             daysOfWeek: [],
-            sessionCount: 1,
+            totalSessions: 1,
         },
     })
 
@@ -111,12 +111,12 @@ export function RepeatAppointmentForm() {
                     </label>
                     <Input
                         type="number"
-                        {...register("sessionCount", { valueAsNumber: true })}
+                        {...register("totalSessions", { valueAsNumber: true })}
                         min={1}
                     />
-                    {errors.sessionCount && (
+                    {errors.totalSessions && (
                         <span className="text-sm text-red-500">
-                            {errors.sessionCount.message}
+                            {errors.totalSessions.message}
                         </span>
                     )}
                 </div>

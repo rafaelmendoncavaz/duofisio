@@ -122,6 +122,7 @@ export function ScheduleInfo() {
                     {currentAppointment &&
                     appointmentData.status !== "FINALIZADO" ? (
                         <button
+                            title="Finalizar Agendamento"
                             type="button"
                             onClick={terminateAppointment}
                             className="rounded-md bg-slate-600 text-white p-2 hover:bg-slate-700"
@@ -130,6 +131,7 @@ export function ScheduleInfo() {
                         </button>
                     ) : null}
                     <button
+                        title="Repetir Agendamento"
                         type="button"
                         onClick={toggleRepeat}
                         className={`rounded-md p-2 text-white ${isRepeating ? "bg-red-500 hover:bg-red-600" : "bg-emerald-800 hover:bg-emerald-900"}`}
@@ -141,6 +143,7 @@ export function ScheduleInfo() {
                         )}
                     </button>
                     <button
+                        title="Editar Agendamento"
                         type="button"
                         onClick={toggleEdit}
                         className={`rounded-md p-2 text-white ${isEditing ? "bg-red-500 hover:bg-red-600" : "bg-blue-500 hover:bg-blue-600"}`}
@@ -153,6 +156,7 @@ export function ScheduleInfo() {
                     </button>
 
                     <button
+                        title="Excluir Agendamento"
                         type="button"
                         onClick={handleDelete}
                         className="rounded-md bg-red-600 text-white p-2 hover:bg-red-700"
