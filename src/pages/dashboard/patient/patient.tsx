@@ -2,10 +2,10 @@ import { DashboardTemplate } from "../../../components/dashboard/dashboard-templ
 import { PatientList } from "./patient-list/patient-list"
 import { useAPI, useModal, useSearchFilter } from "../../../store/store"
 import { CreatePatientModal } from "../../../components/modal/patient/create-patient-modal"
-import { SearchFilter } from "../../../components/search-filter/search-filter"
+import { PatientFilter } from "./patient-filter/patient-filter"
 import { GetPatientInfoModal } from "../../../components/modal/patient/get-patient-info-modal"
 import type { TypePatientList } from "../../../types/types"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import ReactPaginate from "react-paginate"
 
 export function DashboardPatients() {
@@ -18,17 +18,6 @@ export function DashboardPatients() {
     const { getSinglePatient, getPatients, patientList } = useAPI()
     const { searchName, searchPhone, searchCPF } = useSearchFilter()
 
-    const [filteredPatients, setFilteredPatients] = useState<TypePatientList[]>(
-        []
-    )
-    const [page, setPage] = useState(0)
-    const itemsPerPage = 20
-    const pageCount = Math.ceil((filteredPatients.length || 0) / itemsPerPage)
-    const paginatedPatients = filteredPatients.slice(
-        page * itemsPerPage,
-        (page + 1) * itemsPerPage
-    )
-
     // Carregamento da lista de pacientes no componente
     useEffect(() => {
         if (patientList.length === 0) {
@@ -36,26 +25,38 @@ export function DashboardPatients() {
         }
     }, [patientList, getPatients])
 
-    // Lógica do filtro de busca da lista de pacientes
-    useEffect(() => {
-        if (patientList) {
-            const search =
-                searchName.length || searchPhone.length || searchCPF.length > 0
-                    ? patientList.filter(patient => {
-                          const matchName = patient.name
-                              .toLowerCase()
-                              .includes(searchName.toLowerCase())
-                          const matchPhone =
-                              patient.phone?.includes(searchPhone)
-                          const matchCPF = patient.cpf.includes(searchCPF)
-
-                          return matchName && matchPhone && matchCPF
-                      })
-                    : patientList
-
-            setFilteredPatients(search)
+    // Filtragem com useMemo
+    const filteredPatients = useMemo(() => {
+        if (!patientList) return []
+        if (!(searchName.length || searchPhone.length || searchCPF.length)) {
+            return patientList
         }
-    }, [searchName, searchPhone, searchCPF, patientList])
+        return patientList.filter(patient => {
+            const normalizedPatientName = patient.name
+                .normalize("NFD")
+                // biome-ignore lint/suspicious/noMisleadingCharacterClass: <explanation>
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLowerCase()
+            const normalizedSearchName = searchName
+                .normalize("NFD")
+                // biome-ignore lint/suspicious/noMisleadingCharacterClass: <explanation>
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLowerCase()
+            const matchName =
+                normalizedPatientName.includes(normalizedSearchName)
+            const matchPhone = patient.phone?.includes(searchPhone) ?? true
+            const matchCPF = patient.cpf.includes(searchCPF) ?? true
+            return matchName && matchPhone && matchCPF
+        })
+    }, [patientList, searchName, searchPhone, searchCPF])
+
+    const [page, setPage] = useState(0)
+    const itemsPerPage = 20
+    const pageCount = Math.ceil((filteredPatients.length || 0) / itemsPerPage)
+    const paginatedPatients = filteredPatients.slice(
+        page * itemsPerPage,
+        (page + 1) * itemsPerPage
+    )
 
     // Função de carregamento dos dados do paciente no modal
     async function handleClick(patient: TypePatientList) {
@@ -65,9 +66,13 @@ export function DashboardPatients() {
 
     return (
         <DashboardTemplate>
-            <SearchFilter />
+            <PatientFilter />
 
             <div className="w-full h-px bg-fisioblue shadow-shape" />
+
+            <h1 className="text-xl text-fisiogray font-semibold">
+                {`Exibindo ${filteredPatients.length} de ${patientList.length} Pacientes`}
+            </h1>
 
             {patientList ? (
                 filteredPatients.length > 0 ? (

@@ -1,64 +1,73 @@
 import { useEffect } from "react"
-import { AppointmentFilter } from "../../../components/appointment-filter/appointment-filter"
+import { ScheduleFilter } from "./schedule-filter/schedule-filter"
 import { DashboardTemplate } from "../../../components/dashboard/dashboard-template"
 import { useAPI, useModal } from "../../../store/store"
 import { AppointmentInfoModal } from "./modal/appointment-info-modal"
-import type { TypeAppointmentList } from "../../../types/types"
 import { MonthlySchedule } from "./schedule-list/monthly-schedule"
 import { WeeklySchedule } from "./schedule-list/weekly-schedule"
 import { DailySchedule } from "./schedule-list/daily-schedule"
+import { ScheduleHistory } from "./schedule-list/schedule-history"
+import { TimespanModal } from "./schedule-filter/timespan-modal"
 
 export function DashboardSchedule() {
-    const { isSingleAppointmentModalOpen, openSingleAppointmentModal } =
-        useModal()
+    const {
+        isFilterByTimespanModalOpen,
+        isSingleAppointmentModalOpen,
+        openSingleAppointmentModal,
+    } = useModal()
     const {
         appointmentList,
+        filteredAppointments,
         getAppointments,
         getSingleAppointment,
         activeFilter,
-        setActiveFilter,
     } = useAPI()
 
     // Carregamento da lista de agendamentos no componente
     useEffect(() => {
         const loadTodaysAppointments = async () => {
-            if (!appointmentList && !activeFilter) {
-                setActiveFilter("today")
-                await getAppointments({ filter: "today" })
+            if (!appointmentList) {
+                await getAppointments()
             }
         }
         loadTodaysAppointments()
-    }, [appointmentList, getAppointments, activeFilter, setActiveFilter])
+    }, [appointmentList, getAppointments])
 
-    // Função de carregamento dos dados do agendamento no modal
-    async function onAppointmentClick(appointment: TypeAppointmentList) {
-        await getSingleAppointment(appointment.id)
+    // Função de carregamento dos dados da sessão no modal
+    async function onSessionClick(sessionId: string, appointmentId: string) {
+        await getSingleAppointment(sessionId)
         openSingleAppointmentModal()
     }
 
     return (
         <DashboardTemplate>
-            <AppointmentFilter />
+            <ScheduleFilter />
 
             <div className="w-full h-px bg-fisioblue shadow-shape" />
 
-            {appointmentList ? (
-                <div className="overflow-hidden scrollbar-hidden overflow-y-auto flex-1">
-                    {activeFilter === "today" || activeFilter === "tomorrow" ? (
+            {filteredAppointments ? (
+                <div className="overflow-hidden scrollbar-hidden overflow-y-auto overflow-x-auto flex-1">
+                    {activeFilter === "history" ? (
+                        <ScheduleHistory
+                            appointments={filteredAppointments}
+                            onSessionClick={onSessionClick}
+                        />
+                    ) : activeFilter === "today" ||
+                      activeFilter === "tomorrow" ? (
                         <DailySchedule
-                            appointments={appointmentList}
-                            onAppointmentClick={onAppointmentClick}
+                            appointments={filteredAppointments}
+                            onSessionClick={onSessionClick}
                             isToday={activeFilter === "today"}
                         />
                     ) : activeFilter === "week" ? (
                         <WeeklySchedule
-                            appointments={appointmentList}
-                            onAppointmentClick={onAppointmentClick}
+                            appointments={filteredAppointments}
+                            onSessionClick={onSessionClick}
                         />
                     ) : activeFilter === "month" ? (
                         <MonthlySchedule
-                            appointments={appointmentList}
-                            onAppointmentClick={onAppointmentClick}
+                            appointments={filteredAppointments}
+                            onSessionClick={onSessionClick}
                         />
                     ) : (
                         <p>
@@ -72,6 +81,7 @@ export function DashboardSchedule() {
             )}
 
             {isSingleAppointmentModalOpen && <AppointmentInfoModal />}
+            {isFilterByTimespanModalOpen && <TimespanModal />}
         </DashboardTemplate>
     )
 }

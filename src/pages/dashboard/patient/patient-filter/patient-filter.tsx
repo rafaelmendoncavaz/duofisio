@@ -1,9 +1,9 @@
 import { UserPlus, UserSearch, User, Phone, IdCard } from "lucide-react"
-import { Input } from "../global/input"
-import { useModal, useSearchFilter } from "../../store/store"
+import { Input } from "../../../../components/global/input"
+import { useModal, useSearchFilter } from "../../../../store/store"
 import { useState } from "react"
 
-export function SearchFilter() {
+export function PatientFilter() {
     const { openCreatePatientModal } = useModal()
     const { setSearchName, setSearchPhone, setSearchCPF } = useSearchFilter()
 
@@ -45,7 +45,9 @@ export function SearchFilter() {
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h1 className="font-bold text-2xl">Lista de Pacientes</h1>
+                <h1 className="font-bold text-2xl text-fisiogray">
+                    Lista de Pacientes
+                </h1>
                 <button
                     onClick={openCreatePatientModal}
                     type="button"
@@ -61,7 +63,7 @@ export function SearchFilter() {
                     <UserSearch size={20} />
                     <label
                         htmlFor="search-name"
-                        className="font-semibold text-lg"
+                        className="font-semibold text-lg text-fisiogray"
                     >
                         Pesquisar
                     </label>

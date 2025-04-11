@@ -1,4 +1,3 @@
-// schedule-list/monthly-schedule.tsx
 import { useState } from "react"
 import {
     format,
@@ -12,20 +11,38 @@ import {
 } from "date-fns"
 import type { TypeAppointmentList } from "../../../../types/types"
 import { DayDetailSchedule } from "./day-detail-schedule"
+import { ArrowLeftCircle, ArrowRightCircle } from "lucide-react"
+import { useAPI } from "../../../../store/store"
 
-type MonthlyScheduleProps = {
+interface MonthlyScheduleProps {
     appointments: TypeAppointmentList[]
-    onAppointmentClick: (appointment: TypeAppointmentList) => void
+    onSessionClick: (sessionId: string, appointmentId: string) => void
 }
 
 export function MonthlySchedule({
     appointments,
-    onAppointmentClick,
+    onSessionClick,
 }: MonthlyScheduleProps) {
     const [selectedDay, setSelectedDay] = useState<Date | null>(null)
+    const { setActiveFilter, prevMonth, currentMonth, nextMonth } = useAPI()
 
-    const start = startOfMonth(new Date())
-    const end = endOfMonth(new Date())
+    // Extrair todas as sessões dos agendamentos
+    const allSessions = appointments.flatMap(appointment =>
+        appointment.sessions.map(session => ({
+            sessionId: session.id,
+            appointmentId: appointment.id,
+            appointmentDate: new Date(session.appointmentDate),
+            duration: session.duration,
+            status: session.status,
+            patientName: appointment.patient.name,
+            cid: appointment.appointmentReason.cid,
+            sessionNumber: session.sessionNumber,
+            totalSessions: appointment.totalSessions,
+        }))
+    )
+
+    const start = startOfMonth(currentMonth)
+    const end = endOfMonth(currentMonth)
     const days = eachDayOfInterval({ start, end })
     const firstDayOfWeek = startOfWeek(start, { weekStartsOn: 0 }) // Domingo
     const weekDays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"]
@@ -42,7 +59,7 @@ export function MonthlySchedule({
         "Outubro",
         "Novembro",
         "Dezembro",
-    ][getMonth(new Date())]
+    ][getMonth(currentMonth)]
 
     const paddingDays = Array.from(
         { length: (start.getDay() + 7) % 7 },
@@ -50,26 +67,60 @@ export function MonthlySchedule({
     )
 
     if (selectedDay) {
-        const dayAppointments = appointments.filter(
-            a =>
-                format(new Date(a.appointmentDate), "yyyy-MM-dd") ===
-                format(selectedDay, "yyyy-MM-dd")
+        // Filtrar agendamentos que têm sessões no dia selecionado
+        const dayAppointments = appointments.filter(appointment =>
+            appointment.sessions.some(
+                session =>
+                    format(new Date(session.appointmentDate), "yyyy-MM-dd") ===
+                    format(selectedDay, "yyyy-MM-dd")
+            )
         )
         return (
             <DayDetailSchedule
                 appointments={dayAppointments}
                 selectedDay={selectedDay}
                 onBack={() => setSelectedDay(null)}
-                onAppointmentClick={onAppointmentClick}
+                onSessionClick={onSessionClick}
             />
         )
     }
 
+    const handlePreviousMonth = () => {
+        prevMonth()
+        setActiveFilter("month")
+    }
+
+    const handleNextMonth = () => {
+        nextMonth()
+        setActiveFilter("month")
+    }
+
     return (
-        <div className="mt-2">
-            <h2 className="text-xl font-semibold mb-2">
-                {month}, {getYear(new Date())}
-            </h2>
+        <div className="mt-2 space-y-2">
+            <div className="flex items-center justify-between">
+                <h2 className="text-xl text-fisiogray font-semibold mb-2">
+                    {month}, {getYear(currentMonth)}
+                </h2>
+                <div className="flex items-center gap-2">
+                    <button
+                        type="button"
+                        className="flex items-center gap-2 rounded-md bg-fisioblue hover:bg-fisioblue2 px-3 py-1 text-slate-100 font-semibold"
+                        onClick={handlePreviousMonth}
+                    >
+                        <ArrowLeftCircle size={20} />
+                        Mês Anterior
+                    </button>
+                    <button
+                        type="button"
+                        className="flex items-center gap-2 rounded-md bg-fisioblue hover:bg-fisioblue2 px-3 py-1 text-slate-100 font-semibold"
+                        onClick={handleNextMonth}
+                    >
+                        <ArrowRightCircle size={20} />
+                        Próximo Mês
+                    </button>
+                </div>
+            </div>
+
             <div className="grid grid-cols-7 gap-2 text-center font-semibold mb-2">
                 {weekDays.map(day => (
                     <div
@@ -84,31 +135,28 @@ export function MonthlySchedule({
                 {paddingDays.map(day => (
                     <div
                         key={day.toISOString()}
-                        className="border p-2 min-h-[100px] bg-gray-100"
+                        className="border p-2 min-h-[100px] bg-gray-200"
                     />
                 ))}
                 {days.map(day => {
-                    const dayAppointments = appointments.filter(
-                        a =>
-                            format(
-                                new Date(a.appointmentDate),
-                                "yyyy-MM-dd"
-                            ) === format(day, "yyyy-MM-dd")
+                    const daySessions = allSessions.filter(
+                        session =>
+                            format(session.appointmentDate, "yyyy-MM-dd") ===
+                            format(day, "yyyy-MM-dd")
                     )
                     return (
                         <button
                             type="button"
                             key={day.toISOString()}
                             onClick={() => setSelectedDay(day)}
-                            className="flex flex-col justify-between border p-2 min-h-[100px] hover:bg-fisioblue hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-fisioblue2"
+                            className="flex flex-col justify-between border p-2 min-h-[100px] bg-yellow-50 hover:bg-fisioblue hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-fisioblue2"
                         >
                             <p className="font-semibold text-start">
                                 {format(day, "d")}
                             </p>
-                            {dayAppointments.length > 0 && (
-                                <p className="mt-1 text-xs font-semibold text-center bg-fisioblue text-white rounded-md p-[2px]">
-                                    {dayAppointments.length} agendamento
-                                    {dayAppointments.length > 1 ? "s" : ""}
+                            {daySessions.length > 0 && (
+                                <p className="mt-1 text-xs font-semibold text-center bg-blue-100 text-blue-800 rounded-md p-[2px]">
+                                    {`${daySessions.length} ${daySessions.length > 1 ? "sessões" : "sessão"}`}
                                 </p>
                             )}
                         </button>

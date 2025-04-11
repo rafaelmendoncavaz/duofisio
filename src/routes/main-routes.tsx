@@ -8,7 +8,7 @@ import { Login } from "../components/login/login"
 import { RestrictRoutes } from "./restrict-routes"
 import { DashboardPatients } from "../pages/dashboard/patient/patient"
 import { DashboardSchedule } from "../pages/dashboard/schedule/schedule"
-import { DashboardHome } from "../pages/dashboard/dashboard-home"
+import { DashboardHome } from "../components/dashboard/dashboard-home"
 
 export function MainRoutes() {
     return (

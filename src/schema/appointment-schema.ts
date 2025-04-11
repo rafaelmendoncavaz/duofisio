@@ -24,7 +24,7 @@ export const createAppointmentSchema = z.object({
                     "Os dias da semana devem ser de 0 a 6 (domingo a sábado)"
                 )
         )
-        .min(1, "Selecione pelo menos um dia da semana"),
+        .optional(),
     patientId: z.string().uuid("ID do paciente deve ser um UUID"),
     employeeId: z.string().uuid("ID do funcionário deve ser um UUID"),
     clinicalRecordId: z
@@ -89,23 +89,22 @@ export const getSinglePatientAppointments = z.object({
         totalSessions: z.number(),
         createdAt: z.date(),
         updatedAt: z.date(),
-    }),
-    patient: z.object({
-        patientId: z.string().uuid("ID do paciente deve ser um UUID"),
-        name: z.string(),
-        phone: z.string().nullable(),
-        email: z.string().email().nullable(),
-    }),
-    employee: z.object({
-        employeeId: z.string().uuid("ID do funcionário deve ser um UUID"),
-        employeeName: z.string(),
-    }),
-
-    appointmentReason: z.object({
-        id: z.string().uuid(),
-        cid: z.string(),
-        allegation: z.string(),
-        diagnosis: z.string(),
+        patient: z.object({
+            patientId: z.string().uuid("ID do paciente deve ser um UUID"),
+            name: z.string(),
+            phone: z.string().nullable(),
+            email: z.string().email().nullable(),
+        }),
+        employee: z.object({
+            employeeId: z.string().uuid("ID do funcionário deve ser um UUID"),
+            employeeName: z.string(),
+        }),
+        appointmentReason: z.object({
+            id: z.string().uuid(),
+            cid: z.string(),
+            allegation: z.string(),
+            diagnosis: z.string(),
+        }),
     }),
 })
 
@@ -130,7 +129,13 @@ export const repeatAppointmentSchema = z.object({
 
 // Atualizar Agendamento Específico (alinhado com backend updateAppointmentSchema)
 export const updateAppointmentSchema = z.object({
-    appointmentDate: z.string().datetime({ offset: true }).optional(),
+    appointmentDate: z
+        .preprocess(
+            val =>
+                typeof val === "string" ? new Date(val).toISOString() : val,
+            z.string().datetime({ message: "Formato de data inválido" })
+        )
+        .optional(),
     duration: z
         .number()
         .min(30, "A duração mínima é 30 minutos")

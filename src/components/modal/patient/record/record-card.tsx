@@ -13,7 +13,7 @@ export function RecordCard({
 }: RecordCardProps) {
     return (
         <li
-            className="border border-fisioblue rounded-md shadow-shape p-2 hover:bg-fisioblue hover:text-slate-100 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-fisioblue2"
+            className="border border-red-800 bg-red-100 text-red-800 rounded-md shadow-shape p-2 hover:bg-red-800 hover:text-red-100 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-900"
             onClick={() => handleClick(patientId, record.id)}
             onKeyDown={e =>
                 e.key === "Enter" && handleClick(patientId, record.id)
@@ -22,7 +22,7 @@ export function RecordCard({
             // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: <explanation>
             // biome-ignore lint/a11y/useSemanticElements: <explanation>
             role="button"
-            aria-label={`Ver detalhes do registro ${record.cid}`}
+            title={`Ver detalhes do registro ${record.cid}`}
         >
             <h1 className="font-medium truncate">
                 <span className="font-bold">CID: </span>

@@ -2,32 +2,16 @@ import { useForm } from "react-hook-form"
 import { useAPI, useModal } from "../../../store/store"
 import type { TypeUpdatePatient } from "../../../types/types"
 import { useState } from "react"
-import {
-    CalendarPlus,
-    Hospital,
-    UserRoundPen,
-    UserRoundX,
-    X,
-} from "lucide-react"
-import { CreateRecord } from "../../modal/patient/record/create-record"
+import { Hospital, UserRoundPen, UserRoundX, X } from "lucide-react"
 import { EditPatientForm } from "../../forms/edit-patient-form"
-import { CreateAppointmentForm } from "../../forms/create-appointment-form"
+import { PatientHistory } from "./patient-history"
 
 export function PatientInfo() {
-    const {
-        patientData,
-        getClinicalRecords,
-        deletePatient,
-        clinicalRecord,
-        clinicalRecords,
-        clearRecords,
-    } = useAPI()
+    const { patientData, deletePatient } = useAPI()
     const { closeModal } = useModal()
     const [isEditing, setIsEditing] = useState(false)
 
     const [isClinicalHistoryOpen, setIsClinicalHistoryOpen] = useState(false)
-    const [isCreateAppointmentOpen, setIsCreateAppointmentOpen] =
-        useState(false)
 
     const { reset } = useForm<TypeUpdatePatient>()
 
@@ -42,25 +26,8 @@ export function PatientInfo() {
         }
     }
 
-    const openClinicalHistory = async () => {
-        if (!isClinicalHistoryOpen) {
-            if (!patientData?.id) return
-            await getClinicalRecords(patientData.id)
-            setIsClinicalHistoryOpen(true)
-        }
-    }
-
-    const openCreateAppointment = async () => {
-        if (!isCreateAppointmentOpen) {
-            if (!patientData?.id) return
-            await getClinicalRecords(patientData.id)
-            setIsCreateAppointmentOpen(true)
-        }
-    }
-
-    const closeCreateAppointment = () => {
-        clearRecords()
-        setIsCreateAppointmentOpen(false)
+    const openClinicalHistory = () => {
+        setIsClinicalHistoryOpen(true)
     }
 
     const toggleEdit = () => {
@@ -77,67 +44,51 @@ export function PatientInfo() {
     }
 
     return (
-        <div className="w-full flex flex-col items-center gap-2">
+        <div className="w-full flex flex-col items-center gap-2 text-fisiogray">
             <div className="max-h-[70vh] w-full overflow-hidden scrollbar-hidden overflow-y-auto space-y-6">
-                <div className="flex items-center justify-between">
-                    {clinicalRecord || clinicalRecords ? null : (
+                {isClinicalHistoryOpen ? null : (
+                    <div className="flex items-center justify-between">
                         <p className="text-sm">
                             <span className="font-bold text-red-500">*</span>{" "}
                             indica campos obrigatórios
                         </p>
-                    )}
 
-                    {isClinicalHistoryOpen || isCreateAppointmentOpen ? null : (
-                        <>
-                            <div className="flex items-center gap-4">
-                                <button
-                                    title="Criar Agendamento"
-                                    onClick={openCreateAppointment}
-                                    type="button"
-                                    className="rounded-md bg-emerald-800 text-slate-100 hover:bg-emerald-900 p-2"
-                                >
-                                    <CalendarPlus size={20} />
-                                </button>
-                                <button
-                                    title="Abrir Histórico Clínico"
-                                    onClick={openClinicalHistory}
-                                    type="button"
-                                    className="rounded-md bg-fisioblue text-slate-100 hover:bg-sky-900 p-2"
-                                >
-                                    <Hospital size={20} />
-                                </button>
-                                <button
-                                    title="Editar Paciente"
-                                    type="button"
-                                    onClick={toggleEdit}
-                                    className={`rounded-md p-2 text-white ${isEditing ? "bg-red-500 hover:bg-red-600" : "bg-blue-500 hover:bg-blue-600"}`}
-                                >
-                                    {isEditing ? (
-                                        <X size={20} />
-                                    ) : (
-                                        <UserRoundPen size={20} />
-                                    )}
-                                </button>
-                                <button
-                                    title="Deletar Paciente"
-                                    type="button"
-                                    onClick={handleDelete}
-                                    className="rounded-md bg-red-600 text-white p-2 hover:bg-red-700"
-                                >
-                                    <UserRoundX size={20} />
-                                </button>
-                            </div>
-                        </>
-                    )}
-                </div>
+                        <div className="flex items-center gap-4">
+                            <button
+                                title="Abrir Histórico Clínico"
+                                onClick={openClinicalHistory}
+                                type="button"
+                                className="rounded-md  bg-emerald-800 text-slate-100 hover:bg-emerald-900 p-2"
+                            >
+                                <Hospital size={20} />
+                            </button>
+                            <button
+                                title="Editar Paciente"
+                                type="button"
+                                onClick={toggleEdit}
+                                className={`rounded-md p-2 text-white ${isEditing ? "bg-red-500 hover:bg-red-600" : "bg-blue-500 hover:bg-blue-600"}`}
+                            >
+                                {isEditing ? (
+                                    <X size={20} />
+                                ) : (
+                                    <UserRoundPen size={20} />
+                                )}
+                            </button>
+                            <button
+                                title="Deletar Paciente"
+                                type="button"
+                                onClick={handleDelete}
+                                className="rounded-md bg-red-600 text-white p-2 hover:bg-red-700"
+                            >
+                                <UserRoundX size={20} />
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {isClinicalHistoryOpen ? (
-                    <CreateRecord
+                    <PatientHistory
                         setIsClinicalHistoryOpen={setIsClinicalHistoryOpen}
-                    />
-                ) : isCreateAppointmentOpen ? (
-                    <CreateAppointmentForm
-                        closeCreateAppointment={closeCreateAppointment}
                     />
                 ) : (
                     <EditPatientForm

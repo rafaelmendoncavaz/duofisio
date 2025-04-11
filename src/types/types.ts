@@ -25,7 +25,7 @@ export type TypeCep = z.infer<typeof cep>
 export type AddressSchema = z.infer<typeof addressSchema>
 export type TypeCreateRecord = z.infer<typeof createRecordSchema>
 export type TypeCreateAppointment = z.infer<typeof createAppointmentSchema>
-export type TypeAppointment = z.infer<typeof getSinglePatientAppointments>
+export type TypeSession = z.infer<typeof getSinglePatientAppointments>
 export type TypeAppointmentRepeat = z.infer<typeof repeatAppointmentSchema>
 export type TypeAppointmentUpdate = z.infer<typeof updateAppointmentSchema>
 export type TypeAppointmentList = z.infer<typeof appointmentListSchema>
@@ -49,18 +49,7 @@ export interface TypeClinicalRecord {
     clinicalRecordList: ClinicalData[]
 }
 
-// Modal
-export interface TypeModal {
-    closeModal: () => void
-    isCreatePatientModalOpen: boolean
-    isSinglePatientModalOpen: boolean
-    isSingleAppointmentModalOpen: boolean
-    openCreatePatientModal: () => void
-    openSinglePatientModal: () => void
-    openSingleAppointmentModal: () => void
-}
-
-// SearchFilter
+// PatientFilter
 export interface TypeSearchFilter {
     searchName: string
     searchPhone: string
@@ -70,26 +59,35 @@ export interface TypeSearchFilter {
     setSearchCPF: (cpf: string) => void
 }
 
-// QueryFilter
-export interface QueryFilter {
-    filter?: "today" | "tomorrow" | "week" | "month"
-    startDate?: string
-    endDate?: string
-}
-
 export interface TypeUser {
     id: string
     name: string
     appointments: {
         id: string
+        totalSessions: number
         patient: { id: string; name: string }
+        clinicalRecord: { cid: string }
         sessions: {
             id: string
             sessionNumber: number
             appointmentDate: string
+            duration: number
             status: "SOLICITADO" | "CONFIRMADO" | "CANCELADO" | "FINALIZADO"
         }[]
     }[]
+}
+
+// Modal
+export interface TypeModal {
+    closeModal: () => void
+    isCreatePatientModalOpen: boolean
+    isSinglePatientModalOpen: boolean
+    isSingleAppointmentModalOpen: boolean
+    isFilterByTimespanModalOpen: boolean
+    openCreatePatientModal: () => void
+    openSinglePatientModal: () => void
+    openSingleAppointmentModal: () => void
+    openFilterByTimespanModal: () => void
 }
 
 export interface TypeAPI {
@@ -97,13 +95,12 @@ export interface TypeAPI {
     error: string | null
     token: string | null // Token é string ou null
     user: TypeUser | null // Reflete o retorno de /auth/verify
-    activeFilter: "today" | "tomorrow" | "week" | "month" | null
-    employees:
-        | {
-              name: string
-              id: string
-          }[]
-        | null
+    employees: { name: string; id: string }[] | null
+    activeFilter: "history" | "today" | "tomorrow" | "week" | "month" | null
+    startDate: string | number | Date
+    endDate: string | number | Date
+    currentWeek: string | number | Date
+    currentMonth: string | number | Date
 
     // Armazenamento de Requisições
     patientList: TypePatientList[]
@@ -111,7 +108,24 @@ export interface TypeAPI {
     clinicalRecords: TypeClinicalRecord | null
     clinicalRecord: ClinicalData | null
     appointmentList: TypeAppointmentList[] | null
-    appointmentData: TypeAppointment | null
+    filteredAppointments: TypeAppointmentList[] | null
+    selectedAppointmentData: TypePatient["appointments"][0] | null
+    sessionData: TypeSession | null
+
+    // Funções de controle de estado
+    setSelectedAppointmentData: (
+        appointment: TypePatient["appointments"][0]
+    ) => void
+    clearSelectedAppointmentData: () => void
+    setActiveFilter: (filter: TypeAPI["activeFilter"]) => void
+    setDateRangeFilter: (
+        startDate: TypeAPI["startDate"],
+        endDate: TypeAPI["endDate"]
+    ) => void
+    prevWeek: () => void
+    nextWeek: () => void
+    prevMonth: () => void
+    nextMonth: () => void
 
     // Funções de limpeza
     clearRecords: () => void
@@ -168,13 +182,10 @@ export interface TypeAPI {
         status?: number
         error?: unknown
     }>
-    getAppointments: (
-        filterParams?: QueryFilter
-    ) => Promise<{ success: boolean; error?: unknown }>
-    setActiveFilter: (filter: TypeAPI["activeFilter"]) => void
+    getAppointments: () => Promise<{ success: boolean; error?: unknown }>
     getSingleAppointment: (appointmentId: string) => Promise<{
         success: boolean
-        session?: TypeAppointment
+        session?: TypeSession
         error?: unknown
     }>
     repeatAppointment: (

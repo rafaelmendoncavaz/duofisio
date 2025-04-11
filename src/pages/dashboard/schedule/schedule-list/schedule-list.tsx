@@ -3,20 +3,44 @@ import { ScheduleCard } from "./schedule-card/schedule-card"
 
 interface AppointmentListProps {
     appointments: TypeAppointmentList[]
-    onAppointmentClick: (appointment: TypeAppointmentList) => void
+    onSessionClick: (sessionId: string, appointmentId: string) => void
 }
 
 export function ScheduleList({
     appointments,
-    onAppointmentClick,
+    onSessionClick,
 }: AppointmentListProps) {
+    // Extrair todas as sessões dos agendamentos
+    const allSessions = appointments
+        .flatMap(appointment =>
+            appointment.sessions.map(session => ({
+                sessionId: session.id,
+                appointmentId: appointment.id,
+                appointmentDate: new Date(session.appointmentDate),
+                duration: session.duration,
+                status: session.status,
+                patientName: appointment.patient.name,
+                cid: appointment.appointmentReason.cid,
+                sessionNumber: session.sessionNumber,
+                totalSessions: appointment.totalSessions,
+            }))
+        )
+        .sort((a, b) => a.patientName.localeCompare(b.patientName))
+
     return (
         <ul className="grid grid-cols-5 grid-rows-4 gap-4">
-            {appointments.map(appointment => (
+            {allSessions.map(session => (
                 <ScheduleCard
-                    key={appointment.id}
-                    appointment={appointment}
-                    onAppointmentClick={onAppointmentClick}
+                    key={session.sessionId}
+                    sessionId={session.sessionId}
+                    appointmentId={session.appointmentId}
+                    patientName={session.patientName}
+                    status={session.status}
+                    cid={session.cid}
+                    appointmentDate={session.appointmentDate.toISOString()}
+                    sessionNumber={session.sessionNumber}
+                    totalSessions={session.totalSessions}
+                    onSessionClick={onSessionClick}
                 />
             ))}
         </ul>

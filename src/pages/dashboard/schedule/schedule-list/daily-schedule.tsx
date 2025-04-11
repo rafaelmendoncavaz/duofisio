@@ -1,4 +1,3 @@
-// schedule-list/daily-schedule.tsx
 import { useState, useEffect } from "react"
 import { format, addMinutes, isBefore, set } from "date-fns"
 import type { TypeAppointmentList } from "../../../../types/types"
@@ -6,18 +5,17 @@ import { ScheduleCard } from "./schedule-card/schedule-card"
 
 type DailyScheduleProps = {
     appointments: TypeAppointmentList[]
-    onAppointmentClick: (appointment: TypeAppointmentList) => void
+    onSessionClick: (sessionId: string, appointmentId: string) => void
     isToday: boolean
 }
 
 export function DailySchedule({
     appointments,
-    onAppointmentClick,
+    onSessionClick,
     isToday,
 }: DailyScheduleProps) {
     const [currentTime, setCurrentTime] = useState(() => {
         const now = new Date()
-        // Forçar UTC-3 independentemente do fuso do navegador
         return new Date(
             now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" })
         )
@@ -39,9 +37,24 @@ export function DailySchedule({
         }
     }, [isToday])
 
-    // Definir o início como 06:00 e o fim como 20:00 no dia base, já em UTC-3
-    const baseDate = appointments.length
-        ? new Date(appointments[0].appointmentDate) // Já vem em UTC-3 do backend
+    // Extrair todas as sessões dos agendamentos
+    const allSessions = appointments.flatMap(appointment =>
+        appointment.sessions.map(session => ({
+            sessionId: session.id,
+            appointmentId: appointment.id,
+            appointmentDate: new Date(session.appointmentDate),
+            duration: session.duration,
+            status: session.status,
+            patientName: appointment.patient.name,
+            cid: appointment.appointmentReason.cid,
+            sessionNumber: session.sessionNumber,
+            totalSessions: appointment.totalSessions,
+        }))
+    )
+
+    // Definir o início como 06:00 e o fim como 20:00 no dia base, em UTC-3
+    const baseDate = allSessions.length
+        ? new Date(allSessions[0].appointmentDate)
         : new Date(
               new Date().toLocaleString("en-US", {
                   timeZone: "America/Sao_Paulo",
@@ -73,9 +86,9 @@ export function DailySchedule({
             <div className="relative">
                 {intervals.map((time, index) => (
                     <div
-                        // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                        // biome-ignore lint/suspicious/noArrayIndexKey: Intervalos fixos de tempo
                         key={index}
-                        className="h-16 border-b text-right pr-2 pt-2 text-sm"
+                        className="h-[80px] border-b text-right pr-2 pt-2 text-sm"
                     >
                         {format(time, "HH:mm")}
                     </div>
@@ -87,9 +100,9 @@ export function DailySchedule({
                             top: `${
                                 ((currentTime.getHours() * 60 +
                                     currentTime.getMinutes() -
-                                    360) / // 360 minutos = 06:00
+                                    360) /
                                     30) *
-                                64
+                                80
                             }px`,
                         }}
                     />
@@ -99,27 +112,37 @@ export function DailySchedule({
             {/* Cards */}
             <div>
                 {intervals.map((time, index) => {
-                    const slotAppointments = appointments.filter(a => {
-                        const apptTime = new Date(a.appointmentDate) // Já em UTC-3 do backend
+                    const slotSessions = allSessions.filter(session => {
+                        const sessionTime = new Date(session.appointmentDate)
                         return (
-                            !isBefore(apptTime, time) &&
-                            isBefore(apptTime, addMinutes(time, 30))
+                            !isBefore(sessionTime, time) &&
+                            isBefore(sessionTime, addMinutes(time, 30))
                         )
                     })
                     return (
-                        <ul
-                            // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                        <div
+                            // biome-ignore lint/suspicious/noArrayIndexKey: Intervalos fixos de tempo
                             key={index}
-                            className="h-16 border-b flex gap-2 items-start pt-2"
+                            className="h-[80px] border-b flex gap-2 items-start pt-1"
                         >
-                            {slotAppointments.map(appt => (
-                                <ScheduleCard
-                                    key={appt.id}
-                                    appointment={appt}
-                                    onAppointmentClick={onAppointmentClick}
-                                />
+                            {slotSessions.map(session => (
+                                <ul
+                                    key={session.sessionId}
+                                    className="flex-1 min-w-[60px] max-w-52"
+                                >
+                                    <ScheduleCard
+                                        sessionId={session.sessionId}
+                                        appointmentId={session.appointmentId}
+                                        patientName={session.patientName}
+                                        status={session.status}
+                                        cid={session.cid}
+                                        sessionNumber={session.sessionNumber}
+                                        totalSessions={session.totalSessions}
+                                        onSessionClick={onSessionClick}
+                                    />
+                                </ul>
                             ))}
-                        </ul>
+                        </div>
                     )
                 })}
             </div>

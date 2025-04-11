@@ -1,14 +1,12 @@
 import { useState } from "react"
-import { useAPI } from "../../../../store/store"
 import { CreateRecordForm } from "../../../forms/create-record-form"
 import { RecordHistory } from "./record-history"
 
 interface CreateRecordProps {
-    setIsClinicalHistoryOpen: (isOpen: boolean) => void
+    setClinicalHistory: (isOpen: boolean) => void
 }
 
-export function CreateRecord({ setIsClinicalHistoryOpen }: CreateRecordProps) {
-    const { clearRecords } = useAPI()
+export function CreateRecord({ setClinicalHistory }: CreateRecordProps) {
     const [isCreateRecord, setIsCreateRecord] = useState(false)
 
     const openCreateRecord = () => setIsCreateRecord(true)
@@ -16,8 +14,7 @@ export function CreateRecord({ setIsClinicalHistoryOpen }: CreateRecordProps) {
     const closeCreateRecord = () => setIsCreateRecord(false)
 
     const closeClinicalHistory = () => {
-        clearRecords()
-        setIsClinicalHistoryOpen(false)
+        setClinicalHistory(false)
     }
 
     return (

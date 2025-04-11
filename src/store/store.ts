@@ -10,23 +10,99 @@ import type {
     TypeCreateAppointment,
     TypeAppointmentUpdate,
     TypeAppointmentRepeat,
+    TypeAppointmentList,
 } from "../types/types"
 import { api } from "../api/api"
+import {
+    addDays,
+    endOfDay,
+    startOfDay,
+    startOfWeek,
+    endOfWeek,
+    startOfMonth,
+    endOfMonth,
+    isWithinInterval,
+    addMonths,
+    subMonths,
+    addWeeks,
+    subWeeks,
+} from "date-fns"
+
+// Função auxiliar para aplicar o filtro
+function applyFilter(
+    appointments: TypeAppointmentList[] | null,
+    filter: string | null,
+    state: TypeAPI
+) {
+    if (!appointments || !filter) return null
+
+    const now = new Date(new Date().getTime() - 3 * 60 * 60 * 1000)
+    let start: Date
+    let end: Date
+
+    switch (filter) {
+        case "history":
+            start = startOfDay(state.startDate)
+            end = endOfDay(state.endDate)
+            break
+        case "today":
+            start = startOfDay(now)
+            end = endOfDay(now)
+            break
+        case "tomorrow":
+            start = startOfDay(addDays(now, 1))
+            end = endOfDay(addDays(now, 1))
+            break
+        case "week":
+            start = startOfWeek(state.currentWeek)
+            end = endOfWeek(state.currentWeek)
+            break
+        case "month":
+            start = startOfMonth(state.currentMonth)
+            end = endOfMonth(state.currentMonth)
+            break
+        default:
+            return null
+    }
+
+    const filteredAppointments = appointments
+        .map(appointment => {
+            const filteredSessions = appointment.sessions.filter(session =>
+                isWithinInterval(new Date(session.appointmentDate), {
+                    start,
+                    end,
+                })
+            )
+            if (filteredSessions.length > 0) {
+                return {
+                    ...appointment,
+                    sessions: filteredSessions,
+                }
+            }
+            return null
+        })
+        .filter(Boolean) as TypeAppointmentList[]
+
+    return filteredAppointments
+}
 
 export const useModal = create<TypeModal>(set => ({
     isCreatePatientModalOpen: false,
     isSinglePatientModalOpen: false,
     isCreateAppointmentModalOpen: false,
     isSingleAppointmentModalOpen: false,
+    isFilterByTimespanModalOpen: false,
     openCreatePatientModal: () => set({ isCreatePatientModalOpen: true }),
     openSinglePatientModal: () => set({ isSinglePatientModalOpen: true }),
     openSingleAppointmentModal: () =>
         set({ isSingleAppointmentModalOpen: true }),
+    openFilterByTimespanModal: () => set({ isFilterByTimespanModalOpen: true }),
     closeModal: () =>
         set({
             isCreatePatientModalOpen: false,
             isSinglePatientModalOpen: false,
             isSingleAppointmentModalOpen: false,
+            isFilterByTimespanModalOpen: false,
         }),
 }))
 
@@ -41,10 +117,18 @@ export const useSearchFilter = create<TypeSearchFilter>(set => ({
 
 export const useAPI = create<TypeAPI>((set, get) => ({
     // Estados
+    error: null,
     token: localStorage.getItem("@authToken") || null,
     user: null,
     employees: null,
-    activeFilter: null,
+    activeFilter: "today",
+    startDate: "",
+    endDate: "",
+    currentWeek: startOfWeek(
+        new Date(new Date().getTime() - 3 * 60 * 60 * 1000),
+        { weekStartsOn: 0 }
+    ),
+    currentMonth: new Date(new Date().getTime() - 3 * 60 * 60 * 1000),
 
     // Armazenamento de requisições
     patientList: [],
@@ -52,15 +136,62 @@ export const useAPI = create<TypeAPI>((set, get) => ({
     clinicalRecords: null,
     clinicalRecord: null,
     appointmentList: null,
-    appointmentData: null,
-    error: null,
+    filteredAppointments: null,
+    selectedAppointmentData: null,
+    sessionData: null,
 
     // Funções de limpeza
     clearRecords: () => set({ clinicalRecords: null }),
     clearRecord: () => set({ clinicalRecord: null }),
-    clearAppointment: () => set({ appointmentData: null }),
+    clearAppointment: () => set({ sessionData: null }),
     clearError: () => set({ error: null }),
     clearToken: () => set({ token: null }),
+
+    // Funções de controle de estado
+    setSelectedAppointmentData: appointment =>
+        set({ selectedAppointmentData: appointment }),
+    clearSelectedAppointmentData: () => set({ selectedAppointmentData: null }),
+    setActiveFilter: filter => {
+        set(state => {
+            const filteredAppointments = applyFilter(
+                state.appointmentList,
+                filter,
+                state
+            )
+
+            return {
+                activeFilter: filter,
+                filteredAppointments,
+            }
+        })
+    },
+    setDateRangeFilter: (startDate, endDate) => {
+        set({ startDate, endDate })
+    },
+
+    prevWeek: () =>
+        set(state => {
+            const newWeek = subWeeks(state.currentWeek, 1)
+            return { currentWeek: newWeek }
+        }),
+
+    nextWeek: () =>
+        set(state => {
+            const newWeek = addWeeks(state.currentWeek, 1)
+            return { currentWeek: newWeek }
+        }),
+
+    prevMonth: () =>
+        set(state => {
+            const newMonth = subMonths(state.currentMonth, 1)
+            return { currentMonth: newMonth }
+        }),
+
+    nextMonth: () =>
+        set(state => {
+            const newMonth = addMonths(state.currentMonth, 1)
+            return { currentMonth: newMonth }
+        }),
 
     // Funções assíncronas
     userLogin: async (loginData: TypeLoginData) => {
@@ -252,6 +383,7 @@ export const useAPI = create<TypeAPI>((set, get) => ({
             return { success: false, error }
         }
     },
+
     createAppointment: async (data: TypeCreateAppointment) => {
         try {
             const token = localStorage.getItem("@authToken")
@@ -274,40 +406,55 @@ export const useAPI = create<TypeAPI>((set, get) => ({
             return { success: false, error }
         }
     },
-    getAppointments: async (filterParams = {}) => {
+
+    getAppointments: async () => {
         try {
             const token = localStorage.getItem("@authToken")
             if (!token) throw new Error("Token não encontrado")
             const { data } = await api.get("/dashboard/appointments", {
                 headers: { Authorization: `Bearer ${token}` },
-                params: filterParams,
             })
-            set({ appointmentList: data.appointments, error: null })
+
+            set(state => {
+                const newAppointmentList = data.appointments
+                const newFilteredAppointments = applyFilter(
+                    newAppointmentList,
+                    state.activeFilter,
+                    state
+                )
+
+                return {
+                    appointmentList: newAppointmentList,
+                    filteredAppointments: newFilteredAppointments,
+                    error: null,
+                }
+            })
             return { success: true }
         } catch (error) {
             set({ error: "Erro ao buscar agendamentos" })
             return { success: false, error }
         }
     },
-    setActiveFilter: filter => set({ activeFilter: filter }),
+
     getSingleAppointment: async (appointmentId: string) => {
         try {
             const token = localStorage.getItem("@authToken")
             if (!token) throw new Error("Token não encontrado")
-            set({ appointmentData: null })
+            set({ sessionData: null })
             const { data } = await api.get(
                 `/dashboard/appointments/${appointmentId}`,
                 {
                     headers: { Authorization: `Bearer ${token}` },
                 }
             )
-            set({ appointmentData: data.session, error: null })
+            set({ sessionData: data.session, error: null })
             return { success: true, appointment: data.session }
         } catch (error) {
             set({ error: "Erro ao buscar agendamento" })
             return { success: false, error }
         }
     },
+
     repeatAppointment: async (
         data: TypeAppointmentRepeat,
         appointmentId: string
@@ -329,6 +476,7 @@ export const useAPI = create<TypeAPI>((set, get) => ({
             return { success: false, error }
         }
     },
+
     updateAppointment: async (
         data: TypeAppointmentUpdate,
         appointmentId: string
@@ -350,6 +498,7 @@ export const useAPI = create<TypeAPI>((set, get) => ({
             return { success: false, error }
         }
     },
+
     deleteAppointment: async (appointmentId: string) => {
         try {
             const token = localStorage.getItem("@authToken")

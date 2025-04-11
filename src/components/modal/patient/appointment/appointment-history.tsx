@@ -1,76 +1,121 @@
 import { ArrowLeftCircle, ClipboardPlus } from "lucide-react"
 import { useAPI } from "../../../../store/store"
-import { RecordList } from "./record-list"
-import { RecordInfo } from "./record-info"
+import { AppointmentList } from "./appointment-list"
 import { useState } from "react"
 import ReactPaginate from "react-paginate"
+import { AppointmentInfo } from "./appointment-info"
+import type { TypePatient } from "../../../../types/types"
+import { CreateAppointmentForm } from "../../../forms/create-appointment-form"
 
-interface RecordHistoryProps {
-    closeClinicalHistory: () => void
-    openCreateRecord: () => void
+interface AppointmentHistoryProps {
+    appointmentHistory: boolean
+    setAppointmentHistory: (isOpen: boolean) => void
 }
 
-export function RecordHistory({
-    closeClinicalHistory,
-    openCreateRecord,
-}: RecordHistoryProps) {
-    const { clinicalRecords, clinicalRecord, getSingleClinicalRecord } =
-        useAPI()
+export function AppointmentHistory({
+    appointmentHistory,
+    setAppointmentHistory,
+}: AppointmentHistoryProps) {
+    const {
+        patientData,
+        getClinicalRecords,
+        clinicalRecords,
+        selectedAppointmentData,
+        setSelectedAppointmentData,
+        clearSelectedAppointmentData,
+    } = useAPI()
+
+    if (!patientData) {
+        return <p>Dados do paciente não encontrados</p>
+    }
+
+    const [isCreateAppointmentOpen, setIsCreateAppointmentOpen] =
+        useState(false)
+    const [isSelectedAppointmentOpen, setIsSelectedAppointmentOpen] =
+        useState(false)
+
     const [page, setPage] = useState(0)
     const itemsPerPage = 4
     const pageCount = Math.ceil(
-        (clinicalRecords?.clinicalRecordList.length || 0) / itemsPerPage
+        (patientData.appointments.length || 0) / itemsPerPage
     )
-    const paginatedRecords =
-        clinicalRecords?.clinicalRecordList.slice(
+    const paginatedAppointments =
+        patientData.appointments.slice(
             page * itemsPerPage,
             (page + 1) * itemsPerPage
         ) || []
 
-    const handleRecordClick = async (patientId: string, recordId: string) => {
-        await getSingleClinicalRecord(patientId, recordId)
+    const setAppointmentData = (
+        appointment: TypePatient["appointments"][0]
+    ) => {
+        setIsSelectedAppointmentOpen(true)
+        setSelectedAppointmentData(appointment)
+    }
+
+    const clearAppointmentData = () => {
+        setIsSelectedAppointmentOpen(false)
+        clearSelectedAppointmentData()
+    }
+
+    const openCreateAppointmentForm = async () => {
+        if (!clinicalRecords) {
+            await getClinicalRecords(patientData.id)
+        }
+        setIsCreateAppointmentOpen(true)
+    }
+
+    const closeCreateAppointmentForm = () => {
+        setIsCreateAppointmentOpen(false)
+    }
+
+    if (isSelectedAppointmentOpen) {
+        return (
+            <AppointmentInfo
+                appointmentData={selectedAppointmentData}
+                clearAppointmentData={clearAppointmentData}
+            />
+        )
     }
 
     return (
         <section className="flex flex-col gap-4 text-fisiogray">
-            {!clinicalRecord && (
+            {appointmentHistory && !isCreateAppointmentOpen && (
                 <>
-                    <div className="flex flex-col justify-between">
+                    <div className="flex flex-col justify-between gap-2">
                         <div className="flex items-center justify-end gap-2">
                             <button
                                 type="button"
-                                onClick={closeClinicalHistory}
                                 className="flex items-center gap-2 rounded-md bg-fisioblue text-slate-100 hover:bg-fisioblue2 px-3 py-1 shadow-shape font-semibold transition-colors"
+                                onClick={() => setAppointmentHistory(false)}
                             >
                                 <ArrowLeftCircle size={20} />
                                 Voltar
                             </button>
                             <button
                                 type="button"
-                                onClick={openCreateRecord}
                                 className="flex items-center gap-2 rounded-md bg-fisioblue text-slate-100 hover:bg-fisioblue2 px-3 py-1 shadow-shape font-semibold transition-colors"
+                                onClick={openCreateAppointmentForm}
                             >
                                 <ClipboardPlus size={20} />
-                                Novo Registro
+                                Novo Agendamento
                             </button>
                         </div>
 
-                        <div className="flex items-center gap-2">
-                            <ClipboardPlus size={20} color="red" />
+                        <div className="truncate">
                             <h2 className="text-lg font-semibold truncate">
-                                Prontuários de {clinicalRecords?.patientName}
+                                Agendamentos de{" "}
+                                {patientData?.name ?? "Paciente"}
                             </h2>
                         </div>
                     </div>
 
                     <div className="w-full h-px bg-black shadow-shape" />
 
-                    {clinicalRecords?.clinicalRecordList.length ? (
+                    {patientData?.appointments.length ? (
                         <>
-                            <RecordList
-                                records={paginatedRecords}
-                                patientId={clinicalRecords.patientId}
-                                onRecordClick={handleRecordClick}
+                            <AppointmentList
+                                appointments={paginatedAppointments}
+                                setAppointmentData={setAppointmentData}
                             />
                             {pageCount >= 1 && (
                                 <ReactPaginate
@@ -91,12 +136,16 @@ export function RecordHistory({
                         </>
                     ) : (
                         <p className="text-center text-gray-500">
-                            Nenhum registro encontrado.
+                            Nenhum agendamento encontrado.
                         </p>
                     )}
                 </>
             )}
-            {clinicalRecord && <RecordInfo />}
+            {isCreateAppointmentOpen && (
+                <CreateAppointmentForm
+                    closeCreateAppointment={closeCreateAppointmentForm}
+                />
+            )}
         </section>
     )
 }

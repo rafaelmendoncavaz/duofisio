@@ -152,7 +152,9 @@ export function CreatePatientForm() {
                                 {...register("sex")}
                                 className="w-full bg-transparent border rounded-md p-2 focus:border-fisioblue shadow-shape"
                             >
-                                <option value="">Selecione</option>
+                                <option value="" disabled>
+                                    Selecione
+                                </option>
                                 <option value="Masculino">Masculino</option>
                                 <option value="Feminino">Feminino</option>
                             </select>

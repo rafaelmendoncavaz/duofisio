@@ -18,46 +18,50 @@ export function ScheduleInfo() {
     const [isRepeating, setIsRepeating] = useState(false)
 
     const {
-        appointmentData,
+        filteredAppointments,
+        sessionData,
         getAppointments,
         updateAppointment,
         deleteAppointment,
     } = useAPI()
     const { closeModal } = useModal()
 
-    if (!appointmentData) return
+    if (!sessionData) return null
 
     const currentDate = new Date()
-    const appointmentDate = new Date(appointmentData?.appointmentDate)
+    const appointmentDate = new Date(sessionData.appointmentDate)
     const currentAppointment = isBefore(appointmentDate, currentDate)
     const createdAt = format(
-        new Date(appointmentData.createdAt).toISOString().split("T")[0],
+        new Date(sessionData.appointment.createdAt).toISOString().split("T")[0],
         "dd-MM-yyyy"
     )
     const updatedAt = format(
-        new Date(appointmentData.updatedAt).toISOString().split("T")[0],
+        new Date(sessionData.appointment.updatedAt).toISOString().split("T")[0],
         "dd-MM-yyyy"
     )
 
     const formattedPhone =
-        appointmentData?.patient.phone
+        sessionData.appointment.patient.phone
             ?.replace(/(\d{2})(\d)/, "($1) $2")
             .replace(/(\d{5})(\d)/, "$1-$2") || "Não Informado"
 
     const toggleEdit = () => {
-        if (isEditing) {
-            // reset() // Restaura os valores originais ao cancelar
-        }
         setIsEditing(prev => !prev)
     }
 
+    const checkForUnfinishedSessions = filteredAppointments
+        ?.filter(appointment => appointment.id === sessionData.appointment.id)
+        .some(check => {
+            const sessions = check.sessions.some(
+                checkStatus => checkStatus.status !== "FINALIZADO"
+            )
+            return sessions
+        })
+
     const toggleRepeat = () => {
-        if (appointmentData?.status !== "FINALIZADO") {
+        if (checkForUnfinishedSessions) {
             alert("Você só pode repetir atendimentos finalizados!")
             return
-        }
-        if (isRepeating) {
-            // reset() // Restaura os valores originais ao cancelar
         }
         setIsRepeating(prev => !prev)
     }
@@ -65,104 +69,99 @@ export function ScheduleInfo() {
     const terminateAppointment = async () => {
         if (!currentAppointment) return
 
-        const formattedDate = new Date(
-            appointmentData.appointmentDate
-        ).toISOString()
         const updateData: TypeAppointmentUpdate = {
-            appointmentDate: formattedDate,
             status: "FINALIZADO",
         }
 
         const confirmation = window.confirm(
-            "Marcar este agendamento como: FINALIZADO.\nEsta ação não pode ser desfeita!"
+            "Marcar esta sessão como: FINALIZADO.\nEsta ação não pode ser desfeita!"
         )
 
         if (confirmation) {
             const result = await updateAppointment(
                 updateData,
-                appointmentData.id
+                sessionData.id // sessionId
             )
             if (result.success) {
-                await getAppointments() // Atualiza a lista de agendamentos para refletir o novo agendamento
+                await getAppointments() // Atualiza a lista de agendamentos
                 closeModal()
             }
         }
     }
 
     const handleDelete = async () => {
-        if (!appointmentData) return
+        if (!sessionData) return
         const confirmation = window.confirm(
-            "Você está prestes a excluir este agendamento.\nEsta ação não pode ser desfeita!"
+            "Você está prestes a excluir o Agendamento.\nIsto apagará todas as sessões relacionadas! \nEsta ação não pode ser desfeita!"
         )
 
         if (confirmation) {
-            const result = await deleteAppointment(appointmentData.id)
+            const result = await deleteAppointment(sessionData.appointment.id) // appointmentId
             if (result.success) {
-                await getAppointments() // Atualiza a lista de agendamentos para refletir o novo agendamento
+                await getAppointments() // Atualiza a lista de agendamentos
                 closeModal()
             }
         }
     }
 
-    return (
-        <div className="flex flex-col gap-4 py-2 w-full mx-auto">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-lg font-semibold">
-                        Informações do Agendamento
-                    </h1>
-                    <p className="text-xs text-slate-500 italic">
-                        Criado em: {`${createdAt}`}
-                    </p>
-                    <p className="text-xs text-slate-500 italic">
-                        Atualizado em: {`${updatedAt}`}
-                    </p>
-                </div>
-                <div className="flex items-center gap-4">
-                    {currentAppointment &&
-                    appointmentData.status !== "FINALIZADO" ? (
-                        <button
-                            title="Finalizar Agendamento"
-                            type="button"
-                            onClick={terminateAppointment}
-                            className="rounded-md bg-slate-600 text-white p-2 hover:bg-slate-700"
-                        >
-                            <CalendarCheck size={20} />
-                        </button>
-                    ) : null}
-                    <button
-                        title="Repetir Agendamento"
-                        type="button"
-                        onClick={toggleRepeat}
-                        className={`rounded-md p-2 text-white ${isRepeating ? "bg-red-500 hover:bg-red-600" : "bg-emerald-800 hover:bg-emerald-900"}`}
-                    >
-                        {isRepeating ? (
-                            <X size={20} />
-                        ) : (
-                            <CalendarSync size={20} />
-                        )}
-                    </button>
-                    <button
-                        title="Editar Agendamento"
-                        type="button"
-                        onClick={toggleEdit}
-                        className={`rounded-md p-2 text-white ${isEditing ? "bg-red-500 hover:bg-red-600" : "bg-blue-500 hover:bg-blue-600"}`}
-                    >
-                        {isEditing ? (
-                            <X size={20} />
-                        ) : (
-                            <CalendarCog size={20} />
-                        )}
-                    </button>
+    const currentSession = `sessão ${sessionData.sessionNumber} de ${sessionData.appointment.totalSessions}`
 
-                    <button
-                        title="Excluir Agendamento"
-                        type="button"
-                        onClick={handleDelete}
-                        className="rounded-md bg-red-600 text-white p-2 hover:bg-red-700"
-                    >
-                        <CalendarX2 size={20} />
-                    </button>
+    return (
+        <div className="flex flex-col gap-4 py-2 w-full mx-auto max-h-[70vh] overflow-hidden scrollbar-hidden overflow-y-auto">
+            <div className="flex flex-col">
+                <p className="text-xs text-slate-500 italic">
+                    Criado em: {createdAt} | Atualizado em: {updatedAt}
+                </p>
+
+                <div className="flex items-center justify-between">
+                    <h1 className="text-lg font-semibold">
+                        {`Informações do Agendamento: (${currentSession})`}
+                    </h1>
+                    <div className="flex items-center gap-4">
+                        {currentAppointment &&
+                        sessionData.status !== "FINALIZADO" ? (
+                            <button
+                                title="Finalizar Sessão"
+                                type="button"
+                                onClick={terminateAppointment}
+                                className="rounded-md bg-slate-600 text-white p-2 hover:bg-slate-700"
+                            >
+                                <CalendarCheck size={20} />
+                            </button>
+                        ) : null}
+                        <button
+                            title="Repetir Agendamento"
+                            type="button"
+                            onClick={toggleRepeat}
+                            className={`rounded-md p-2 text-white ${isRepeating ? "bg-red-500 hover:bg-red-600" : "bg-emerald-800 hover:bg-emerald-900"}`}
+                        >
+                            {isRepeating ? (
+                                <X size={20} />
+                            ) : (
+                                <CalendarSync size={20} />
+                            )}
+                        </button>
+                        <button
+                            title="Editar Sessão"
+                            type="button"
+                            onClick={toggleEdit}
+                            className={`rounded-md p-2 text-white ${isEditing ? "bg-red-500 hover:bg-red-600" : "bg-blue-500 hover:bg-blue-600"}`}
+                        >
+                            {isEditing ? (
+                                <X size={20} />
+                            ) : (
+                                <CalendarCog size={20} />
+                            )}
+                        </button>
+                        <button
+                            title="Excluir Sessão"
+                            type="button"
+                            onClick={handleDelete}
+                            className="rounded-md bg-red-600 text-white p-2 hover:bg-red-700"
+                        >
+                            <CalendarX2 size={20} />
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -175,7 +174,7 @@ export function ScheduleInfo() {
                     id="patientName"
                     type="text"
                     disabled={true}
-                    value={`${appointmentData?.patient.name}`}
+                    value={sessionData.appointment.patient.name}
                 />
             </div>
 
@@ -189,7 +188,7 @@ export function ScheduleInfo() {
                         id="patientPhone"
                         type="text"
                         disabled={true}
-                        value={`${formattedPhone}`}
+                        value={formattedPhone}
                     />
                 </div>
 
@@ -202,7 +201,10 @@ export function ScheduleInfo() {
                         id="patientEmail"
                         type="text"
                         disabled={true}
-                        value={`${appointmentData?.patient.email}`}
+                        value={
+                            sessionData.appointment.patient.email ||
+                            "Não Informado"
+                        }
                     />
                 </div>
 
@@ -215,7 +217,7 @@ export function ScheduleInfo() {
                         id="appointmentCID"
                         type="text"
                         disabled={true}
-                        value={`${appointmentData?.appointmentReason.cid}`}
+                        value={sessionData.appointment.appointmentReason.cid}
                     />
                 </div>
 
@@ -228,29 +230,31 @@ export function ScheduleInfo() {
                         id="appointmentAllegation"
                         type="text"
                         disabled={true}
-                        value={`${appointmentData?.appointmentReason.allegation}`}
+                        value={
+                            sessionData.appointment.appointmentReason.allegation
+                        }
                     />
                 </div>
             </div>
 
             <div className="space-y-2">
-                <label className="block" htmlFor="">
+                <label className="block" htmlFor="diagnosis">
                     Diagnóstico
                 </label>
                 <textarea
-                    rows={4}
+                    rows={3}
                     className="w-full bg-slate-200 text-gray-500 border rounded-md p-2 shadow-shape"
                     disabled={true}
-                    value={`${appointmentData?.appointmentReason.diagnosis}`}
+                    value={sessionData.appointment.appointmentReason.diagnosis}
                 />
             </div>
 
-            <div className="w-full h-px bg-fisioblue shadow-shape" />
+            <div className="w-full h-px bg-black shadow-shape" />
 
-            <p className="text-sm">
-                <span className="font-bold text-red-500">*</span> indica campos
-                obrigatórios
-            </p>
+            <h1 className="text-lg font-semibold">
+                {isRepeating ? "Repetir Agendamento" : "Informações da Sessão"}
+            </h1>
+
             {isRepeating ? (
                 <RepeatAppointmentForm />
             ) : (

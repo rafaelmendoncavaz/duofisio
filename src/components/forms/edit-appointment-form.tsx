@@ -11,8 +11,15 @@ interface EditAppointmentFormProps {
 }
 
 export function EditAppointmentForm({ isEditing }: EditAppointmentFormProps) {
-    const { updateAppointment, getAppointments, employees, appointmentData } =
-        useAPI()
+    const {
+        verifyAuth,
+        updateAppointment,
+        getAppointments,
+        employees,
+        sessionData,
+        setActiveFilter,
+        activeFilter,
+    } = useAPI()
     const { closeModal } = useModal()
 
     // Formata a data ISO para datetime-local (remove segundos e timezone)
@@ -25,20 +32,27 @@ export function EditAppointmentForm({ isEditing }: EditAppointmentFormProps) {
     } = useForm<TypeAppointmentUpdate>({
         resolver: zodResolver(updateAppointmentSchema),
         defaultValues: {
-            appointmentDate: appointmentData?.appointmentDate
-                ? formatToDateTimeLocal(appointmentData.appointmentDate)
+            employeeId: sessionData?.appointment.employee.employeeId,
+            appointmentDate: sessionData?.appointmentDate
+                ? formatToDateTimeLocal(sessionData.appointmentDate)
                 : "",
-            duration: appointmentData?.duration,
-            status: appointmentData?.status,
-            employeeId: appointmentData?.employee.employeeId,
+            duration: sessionData?.duration,
+            status: sessionData?.status,
+            progress: sessionData?.progress,
         },
     })
 
     const onSubmit = async (data: TypeAppointmentUpdate) => {
-        if (!appointmentData) return
+        if (!sessionData) return
 
         // Converte appointmentDate para ISO com timezone local
-        const formattedDate = new Date(data.appointmentDate).toISOString()
+        const appointmentDate = data.appointmentDate
+        if (!appointmentDate) {
+            alert("O agendamento não pode ficar sem data")
+            return
+        }
+
+        const formattedDate = new Date(appointmentDate).toISOString()
 
         const now = new Date()
         if (
@@ -54,14 +68,16 @@ export function EditAppointmentForm({ isEditing }: EditAppointmentFormProps) {
             appointmentDate: formattedDate,
         }
 
-        const result = await updateAppointment(updateData, appointmentData.id)
+        const result = await updateAppointment(updateData, sessionData.id)
         if (result.success) {
             await getAppointments() // Atualiza a lista de agendamentos para refletir o novo agendamento
+            setActiveFilter(activeFilter) // Atualiza o filtro ativo para refletir o novo agendamento
+            verifyAuth()
             closeModal()
         }
     }
 
-    if (!appointmentData) {
+    if (!sessionData) {
         return (
             <div className="p-4 text-center">
                 Nenhum agendamento selecionado.
@@ -74,7 +90,7 @@ export function EditAppointmentForm({ isEditing }: EditAppointmentFormProps) {
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <label className="block" htmlFor="employeeId">
-                        Funcionário <span className="text-red-500">*</span>
+                        Funcionário
                     </label>
                     <select
                         className={
@@ -83,10 +99,14 @@ export function EditAppointmentForm({ isEditing }: EditAppointmentFormProps) {
                                 : "w-full bg-slate-200 text-gray-500 border rounded-md p-2 shadow-shape cursor-not-allowed"
                         }
                         {...register("employeeId")}
-                        defaultValue={appointmentData?.employee.employeeId}
+                        defaultValue={
+                            sessionData?.appointment.employee.employeeId
+                        }
                         disabled={!isEditing}
                     >
-                        <option value="">Selecione um Funcionário</option>
+                        <option value="" disabled>
+                            Selecione um Funcionário
+                        </option>
                         {employees?.map(employee => (
                             <option key={employee.id} value={employee.id}>
                                 {employee.name}
@@ -102,7 +122,7 @@ export function EditAppointmentForm({ isEditing }: EditAppointmentFormProps) {
 
                 <div className="space-y-2">
                     <label className="block" htmlFor="appointmentDate">
-                        Data e Hora <span className="text-red-500">*</span>
+                        Data e Hora
                     </label>
                     <Input
                         type="datetime-local"
@@ -121,8 +141,7 @@ export function EditAppointmentForm({ isEditing }: EditAppointmentFormProps) {
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <label className="block" htmlFor="duration">
-                        Duração (minutos){" "}
-                        <span className="text-red-500">*</span>
+                        Duração (minutos)
                     </label>
                     <select
                         className={
@@ -147,7 +166,7 @@ export function EditAppointmentForm({ isEditing }: EditAppointmentFormProps) {
 
                 <div className="space-y-2">
                     <label className="block" htmlFor="clinicalRecordId">
-                        Status <span className="text-red-500">*</span>
+                        Status
                     </label>
                     <select
                         className={
@@ -158,7 +177,9 @@ export function EditAppointmentForm({ isEditing }: EditAppointmentFormProps) {
                         {...register("status")}
                         disabled={!isEditing}
                     >
-                        <option value="">Selecione um Status</option>
+                        <option value="" disabled>
+                            Selecione um Status
+                        </option>
                         <option value="SOLICITADO">SOLICITADO</option>
                         <option value="CONFIRMADO">CONFIRMADO</option>
                         <option value="CANCELADO">CANCELADO</option>
@@ -170,6 +191,21 @@ export function EditAppointmentForm({ isEditing }: EditAppointmentFormProps) {
                         </span>
                     )}
                 </div>
+            </div>
+
+            <div className="space-y-2">
+                <label className="block" htmlFor="sessionProgress">
+                    Progresso
+                </label>
+                <textarea
+                    {...register("progress")}
+                    rows={2}
+                    className="w-full bg-transparent text-black disabled:bg-slate-200 disabled:text-gray-500 border rounded-md p-2 shadow-shape"
+                    disabled={!isEditing}
+                    placeholder={
+                        sessionData.progress ? "" : "Nenhum progresso informado"
+                    }
+                />
             </div>
 
             <button

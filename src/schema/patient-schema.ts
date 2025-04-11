@@ -82,6 +82,11 @@ export const patientDataSchema = z.object({
             createdAt: z.date(),
             updatedAt: z.date(),
             totalSessions: z.number(),
+            clinicalRecord: z.object({
+                cid: z.string(),
+                allegation: z.string(),
+                diagnosis: z.string(),
+            }),
             sessions: z.array(
                 z.object({
                     id: z.string().uuid(),

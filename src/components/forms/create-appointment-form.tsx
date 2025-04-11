@@ -28,6 +28,7 @@ export function CreateAppointmentForm({
         register,
         handleSubmit,
         control,
+        watch,
         formState: { errors, isSubmitting },
     } = useForm<TypeCreateAppointment>({
         resolver: zodResolver(createAppointmentSchema),
@@ -37,7 +38,7 @@ export function CreateAppointmentForm({
             clinicalRecordId: "",
             appointmentDate: "",
             duration: 30,
-            daysOfWeek: [],
+            daysOfWeek: undefined,
             totalSessions: 1,
         },
     })
@@ -88,6 +89,8 @@ export function CreateAppointmentForm({
         { value: 6, label: "Sábado" },
     ]
 
+    const totalSessions = watch("totalSessions")
+
     return (
         <div className="flex flex-col gap-6 py-2 w-full mx-auto">
             <div className="flex items-center justify-between">
@@ -125,7 +128,9 @@ export function CreateAppointmentForm({
                             {...register("employeeId")}
                             defaultValue={user?.id}
                         >
-                            <option value="">Selecione um Funcionário</option>
+                            <option value="" disabled>
+                                Selecione um Funcionário
+                            </option>
                             {employees.map(employee => (
                                 <option key={employee.id} value={employee.id}>
                                     {employee.name}
@@ -188,7 +193,9 @@ export function CreateAppointmentForm({
                             className="w-full bg-transparent border rounded-md p-2 focus:border-fisioblue shadow-shape"
                             {...register("clinicalRecordId")}
                         >
-                            <option value="">Selecione um CID</option>
+                            <option value="" disabled>
+                                Selecione um CID
+                            </option>
                             {clinicalRecords.clinicalRecordList.map(record => (
                                 <option key={record.id} value={record.id}>
                                     {record.cid}
@@ -222,65 +229,73 @@ export function CreateAppointmentForm({
                     </div>
                 </section>
 
-                <section className="flex flex-col gap-4">
-                    <div className="space-y-2">
-                        <label className="block" htmlFor="daysOfWeek">
-                            Dias da Semana{" "}
-                            <span className="text-red-500">*</span>
-                        </label>
-                        {errors.daysOfWeek && (
-                            <span className="text-sm text-red-500">
-                                {errors.daysOfWeek.message}
-                            </span>
-                        )}
-                        <div className="flex justify-center items-center gap-4">
-                            <Controller
-                                name="daysOfWeek"
-                                control={control}
-                                render={({ field }) => (
-                                    <>
-                                        {days.map(day => (
-                                            <label
-                                                htmlFor="daysOfWeek"
-                                                key={day.value}
-                                                className="flex items-center gap-1"
-                                            >
-                                                <div>
-                                                    <span>{day.label}</span>
-                                                    <Input
-                                                        type="checkbox"
-                                                        value={day.value}
-                                                        checked={field.value.includes(
-                                                            day.value
-                                                        )}
-                                                        onChange={e => {
-                                                            const newValue = e
-                                                                .target.checked
-                                                                ? [
-                                                                      ...field.value,
-                                                                      day.value,
-                                                                  ]
-                                                                : field.value.filter(
-                                                                      (
-                                                                          d: number
-                                                                      ) =>
-                                                                          d !==
-                                                                          day.value
-                                                                  )
-                                                            field.onChange(
-                                                                newValue
-                                                            )
-                                                        }}
-                                                    />
-                                                </div>
-                                            </label>
-                                        ))}
-                                    </>
-                                )}
-                            />
+                {totalSessions > 1 && (
+                    <section className="flex flex-col gap-4">
+                        <div className="space-y-2">
+                            <label className="block" htmlFor="daysOfWeek">
+                                Dias da Semana{" "}
+                                <span className="text-red-500">*</span>
+                            </label>
+                            {errors.daysOfWeek && (
+                                <span className="text-sm text-red-500">
+                                    {errors.daysOfWeek.message}
+                                </span>
+                            )}
+                            <div className="flex justify-center items-center gap-4">
+                                <Controller
+                                    name="daysOfWeek"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <>
+                                            {days.map(day => (
+                                                <label
+                                                    htmlFor="daysOfWeek"
+                                                    key={day.value}
+                                                    className="flex items-center gap-1"
+                                                >
+                                                    <div>
+                                                        <span>{day.label}</span>
+                                                        <Input
+                                                            type="checkbox"
+                                                            value={day.value}
+                                                            checked={
+                                                                field.value?.includes(
+                                                                    day.value
+                                                                ) || false
+                                                            }
+                                                            onChange={e => {
+                                                                const currentValue =
+                                                                    field.value ||
+                                                                    [] // Garante que seja um array
+                                                                const newValue =
+                                                                    e.target
+                                                                        .checked
+                                                                        ? [
+                                                                              ...currentValue,
+                                                                              day.value,
+                                                                          ]
+                                                                        : currentValue.filter(
+                                                                              (
+                                                                                  d: number
+                                                                              ) =>
+                                                                                  d !==
+                                                                                  day.value
+                                                                          )
+                                                                field.onChange(
+                                                                    newValue
+                                                                )
+                                                            }}
+                                                        />
+                                                    </div>
+                                                </label>
+                                            ))}
+                                        </>
+                                    )}
+                                />
+                            </div>
                         </div>
-                    </div>
-                </section>
+                    </section>
+                )}
 
                 <button
                     type="submit"

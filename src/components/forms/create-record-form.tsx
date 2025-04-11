@@ -48,7 +48,7 @@ export function CreateRecordForm({ closeCreateRecord }: CreateRecordFormProps) {
     }
 
     return (
-        <div className="flex flex-col gap-6 py-2 w-full mx-auto">
+        <div className="flex flex-col gap-6 py-2 w-full mx-auto text-fisiogray">
             <div className="flex items-center justify-between">
                 <h1 className="text-lg">
                     <span className="font-semibold">

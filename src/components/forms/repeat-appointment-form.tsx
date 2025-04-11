@@ -6,7 +6,7 @@ import { repeatAppointmentSchema } from "../../schema/schema"
 import { Input } from "../global/input"
 
 export function RepeatAppointmentForm() {
-    const { repeatAppointment, getAppointments, appointmentData } = useAPI()
+    const { repeatAppointment, getAppointments, sessionData } = useAPI()
     const { closeModal } = useModal()
 
     const {
@@ -22,7 +22,7 @@ export function RepeatAppointmentForm() {
         },
     })
 
-    if (!appointmentData) {
+    if (!sessionData) {
         return (
             <div className="p-4 text-center">
                 Nenhum agendamento selecionado.
@@ -41,7 +41,7 @@ export function RepeatAppointmentForm() {
     ]
 
     const onSubmit = async (data: TypeAppointmentRepeat) => {
-        const result = await repeatAppointment(data, appointmentData.id)
+        const result = await repeatAppointment(data, sessionData.appointment.id)
         if (result.success) {
             await getAppointments()
             closeModal()

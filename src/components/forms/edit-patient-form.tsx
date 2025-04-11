@@ -4,7 +4,7 @@ import { updatePatientSchema } from "../../schema/schema"
 import type { TypeUpdatePatient } from "../../types/types"
 import { Input } from "../global/input"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useEffect, useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { viacep } from "../../api/api"
 
 interface EditPatientFormProps {
@@ -16,11 +16,16 @@ export function EditPatientForm({
     isEditing,
     setIsEditing,
 }: EditPatientFormProps) {
-    const { patientData, getSinglePatient, updatePatient } = useAPI()
+    const { verifyAuth, patientData, getSinglePatient, updatePatient } =
+        useAPI()
+
     const [isLoadingCEP, setIsLoadingCEP] = useState({
         patient: false,
         adult: false,
     })
+
+    const birthDate =
+        patientData && new Date(patientData.dateOfBirth).toISOString()
 
     const {
         register,
@@ -30,73 +35,57 @@ export function EditPatientForm({
         formState: { errors, isSubmitting },
     } = useForm<TypeUpdatePatient>({
         resolver: zodResolver(updatePatientSchema),
-        defaultValues: {
-            name: "",
-            cpf: "",
-            dateOfBirth: "",
-            phone: null,
-            email: null,
-            sex: null,
-            profession: null,
-            address: {
-                cep: "",
-                street: "",
-                number: 0,
-                complement: null,
-                neighborhood: "",
-                city: "",
-                state: "",
-            },
-            adultResponsible: null,
-        },
+        defaultValues: patientData
+            ? {
+                  name: patientData.name,
+                  cpf: patientData.cpf,
+                  dateOfBirth: birthDate ? birthDate.split("T")[0] : "", // Formato YYYY-MM-DD para input date
+                  phone: patientData.phone || null,
+                  email: patientData.email || null,
+                  sex: patientData.sex || null,
+                  profession: patientData.profession || null,
+                  address: {
+                      cep: patientData.address.cep,
+                      street: patientData.address.street,
+                      number: patientData.address.number,
+                      complement: patientData.address.complement || null,
+                      neighborhood: patientData.address.neighborhood,
+                      city: patientData.address.city,
+                      state: patientData.address.state,
+                  },
+                  adultResponsible: patientData.adultResponsible
+                      ? {
+                            name: patientData.adultResponsible.name,
+                            cpf: patientData.adultResponsible.cpf,
+                            phone: patientData.adultResponsible.phone,
+                            email: patientData.adultResponsible.email,
+                            address: {
+                                cep: patientData.adultResponsible.address.cep,
+                                street: patientData.adultResponsible.address
+                                    .street,
+                                number: patientData.adultResponsible.address
+                                    .number,
+                                complement:
+                                    patientData.adultResponsible.address
+                                        .complement || null,
+                                neighborhood:
+                                    patientData.adultResponsible.address
+                                        .neighborhood,
+                                city: patientData.adultResponsible.address.city,
+                                state: patientData.adultResponsible.address
+                                    .state,
+                            },
+                        }
+                      : null,
+              }
+            : undefined,
     })
 
-    // Carrega os dados do paciente ao montar o componente
     useEffect(() => {
-        if (patientData) {
-            reset({
-                name: patientData.name,
-                cpf: patientData.cpf,
-                dateOfBirth: patientData.dateOfBirth.split("T")[0], // Formato YYYY-MM-DD para input date
-                phone: patientData.phone || null,
-                email: patientData.email || null,
-                sex: patientData.sex || null,
-                profession: patientData.profession || null,
-                address: {
-                    cep: patientData.address.cep,
-                    street: patientData.address.street,
-                    number: patientData.address.number,
-                    complement: patientData.address.complement || null,
-                    neighborhood: patientData.address.neighborhood,
-                    city: patientData.address.city,
-                    state: patientData.address.state,
-                },
-                adultResponsible: patientData.adultResponsible
-                    ? {
-                          name: patientData.adultResponsible.name,
-                          cpf: patientData.adultResponsible.cpf,
-                          phone: patientData.adultResponsible.phone,
-                          email: patientData.adultResponsible.email,
-                          address: {
-                              cep: patientData.adultResponsible.address.cep,
-                              street: patientData.adultResponsible.address
-                                  .street,
-                              number: patientData.adultResponsible.address
-                                  .number,
-                              complement:
-                                  patientData.adultResponsible.address
-                                      .complement || null,
-                              neighborhood:
-                                  patientData.adultResponsible.address
-                                      .neighborhood,
-                              city: patientData.adultResponsible.address.city,
-                              state: patientData.adultResponsible.address.state,
-                          },
-                      }
-                    : null,
-            })
+        if (!isEditing) {
+            reset()
         }
-    }, [patientData, reset])
+    }, [isEditing, reset])
 
     const fetchAddress = useCallback(
         async (cep: string, type: "patient" | "adult") => {
@@ -122,12 +111,11 @@ export function EditPatientForm({
     const onSubmit = async (data: TypeUpdatePatient) => {
         if (!patientData?.id) return
 
-        const response = await updatePatient(data, patientData.id)
-        if (response.success) {
+        const result = await updatePatient(data, patientData.id)
+        if (result.success) {
             setIsEditing(false)
             getSinglePatient(patientData.id)
-        } else {
-            console.error("Erro ao atualizar paciente:", response.error)
+            verifyAuth()
         }
     }
 

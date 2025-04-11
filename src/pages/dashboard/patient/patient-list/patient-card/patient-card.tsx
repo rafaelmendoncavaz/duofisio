@@ -13,9 +13,12 @@ export function PatientCard({ patient, onClick }: PatientCardProps) {
     )
 
     const currentDate = new Date()
-    const futureAppointments = patient.appointments.filter(appointment => {
-        const appointmentDate = new Date(appointment.appointmentDate)
-        return appointmentDate >= currentDate
+    const futureSessions = patient.appointments.flatMap(appointment => {
+        const sessions = appointment.sessions.filter(session => {
+            const sessionDate = new Date(session.appointmentDate)
+            return sessionDate >= currentDate
+        })
+        return sessions
     }).length
 
     return (
@@ -26,8 +29,8 @@ export function PatientCard({ patient, onClick }: PatientCardProps) {
             // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: <explanation>
             // biome-ignore lint/a11y/useSemanticElements: <explanation>
             role="button"
-            className="border border-fisioblue rounded-md shadow-shape cursor-pointer p-2 hover:bg-fisioblue hover:text-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-fisioblue2"
-            aria-label={`Ver detalhes de ${patient.name}`}
+            className="border border-fisiolightgray rounded-md shadow-shape cursor-pointer p-2 text-fisiogray hover:bg-fisiolightgray hover:text-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-fisioblue2"
+            title={`Ver detalhes de ${patient.name}`}
         >
             <div className="flex items-center gap-2">
                 {patient.sex === "Masculino" ? (
@@ -45,9 +48,9 @@ export function PatientCard({ patient, onClick }: PatientCardProps) {
                 </span>
             </div>
 
-            <div className="flex items-center justify-between mt-1 px-2 py-1 text-sm bg-fisioblue text-slate-100 rounded">
-                <span className="font-semibold">Agendamentos: </span>
-                <span>{futureAppointments}</span>
+            <div className="flex items-center justify-between mt-1 px-2 py-1 text-sm bg-blue-100 text-blue-800 rounded">
+                <span className="font-semibold">Sessões: </span>
+                <span>{futureSessions}</span>
             </div>
         </li>
     )

@@ -16,7 +16,7 @@ export function DashboardMenu() {
     }
 
     return (
-        <div className="bg-fisiogray text-slate-100 py-2">
+        <div className="bg-fisioblue text-slate-100 py-2">
             <div className="max-w-7xl flex justify-between mx-auto">
                 <div className="flex gap-2">
                     <h1 className="leading-none">
@@ -32,7 +32,7 @@ export function DashboardMenu() {
                         onClick={handleLogout}
                         className="flex items-center gap-2 hover:underline"
                     >
-                        <span className="leading-none">Sair</span>
+                        <span className="leading-none font-semibold">Sair</span>
                         <LogOut size={20} />
                     </button>
                 </div>
