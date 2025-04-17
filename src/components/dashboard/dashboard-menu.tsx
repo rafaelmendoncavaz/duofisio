@@ -4,14 +4,10 @@ import { useAPI } from "../../store/store"
 
 export function DashboardMenu() {
     const navigate = useNavigate()
-    const { user, token, clearToken } = useAPI()
+    const { user, userLogout } = useAPI()
 
-    const handleLogout = () => {
-        // TODO: Implementar logout completo no futuro (limpar token, chamar API, etc.)
-        if (token) {
-            localStorage.removeItem("@authToken") // Provisório até logout completo
-            clearToken()
-        }
+    const handleLogout = async () => {
+        userLogout()
         navigate("/")
     }
 

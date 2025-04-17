@@ -1,4 +1,3 @@
-import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
 import { Key, User } from "lucide-react"
@@ -7,10 +6,22 @@ import { Input } from "../global/input"
 import { useAPI } from "../../store/store"
 import type { TypeLoginData } from "../../types/types"
 import roundLogo from "../../assets/duofisio-rounded-transparent.png"
+import { useEffect } from "react"
 
 export function Login() {
     const navigate = useNavigate()
-    const { userLogin, token } = useAPI()
+    const { verifyAuth, userLogin } = useAPI()
+
+    useEffect(() => {
+        const checkForRedirect = async () => {
+            const result = await verifyAuth()
+            if (result.success) {
+                navigate("/dashboard")
+            }
+        }
+        checkForRedirect()
+    }, [navigate, verifyAuth])
+
     const {
         register,
         handleSubmit,
@@ -19,17 +30,12 @@ export function Login() {
         defaultValues: { email: "", password: "" },
     })
 
-    useEffect(() => {
-        if (token) {
-            navigate("/dashboard", { replace: true })
-        }
-    }, [token, navigate])
-
     const onSubmit = async (data: TypeLoginData) => {
         const response = await userLogin(data)
-        if (response?.success) {
-            navigate("/dashboard", { replace: true })
+        if (!response.success) {
+            return
         }
+        navigate("/dashboard", { replace: true })
     }
 
     return (

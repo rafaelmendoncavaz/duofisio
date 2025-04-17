@@ -118,7 +118,7 @@ export const useSearchFilter = create<TypeSearchFilter>(set => ({
 export const useAPI = create<TypeAPI>((set, get) => ({
     // Estados
     error: null,
-    token: localStorage.getItem("@authToken") || null,
+    csrfToken: null,
     user: null,
     employees: null,
     activeFilter: "today",
@@ -145,9 +145,9 @@ export const useAPI = create<TypeAPI>((set, get) => ({
     clearRecord: () => set({ clinicalRecord: null }),
     clearAppointment: () => set({ sessionData: null }),
     clearError: () => set({ error: null }),
-    clearToken: () => set({ token: null }),
 
     // Funções de controle de estado
+    setCsrfToken: csrfToken => set({ csrfToken }),
     setSelectedAppointmentData: appointment =>
         set({ selectedAppointmentData: appointment }),
     clearSelectedAppointmentData: () => set({ selectedAppointmentData: null }),
@@ -158,7 +158,6 @@ export const useAPI = create<TypeAPI>((set, get) => ({
                 filter,
                 state
             )
-
             return {
                 activeFilter: filter,
                 filteredAppointments,
@@ -170,36 +169,36 @@ export const useAPI = create<TypeAPI>((set, get) => ({
     },
 
     prevWeek: () =>
-        set(state => {
-            const newWeek = subWeeks(state.currentWeek, 1)
-            return { currentWeek: newWeek }
-        }),
+        set(state => ({
+            currentWeek: subWeeks(state.currentWeek, 1),
+        })),
 
     nextWeek: () =>
-        set(state => {
-            const newWeek = addWeeks(state.currentWeek, 1)
-            return { currentWeek: newWeek }
-        }),
+        set(state => ({
+            currentWeek: addWeeks(state.currentWeek, 1),
+        })),
 
     prevMonth: () =>
-        set(state => {
-            const newMonth = subMonths(state.currentMonth, 1)
-            return { currentMonth: newMonth }
-        }),
+        set(state => ({
+            currentMonth: subMonths(state.currentMonth, 1),
+        })),
 
     nextMonth: () =>
-        set(state => {
-            const newMonth = addMonths(state.currentMonth, 1)
-            return { currentMonth: newMonth }
-        }),
+        set(state => ({
+            currentMonth: addMonths(state.currentMonth, 1),
+        })),
 
     // Funções assíncronas
     userLogin: async (loginData: TypeLoginData) => {
         try {
-            const { data } = await api.post("/auth/login", loginData)
-            const token = data.token
-            localStorage.setItem("@authToken", token)
-            set({ token, error: null })
+            const { getCsrfToken, setCsrfToken } = get()
+            const token = await getCsrfToken()
+            console.log("CSRF Token antes do POST:", token)
+            if (token) {
+                setCsrfToken(token)
+            }
+            await api.post("/auth/login", loginData)
+            set({ error: null })
             await get().verifyAuth() // Verifica usuário após login
             return { success: true }
         } catch (error) {
@@ -208,15 +207,27 @@ export const useAPI = create<TypeAPI>((set, get) => ({
         }
     },
 
+    userLogout: async () => {
+        try {
+            await api.post("/auth/logout") // CSRF tratado pelo interceptor
+            set({ user: null, csrfToken: null, employees: null })
+            return { success: true }
+        } catch (error) {
+            set({ error: "Erro ao fazer logout" })
+            return { success: false, error }
+        }
+    },
+
     verifyAuth: async () => {
         try {
-            const token = localStorage.getItem("@authToken")
-            if (!token) throw new Error("Token não encontrado")
-            const { data } = await api.get("/auth/verify", {
-                headers: { Authorization: `Bearer ${token}` },
-            })
+            const { csrfToken, getCsrfToken, setCsrfToken } = get()
+            if (!csrfToken) {
+                const token = await getCsrfToken()
+                if (token) setCsrfToken(token)
+            }
+
+            const { data } = await api.get("/auth/verify")
             set({
-                token,
                 user: data.user,
                 employees: data.employees,
                 error: null,
@@ -224,25 +235,36 @@ export const useAPI = create<TypeAPI>((set, get) => ({
             return { success: true, user: data.user }
         } catch (error) {
             set({
-                token: null,
                 user: null,
                 error: "Erro ao verificar autenticação",
+                csrfToken: null,
             })
             return { success: false, error }
         }
     },
 
+    getCsrfToken: async () => {
+        const { csrfToken } = get()
+        if (csrfToken) return csrfToken
+
+        try {
+            const response = await api.get<{ csrfToken: string }>(
+                "/auth/csrf-token"
+            )
+            set({ csrfToken: response.data.csrfToken }) // Atualiza o estado
+            return response.data.csrfToken
+        } catch (error) {
+            console.error("Erro ao obter CSRF token:", error)
+            return null
+        }
+    },
+
     createPatient: async (data: TypeCreatePatient) => {
         try {
-            const token = localStorage.getItem("@authToken")
-            if (!token) throw new Error("Token não encontrado")
             const { data: response, status } = await api.post(
                 "/dashboard/patients",
-                data,
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                }
-            )
+                data
+            ) // CSRF tratado pelo interceptor
             set({ error: null })
             return { success: true, patientId: response.patientId, status }
         } catch (error) {
@@ -253,11 +275,7 @@ export const useAPI = create<TypeAPI>((set, get) => ({
 
     getPatients: async () => {
         try {
-            const token = localStorage.getItem("@authToken")
-            if (!token) throw new Error("Token não encontrado")
-            const { data } = await api.get("/dashboard/patients", {
-                headers: { Authorization: `Bearer ${token}` },
-            })
+            const { data } = await api.get("/dashboard/patients")
             set({ patientList: data.patients, error: null })
             return { success: true }
         } catch (error) {
@@ -268,12 +286,8 @@ export const useAPI = create<TypeAPI>((set, get) => ({
 
     getSinglePatient: async (id: string) => {
         try {
-            const token = localStorage.getItem("@authToken")
-            if (!token) throw new Error("Token não encontrado")
             set({ patientData: null })
-            const { data } = await api.get(`/dashboard/patients/${id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            })
+            const { data } = await api.get(`/dashboard/patients/${id}`)
             set({ patientData: data.patient, error: null })
             return { success: true, patient: data.patient }
         } catch (error) {
@@ -284,15 +298,7 @@ export const useAPI = create<TypeAPI>((set, get) => ({
 
     updatePatient: async (data: TypeUpdatePatient, id: string) => {
         try {
-            const token = localStorage.getItem("@authToken")
-            if (!token) throw new Error("Token não encontrado")
-            const { status } = await api.put(
-                `/dashboard/patients/${id}`,
-                data,
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                }
-            )
+            const { status } = await api.put(`/dashboard/patients/${id}`, data)
             set({ error: null })
             return { success: true, status }
         } catch (error) {
@@ -303,11 +309,7 @@ export const useAPI = create<TypeAPI>((set, get) => ({
 
     deletePatient: async (id: string) => {
         try {
-            const token = localStorage.getItem("@authToken")
-            if (!token) throw new Error("Token não encontrado")
-            await api.delete(`/dashboard/patients/${id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            })
+            await api.delete(`/dashboard/patients/${id}`)
             set({ error: null })
             return { success: true }
         } catch (error) {
@@ -318,11 +320,7 @@ export const useAPI = create<TypeAPI>((set, get) => ({
 
     createClinicalRecord: async (id: string, data: TypeCreateRecord) => {
         try {
-            const token = localStorage.getItem("@authToken")
-            if (!token) throw new Error("Token não encontrado")
-            await api.post(`/dashboard/patients/${id}/clinical`, data, {
-                headers: { Authorization: `Bearer ${token}` },
-            })
+            await api.post(`/dashboard/patients/${id}/clinical`, data)
             set({ error: null })
             return { success: true }
         } catch (error) {
@@ -333,15 +331,8 @@ export const useAPI = create<TypeAPI>((set, get) => ({
 
     getClinicalRecords: async (id: string) => {
         try {
-            const token = localStorage.getItem("@authToken")
-            if (!token) throw new Error("Token não encontrado")
             set({ clinicalRecords: null })
-            const { data } = await api.get(
-                `/dashboard/patients/${id}/clinical`,
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                }
-            )
+            const { data } = await api.get(`/dashboard/patients/${id}/clinical`)
             set({ clinicalRecords: data.patientClinicalRecord, error: null })
             return { success: true }
         } catch (error) {
@@ -352,14 +343,9 @@ export const useAPI = create<TypeAPI>((set, get) => ({
 
     getSingleClinicalRecord: async (id: string, recordId: string) => {
         try {
-            const token = localStorage.getItem("@authToken")
-            if (!token) throw new Error("Token não encontrado")
             set({ clinicalRecord: null })
             const { data } = await api.get(
-                `/dashboard/patients/${id}/clinical/${recordId}`,
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                }
+                `/dashboard/patients/${id}/clinical/${recordId}`
             )
             set({ clinicalRecord: data.clinicalRecord, error: null })
             return { success: true, record: data.clinicalRecord }
@@ -371,11 +357,7 @@ export const useAPI = create<TypeAPI>((set, get) => ({
 
     deleteClinicalRecord: async (id: string, recordId: string) => {
         try {
-            const token = localStorage.getItem("@authToken")
-            if (!token) throw new Error("Token não encontrado")
-            await api.delete(`/dashboard/patients/${id}/clinical/${recordId}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            })
+            await api.delete(`/dashboard/patients/${id}/clinical/${recordId}`)
             set({ error: null })
             return { success: true }
         } catch (error) {
@@ -386,14 +368,9 @@ export const useAPI = create<TypeAPI>((set, get) => ({
 
     createAppointment: async (data: TypeCreateAppointment) => {
         try {
-            const token = localStorage.getItem("@authToken")
-            if (!token) throw new Error("Token não encontrado")
             const { data: response, status } = await api.post(
                 "/dashboard/appointments",
-                data,
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                }
+                data
             )
             set({ error: null })
             return {
@@ -409,12 +386,7 @@ export const useAPI = create<TypeAPI>((set, get) => ({
 
     getAppointments: async () => {
         try {
-            const token = localStorage.getItem("@authToken")
-            if (!token) throw new Error("Token não encontrado")
-            const { data } = await api.get("/dashboard/appointments", {
-                headers: { Authorization: `Bearer ${token}` },
-            })
-
+            const { data } = await api.get("/dashboard/appointments")
             set(state => {
                 const newAppointmentList = data.appointments
                 const newFilteredAppointments = applyFilter(
@@ -422,7 +394,6 @@ export const useAPI = create<TypeAPI>((set, get) => ({
                     state.activeFilter,
                     state
                 )
-
                 return {
                     appointmentList: newAppointmentList,
                     filteredAppointments: newFilteredAppointments,
@@ -438,14 +409,9 @@ export const useAPI = create<TypeAPI>((set, get) => ({
 
     getSingleAppointment: async (appointmentId: string) => {
         try {
-            const token = localStorage.getItem("@authToken")
-            if (!token) throw new Error("Token não encontrado")
             set({ sessionData: null })
             const { data } = await api.get(
-                `/dashboard/appointments/${appointmentId}`,
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                }
+                `/dashboard/appointments/${appointmentId}`
             )
             set({ sessionData: data.session, error: null })
             return { success: true, appointment: data.session }
@@ -460,14 +426,9 @@ export const useAPI = create<TypeAPI>((set, get) => ({
         appointmentId: string
     ) => {
         try {
-            const token = localStorage.getItem("@authToken")
-            if (!token) throw new Error("Token não encontrado")
             const { data: response } = await api.post(
                 `/dashboard/appointments/${appointmentId}/repeat`,
-                data,
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                }
+                data
             )
             set({ error: null })
             return { success: true, appointmentIds: response.sessionIds }
@@ -482,14 +443,9 @@ export const useAPI = create<TypeAPI>((set, get) => ({
         appointmentId: string
     ) => {
         try {
-            const token = localStorage.getItem("@authToken")
-            if (!token) throw new Error("Token não encontrado")
             const { status } = await api.put(
                 `/dashboard/appointments/${appointmentId}`,
-                data,
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                }
+                data
             )
             set({ error: null })
             return { success: true, status }
@@ -501,11 +457,7 @@ export const useAPI = create<TypeAPI>((set, get) => ({
 
     deleteAppointment: async (appointmentId: string) => {
         try {
-            const token = localStorage.getItem("@authToken")
-            if (!token) throw new Error("Token não encontrado")
-            await api.delete(`/dashboard/appointments/${appointmentId}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            })
+            await api.delete(`/dashboard/appointments/${appointmentId}`)
             set({ error: null })
             return { success: true }
         } catch (error) {

@@ -3,22 +3,22 @@ import { useAPI } from "../store/store"
 import { useEffect, useState } from "react"
 
 export function RestrictRoutes() {
-    const { token, verifyAuth } = useAPI()
+    const { user, verifyAuth } = useAPI()
     const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
         const checkAuth = async () => {
-            if (token === null) {
+            if (user === null) {
                 await verifyAuth()
             }
             setIsLoading(false)
         }
         checkAuth()
-    }, [token, verifyAuth])
+    }, [user, verifyAuth])
 
     if (isLoading) {
         return <div>Carregando...</div>
     }
 
-    return token ? <Outlet /> : <Navigate to="/login" replace />
+    return user ? <Outlet /> : <Navigate to="/login" replace />
 }

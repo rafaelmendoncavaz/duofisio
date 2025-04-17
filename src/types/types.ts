@@ -93,7 +93,7 @@ export interface TypeModal {
 export interface TypeAPI {
     // Estados
     error: string | null
-    token: string | null // Token é string ou null
+    csrfToken: string | null
     user: TypeUser | null // Reflete o retorno de /auth/verify
     employees: { name: string; id: string }[] | null
     activeFilter: "history" | "today" | "tomorrow" | "week" | "month" | null
@@ -113,6 +113,7 @@ export interface TypeAPI {
     sessionData: TypeSession | null
 
     // Funções de controle de estado
+    setCsrfToken: (csrfToken: string) => void
     setSelectedAppointmentData: (
         appointment: TypePatient["appointments"][0]
     ) => void
@@ -132,18 +133,19 @@ export interface TypeAPI {
     clearRecord: () => void
     clearAppointment: () => void
     clearError: () => void
-    clearToken: () => void
 
     // Funções assíncronas
     userLogin: (
         loginData: TypeLoginData
     ) => Promise<{ success: boolean; error?: unknown }>
+    userLogout: () => Promise<{ success: boolean; error?: unknown }>
     verifyAuth: () => Promise<{
         success: boolean
-        user?: TypeAPI["user"]
+        user?: TypeUser
         employees?: TypeAPI["employees"]
         error?: unknown
     }>
+    getCsrfToken: () => Promise<string | null>
     createPatient: (data: TypeCreatePatient) => Promise<{
         success: boolean
         patientId?: string
