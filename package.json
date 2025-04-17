@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc && vite build",
     "lint": "biome lint",
     "preview": "vite preview"
   },
+  "packageManager": "pnpm@9.6.0",
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
     "@types/react-paginate": "^7.1.4",
