@@ -10,17 +10,17 @@ import { useEffect } from "react"
 
 export function Login() {
     const navigate = useNavigate()
-    const { verifyAuth, userLogin } = useAPI()
+    const { user, userLogin } = useAPI()
 
     useEffect(() => {
         const checkForRedirect = async () => {
-            const result = await verifyAuth()
-            if (result.success) {
-                navigate("/dashboard")
+            if (user) {
+                navigate("/dashboard", { replace: true })
+                return
             }
         }
         checkForRedirect()
-    }, [navigate, verifyAuth])
+    }, [navigate, user])
 
     const {
         register,
