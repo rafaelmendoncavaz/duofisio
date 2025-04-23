@@ -1,16 +1,16 @@
-import { ArrowLeftCircle, CalendarSync, CalendarX2, X } from "lucide-react"
-import { useAPI, useModal } from "../../../../store/store"
-import { format } from "date-fns"
-import type { TypePatient } from "../../../../types/types"
-import { RepeatAppointmentForm } from "../../../forms/repeat-appointment-form"
-import { Input } from "../../../global/input"
-import { useState } from "react"
-import { SessionList } from "./session-list"
-import ReactPaginate from "react-paginate"
+import { ArrowLeftCircle, CalendarSync, CalendarX2, X } from "lucide-react";
+import { useAPI, useModal } from "../../../../store/store";
+import { format } from "date-fns";
+import type { TypePatient } from "../../../../types/types";
+import { RepeatAppointmentForm } from "../../../forms/repeat-appointment-form";
+import { Input } from "../../../global/input";
+import { useState } from "react";
+import { SessionList } from "./session-list";
+import ReactPaginate from "react-paginate";
 
 interface AppointmentInfoProps {
-    appointmentData: TypePatient["appointments"][0] | null
-    clearAppointmentData: () => void
+    appointmentData: TypePatient["appointments"][0] | null;
+    clearAppointmentData: () => void;
 }
 
 export function AppointmentInfo({
@@ -23,69 +23,69 @@ export function AppointmentInfo({
         deleteAppointment,
         clearRecord,
         clearRecords,
-    } = useAPI()
-    const { closeModal } = useModal()
+    } = useAPI();
+    const { closeModal } = useModal();
 
     if (!appointmentData || !patientData) {
-        return <p>Nenhum dado disponível</p>
+        return <p>Nenhum dado disponível</p>;
     }
 
-    const [isRepeating, setIsRepeating] = useState(false)
+    const [isRepeating, setIsRepeating] = useState(false);
 
-    const [page, setPage] = useState(0)
-    const itemsPerPage = 2
+    const [page, setPage] = useState(0);
+    const itemsPerPage = 2;
     const pageCount = Math.ceil(
         (appointmentData.sessions.length || 0) / itemsPerPage
-    )
+    );
     const orderedSessions = appointmentData.sessions.sort(
         (a, b) => b.sessionNumber - a.sessionNumber
-    )
+    );
     const paginatedSessions =
         orderedSessions.slice(page * itemsPerPage, (page + 1) * itemsPerPage) ||
-        []
+        [];
 
     const createdAt = format(
         new Date(appointmentData.createdAt).toISOString().split("T")[0],
         "dd-MM-yyyy"
-    )
+    );
     const updatedAt = format(
         new Date(appointmentData.updatedAt).toISOString().split("T")[0],
         "dd-MM-yyyy"
-    )
+    );
     const formattedPhone =
         patientData.phone
             ?.replace(/(\d{2})(\d)/, "($1) $2")
-            .replace(/(\d{5})(\d)/, "$1-$2") || "Não Informado"
+            .replace(/(\d{5})(\d)/, "$1-$2") || "Não Informado";
 
     const handleDelete = async () => {
         const confirmation = window.confirm(
             "Você está prestes a deletar este agendamento.\nEsta ação não pode ser desfeita!"
-        )
-        if (!confirmation) return
+        );
+        if (!confirmation) return;
 
-        await deleteAppointment(appointmentData.id)
-        clearRecord()
-        clearRecords()
-        closeModal()
-    }
+        await deleteAppointment(appointmentData.id);
+        clearRecord();
+        clearRecords();
+        closeModal();
+    };
 
     const checkForUnfinishedSessions = appointmentData.sessions.some(
-        check => check.status !== "FINALIZADO"
-    )
+        (check) => check.status !== "FINALIZADO"
+    );
 
     const toggleRepeat = async () => {
         if (checkForUnfinishedSessions) {
-            alert("Você só pode repetir agendamentos finalizados!")
-            return
+            alert("Você só pode repetir agendamentos finalizados!");
+            return;
         }
-        await getSingleAppointment(appointmentData.sessions[0].id)
-        setIsRepeating(prev => !prev)
-    }
+        await getSingleAppointment(appointmentData.sessions[0].id);
+        setIsRepeating((prev) => !prev);
+    };
 
     const currentSession =
         appointmentData.totalSessions > 1
             ? `${appointmentData.totalSessions} sessões`
-            : `${appointmentData.totalSessions} sessão`
+            : `${appointmentData.totalSessions} sessão`;
 
     return (
         <div className="flex flex-col gap-4 py-2 w-full mx-auto overflow-hidden scrollbar-hidden overflow-y-auto text-fisiogray">
@@ -243,5 +243,5 @@ export function AppointmentInfo({
                 </p>
             )}
         </div>
-    )
+    );
 }

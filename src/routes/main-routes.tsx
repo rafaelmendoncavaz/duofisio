@@ -1,14 +1,14 @@
-import { Route, Routes } from "react-router-dom"
-import { Home } from "../pages/home/home"
-import { About } from "../pages/about/about"
-import { Services } from "../pages/services/services"
-import { Appointments } from "../pages/appointments/appointments"
-import { Covenants } from "../pages/covenants/covenants"
-import { Login } from "../components/login/login"
-import { RestrictRoutes } from "./restrict-routes"
-import { DashboardPatients } from "../pages/dashboard/patient/patient"
-import { DashboardSchedule } from "../pages/dashboard/schedule/schedule"
-import { DashboardHome } from "../components/dashboard/dashboard-home"
+import { Route, Routes } from "react-router-dom";
+import { Home } from "../pages/home/home";
+import { About } from "../pages/about/about";
+import { Services } from "../pages/services/services";
+import { Appointments } from "../pages/appointments/appointments";
+import { Covenants } from "../pages/covenants/covenants";
+import { Login } from "../components/login/login";
+import { RestrictRoutes } from "./restrict-routes";
+import { DashboardPatients } from "../pages/dashboard/patient/patient";
+import { DashboardSchedule } from "../pages/dashboard/schedule/schedule";
+import { DashboardHome } from "../components/dashboard/dashboard-home";
 
 export function MainRoutes() {
     return (
@@ -28,5 +28,5 @@ export function MainRoutes() {
                 <Route path="pacientes" element={<DashboardPatients />} />
             </Route>
         </Routes>
-    )
+    );
 }

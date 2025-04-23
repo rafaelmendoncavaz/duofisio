@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "lint": "biome lint",
+    "biome:lint": "biome lint",
+    "biome:format": "biome format",
     "preview": "vite preview"
   },
   "packageManager": "pnpm@9.6.0",

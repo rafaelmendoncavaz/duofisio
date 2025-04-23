@@ -1,7 +1,7 @@
-import type { ComponentProps, ReactNode } from "react"
+import type { ComponentProps, ReactNode } from "react";
 
 interface NavButtonProps extends ComponentProps<"button"> {
-    children: ReactNode
+    children: ReactNode;
 }
 
 export function NavButton({ children, ...props }: NavButtonProps) {
@@ -12,5 +12,5 @@ export function NavButton({ children, ...props }: NavButtonProps) {
         >
             {children}
         </button>
-    )
+    );
 }

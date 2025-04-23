@@ -1,13 +1,13 @@
-import { ArrowLeftCircle, ClipboardPlus } from "lucide-react"
-import { useAPI } from "../../../../store/store"
-import { RecordList } from "./record-list"
-import { RecordInfo } from "./record-info"
-import { useState } from "react"
-import ReactPaginate from "react-paginate"
+import { ArrowLeftCircle, ClipboardPlus } from "lucide-react";
+import { useAPI } from "../../../../store/store";
+import { RecordList } from "./record-list";
+import { RecordInfo } from "./record-info";
+import { useState } from "react";
+import ReactPaginate from "react-paginate";
 
 interface RecordHistoryProps {
-    closeClinicalHistory: () => void
-    openCreateRecord: () => void
+    closeClinicalHistory: () => void;
+    openCreateRecord: () => void;
 }
 
 export function RecordHistory({
@@ -15,21 +15,21 @@ export function RecordHistory({
     openCreateRecord,
 }: RecordHistoryProps) {
     const { clinicalRecords, clinicalRecord, getSingleClinicalRecord } =
-        useAPI()
-    const [page, setPage] = useState(0)
-    const itemsPerPage = 4
+        useAPI();
+    const [page, setPage] = useState(0);
+    const itemsPerPage = 4;
     const pageCount = Math.ceil(
         (clinicalRecords?.clinicalRecordList.length || 0) / itemsPerPage
-    )
+    );
     const paginatedRecords =
         clinicalRecords?.clinicalRecordList.slice(
             page * itemsPerPage,
             (page + 1) * itemsPerPage
-        ) || []
+        ) || [];
 
     const handleRecordClick = async (patientId: string, recordId: string) => {
-        await getSingleClinicalRecord(patientId, recordId)
-    }
+        await getSingleClinicalRecord(patientId, recordId);
+    };
 
     return (
         <section className="flex flex-col gap-4 text-fisiogray">
@@ -98,5 +98,5 @@ export function RecordHistory({
             )}
             {clinicalRecord && <RecordInfo />}
         </section>
-    )
+    );
 }

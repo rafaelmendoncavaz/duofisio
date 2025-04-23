@@ -1,7 +1,7 @@
-import { ArrowLeftCircle, X } from "lucide-react"
-import { useAPI, useModal } from "../../../../store/store"
-import { format } from "date-fns"
-import { Input } from "../../../global/input"
+import { ArrowLeftCircle, X } from "lucide-react";
+import { useAPI, useModal } from "../../../../store/store";
+import { format } from "date-fns";
+import { Input } from "../../../global/input";
 
 export function RecordInfo() {
     const {
@@ -10,30 +10,30 @@ export function RecordInfo() {
         clearRecord,
         clearRecords,
         deleteClinicalRecord,
-    } = useAPI()
-    const { closeModal } = useModal()
+    } = useAPI();
+    const { closeModal } = useModal();
 
     if (!clinicalRecords || !clinicalRecord) {
-        return <p>Nenhum histórico clínico encontrado</p>
+        return <p>Nenhum histórico clínico encontrado</p>;
     }
 
-    const date = clinicalRecord.expires?.split("T")[0]
-    const formattedDate = date && format(date, "dd-MM-yyyy")
+    const date = clinicalRecord.expires?.split("T")[0];
+    const formattedDate = date && format(date, "dd-MM-yyyy");
 
     const handleDeleteRecord = async () => {
         const confirmation = window.confirm(
             "Você está prestes a deletar este registro.\nEsta ação não pode ser desfeita!"
-        )
+        );
         if (confirmation) {
             await deleteClinicalRecord(
                 clinicalRecords.patientId,
                 clinicalRecord.id
-            )
-            clearRecord()
-            clearRecords()
-            closeModal()
+            );
+            clearRecord();
+            clearRecords();
+            closeModal();
         }
-    }
+    };
 
     return (
         <div className="flex flex-col gap-4 py-2 w-full mx-auto max-h-[70vh] overflow-hidden scrollbar-hidden overflow-y-auto text-fisiogray">
@@ -154,5 +154,5 @@ export function RecordInfo() {
                 />
             </div>
         </div>
-    )
+    );
 }

@@ -1,6 +1,6 @@
-import { isSameDay, format, isBefore, startOfDay } from "date-fns"
-import { DashboardTemplate } from "./dashboard-template"
-import { useAPI, useModal } from "../../store/store"
+import { isSameDay, format, isBefore, startOfDay } from "date-fns";
+import { DashboardTemplate } from "./dashboard-template";
+import { useAPI, useModal } from "../../store/store";
 import {
     AlarmClock,
     BriefcaseMedical,
@@ -14,9 +14,9 @@ import {
     Settings2,
     CircleAlert,
     Smile,
-} from "lucide-react"
-import { AppointmentInfoModal } from "../../pages/dashboard/schedule/modal/appointment-info-modal"
-import { GetPatientInfoModal } from "../modal/patient/get-patient-info-modal"
+} from "lucide-react";
+import { AppointmentInfoModal } from "../../pages/dashboard/schedule/modal/appointment-info-modal";
+import { GetPatientInfoModal } from "../modal/patient/get-patient-info-modal";
 
 export function DashboardHome() {
     const {
@@ -26,24 +26,24 @@ export function DashboardHome() {
         getSingleAppointment,
         updateAppointment,
         getSinglePatient,
-    } = useAPI()
+    } = useAPI();
     const {
         isSingleAppointmentModalOpen,
         isSinglePatientModalOpen,
         openSingleAppointmentModal,
         openSinglePatientModal,
-    } = useModal()
+    } = useModal();
 
-    if (!user) return null
+    if (!user) return null;
 
-    const currentDate = new Date()
+    const currentDate = new Date();
     const todaysAppointments = user.appointments
-        .flatMap(appointment =>
+        .flatMap((appointment) =>
             appointment.sessions
-                .filter(session =>
+                .filter((session) =>
                     isSameDay(new Date(session.appointmentDate), currentDate)
                 )
-                .map(session => ({
+                .map((session) => ({
                     ...session,
                     patientId: appointment.patient.id,
                     appointmentId: appointment.id,
@@ -56,61 +56,61 @@ export function DashboardHome() {
             (a, b) =>
                 new Date(a.appointmentDate).getTime() -
                 new Date(b.appointmentDate).getTime()
-        )
+        );
 
-    const pastPending = user.appointments.flatMap(appointment =>
-        appointment.sessions.filter(session => {
-            const sessionDate = startOfDay(new Date(session.appointmentDate))
-            const today = startOfDay(currentDate)
+    const pastPending = user.appointments.flatMap((appointment) =>
+        appointment.sessions.filter((session) => {
+            const sessionDate = startOfDay(new Date(session.appointmentDate));
+            const today = startOfDay(currentDate);
 
             return (
                 isBefore(sessionDate, today) &&
                 ["SOLICITADO", "CONFIRMADO"].includes(session.status)
-            )
+            );
         })
-    ).length
+    ).length;
 
     const statusCounts = {
-        CONFIRMADO: todaysAppointments.filter(s => s.status === "CONFIRMADO")
+        CONFIRMADO: todaysAppointments.filter((s) => s.status === "CONFIRMADO")
             .length,
-        SOLICITADO: todaysAppointments.filter(s => s.status === "SOLICITADO")
+        SOLICITADO: todaysAppointments.filter((s) => s.status === "SOLICITADO")
             .length,
-        FINALIZADO: todaysAppointments.filter(s => s.status === "FINALIZADO")
+        FINALIZADO: todaysAppointments.filter((s) => s.status === "FINALIZADO")
             .length,
-        CANCELADO: todaysAppointments.filter(s => s.status === "CANCELADO")
+        CANCELADO: todaysAppointments.filter((s) => s.status === "CANCELADO")
             .length,
-    }
+    };
 
     const handleConfirmOrFinalize = async (
         sessionId: string,
         status: "CONFIRMADO" | "FINALIZADO"
     ) => {
-        const updateData = { status }
+        const updateData = { status };
 
         const confirmation = window.confirm(
             status === "FINALIZADO"
                 ? "Marcar esta sessão como: FINALIZADO.\nEsta ação não pode ser desfeita!"
                 : "Deseja marcar esta sessão como CONFIRMADO?"
-        )
+        );
 
         if (confirmation) {
-            const result = await updateAppointment(updateData, sessionId)
+            const result = await updateAppointment(updateData, sessionId);
 
             if (result.success) {
-                await getAppointments()
-                await verifyAuth()
+                await getAppointments();
+                await verifyAuth();
             }
         }
-    }
+    };
 
     async function openEditModal(sessionId: string) {
-        await getSingleAppointment(sessionId)
-        openSingleAppointmentModal()
+        await getSingleAppointment(sessionId);
+        openSingleAppointmentModal();
     }
 
     async function openPatientModal(patientId: string) {
-        await getSinglePatient(patientId)
-        openSinglePatientModal()
+        await getSinglePatient(patientId);
+        openSinglePatientModal();
     }
 
     return (
@@ -215,7 +215,7 @@ export function DashboardHome() {
                             </tr>
                         </thead>
                         <tbody className="shadow-shape">
-                            {todaysAppointments.map(session => (
+                            {todaysAppointments.map((session) => (
                                 <tr
                                     key={session.id}
                                     className="border-b hover:bg-gray-50"
@@ -331,5 +331,5 @@ export function DashboardHome() {
             {isSingleAppointmentModalOpen && <AppointmentInfoModal />}
             {isSinglePatientModalOpen && <GetPatientInfoModal />}
         </DashboardTemplate>
-    )
+    );
 }

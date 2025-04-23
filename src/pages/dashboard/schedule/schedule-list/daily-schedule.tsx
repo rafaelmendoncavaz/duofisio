@@ -1,13 +1,13 @@
-import { useState, useEffect } from "react"
-import { format, addMinutes, isBefore, set } from "date-fns"
-import type { TypeAppointmentList } from "../../../../types/types"
-import { ScheduleCard } from "./schedule-card/schedule-card"
+import { useState, useEffect } from "react";
+import { format, addMinutes, isBefore, set } from "date-fns";
+import type { TypeAppointmentList } from "../../../../types/types";
+import { ScheduleCard } from "./schedule-card/schedule-card";
 
 type DailyScheduleProps = {
-    appointments: TypeAppointmentList[]
-    onSessionClick: (sessionId: string, appointmentId: string) => void
-    isToday: boolean
-}
+    appointments: TypeAppointmentList[];
+    onSessionClick: (sessionId: string, appointmentId: string) => void;
+    isToday: boolean;
+};
 
 export function DailySchedule({
     appointments,
@@ -15,31 +15,31 @@ export function DailySchedule({
     isToday,
 }: DailyScheduleProps) {
     const [currentTime, setCurrentTime] = useState(() => {
-        const now = new Date()
+        const now = new Date();
         return new Date(
             now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" })
-        )
-    })
+        );
+    });
 
     useEffect(() => {
         if (isToday) {
             const interval = setInterval(() => {
-                const now = new Date()
+                const now = new Date();
                 setCurrentTime(
                     new Date(
                         now.toLocaleString("en-US", {
                             timeZone: "America/Sao_Paulo",
                         })
                     )
-                )
-            }, 60000)
-            return () => clearInterval(interval)
+                );
+            }, 60000);
+            return () => clearInterval(interval);
         }
-    }, [isToday])
+    }, [isToday]);
 
     // Extrair todas as sessões dos agendamentos
-    const allSessions = appointments.flatMap(appointment =>
-        appointment.sessions.map(session => ({
+    const allSessions = appointments.flatMap((appointment) =>
+        appointment.sessions.map((session) => ({
             sessionId: session.id,
             appointmentId: appointment.id,
             appointmentDate: new Date(session.appointmentDate),
@@ -50,7 +50,7 @@ export function DailySchedule({
             sessionNumber: session.sessionNumber,
             totalSessions: appointment.totalSessions,
         }))
-    )
+    );
 
     // Definir o início como 06:00 e o fim como 20:00 no dia base, em UTC-3
     const baseDate = allSessions.length
@@ -59,25 +59,25 @@ export function DailySchedule({
               new Date().toLocaleString("en-US", {
                   timeZone: "America/Sao_Paulo",
               })
-          )
+          );
     const start = set(baseDate, {
         hours: 6,
         minutes: 0,
         seconds: 0,
         milliseconds: 0,
-    })
+    });
     const end = set(baseDate, {
         hours: 20,
         minutes: 0,
         seconds: 0,
         milliseconds: 0,
-    })
-    const intervals: Date[] = []
-    let current = start
+    });
+    const intervals: Date[] = [];
+    let current = start;
 
     while (isBefore(current, addMinutes(end, 30))) {
-        intervals.push(current)
-        current = addMinutes(current, 30)
+        intervals.push(current);
+        current = addMinutes(current, 30);
     }
 
     return (
@@ -112,20 +112,20 @@ export function DailySchedule({
             {/* Cards */}
             <div>
                 {intervals.map((time, index) => {
-                    const slotSessions = allSessions.filter(session => {
-                        const sessionTime = new Date(session.appointmentDate)
+                    const slotSessions = allSessions.filter((session) => {
+                        const sessionTime = new Date(session.appointmentDate);
                         return (
                             !isBefore(sessionTime, time) &&
                             isBefore(sessionTime, addMinutes(time, 30))
-                        )
-                    })
+                        );
+                    });
                     return (
                         <div
                             // biome-ignore lint/suspicious/noArrayIndexKey: Intervalos fixos de tempo
                             key={index}
                             className="h-[80px] border-b flex gap-2 items-start pt-1"
                         >
-                            {slotSessions.map(session => (
+                            {slotSessions.map((session) => (
                                 <ul
                                     key={session.sessionId}
                                     className="flex-1 min-w-[60px] max-w-52"
@@ -143,9 +143,9 @@ export function DailySchedule({
                                 </ul>
                             ))}
                         </div>
-                    )
+                    );
                 })}
             </div>
         </div>
-    )
+    );
 }

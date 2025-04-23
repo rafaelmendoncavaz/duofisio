@@ -1,9 +1,9 @@
-import { z } from "zod"
+import { z } from "zod";
 
 // Criar Agendamento Clínico (alinhado com backend createAppointmentSchema)
 export const createAppointmentSchema = z.object({
     appointmentDate: z.preprocess(
-        val => (typeof val === "string" ? new Date(val).toISOString() : val),
+        (val) => (typeof val === "string" ? new Date(val).toISOString() : val),
         z.string().datetime()
     ),
     duration: z
@@ -30,7 +30,7 @@ export const createAppointmentSchema = z.object({
     clinicalRecordId: z
         .string()
         .uuid("ID do registro clínico deve ser um UUID"),
-})
+});
 
 // Buscar Agendamentos Filtrados (alinhado com backend statusGetAppointmentsSchema)
 export const appointmentListSchema = z.object({
@@ -69,7 +69,7 @@ export const appointmentListSchema = z.object({
             progress: z.string().nullable(),
         })
     ),
-})
+});
 
 // Buscar Agendamento Específico (alinhado com backend getSinglePatientAppointments)
 export const getSinglePatientAppointments = z.object({
@@ -106,7 +106,7 @@ export const getSinglePatientAppointments = z.object({
             diagnosis: z.string(),
         }),
     }),
-})
+});
 
 // Repetir Agendamento Específico (alinhado com backend repeatAppointmentSchema)
 export const repeatAppointmentSchema = z.object({
@@ -125,13 +125,13 @@ export const repeatAppointmentSchema = z.object({
                 )
         )
         .min(1, "Selecione pelo menos um dia da semana"),
-})
+});
 
 // Atualizar Agendamento Específico (alinhado com backend updateAppointmentSchema)
 export const updateAppointmentSchema = z.object({
     appointmentDate: z
         .preprocess(
-            val =>
+            (val) =>
                 typeof val === "string" ? new Date(val).toISOString() : val,
             z.string().datetime({ message: "Formato de data inválido" })
         )
@@ -154,4 +154,4 @@ export const updateAppointmentSchema = z.object({
         .string()
         .uuid("ID do funcionário deve ser um UUID")
         .optional(),
-})
+});

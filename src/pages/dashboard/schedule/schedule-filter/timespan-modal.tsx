@@ -1,23 +1,23 @@
-import { startOfYesterday } from "date-fns"
-import { Input } from "../../../../components/global/input"
-import { Modal } from "../../../../components/global/modal"
-import { useAPI, useModal } from "../../../../store/store"
-import { useState } from "react"
+import { startOfYesterday } from "date-fns";
+import { Input } from "../../../../components/global/input";
+import { Modal } from "../../../../components/global/modal";
+import { useAPI, useModal } from "../../../../store/store";
+import { useState } from "react";
 
 export function TimespanModal() {
-    const [fromDate, setFromDate] = useState("")
+    const [fromDate, setFromDate] = useState("");
     const [toDate, setToDate] = useState(
         startOfYesterday().toISOString().slice(0, 10)
-    )
+    );
 
-    const { setDateRangeFilter, setActiveFilter } = useAPI()
-    const { closeModal } = useModal()
+    const { setDateRangeFilter, setActiveFilter } = useAPI();
+    const { closeModal } = useModal();
 
     const handleDateRangeFilter = () => {
-        setDateRangeFilter(fromDate, toDate)
-        setActiveFilter("history")
-        closeModal()
-    }
+        setDateRangeFilter(fromDate, toDate);
+        setActiveFilter("history");
+        closeModal();
+    };
 
     return (
         <Modal title="Filtrar por Data">
@@ -30,7 +30,7 @@ export function TimespanModal() {
                         <Input
                             type="date"
                             value={fromDate}
-                            onChange={e => setFromDate(e.target.value)}
+                            onChange={(e) => setFromDate(e.target.value)}
                         />
                     </div>
 
@@ -41,7 +41,7 @@ export function TimespanModal() {
                         <Input
                             type="date"
                             value={toDate}
-                            onChange={e => setToDate(e.target.value)}
+                            onChange={(e) => setToDate(e.target.value)}
                             max={startOfYesterday().toISOString().slice(0, 10)}
                         />
                     </div>
@@ -58,5 +58,5 @@ export function TimespanModal() {
                 </button>
             </div>
         </Modal>
-    )
+    );
 }

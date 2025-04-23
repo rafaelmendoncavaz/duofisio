@@ -1,8 +1,8 @@
-import type { TypePatient } from "../../../../types/types"
+import type { TypePatient } from "../../../../types/types";
 
 interface AppointmentCardProps {
-    appointment: TypePatient["appointments"][0]
-    onClick: (appointment: TypePatient["appointments"][0]) => void
+    appointment: TypePatient["appointments"][0];
+    onClick: (appointment: TypePatient["appointments"][0]) => void;
 }
 
 export function AppointmentCard({
@@ -37,5 +37,5 @@ export function AppointmentCard({
                 {appointment.totalSessions}
             </p>
         </li>
-    )
+    );
 }

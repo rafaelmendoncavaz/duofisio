@@ -1,15 +1,34 @@
-import { ArrowBigLeft, Facebook, Instagram, Lock } from "lucide-react"
-import wp from "../../assets/whatsapp.svg"
-import { useNavigate, useLocation } from "react-router-dom"
+import { ArrowBigLeft, Facebook, Instagram, Lock } from "lucide-react";
+import wp from "../../assets/whatsapp.svg";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAPI } from "../../store/store";
 
 export function Contact() {
-    const navigate = useNavigate()
-    const { pathname } = useLocation()
-    const isLoginPage = pathname === "/login"
+    const { verifyAuth, user } = useAPI();
+    const navigate = useNavigate();
+    const { pathname } = useLocation();
+    const isLoginPage = pathname === "/login";
 
-    const handleNavigation = () => {
-        navigate(isLoginPage ? "/" : "/login")
-    }
+    const handleNavigation = async () => {
+        if (!isLoginPage) {
+            if (user) {
+                navigate("/dashboard", { replace: true });
+                return;
+            }
+
+            const { success } = await verifyAuth();
+
+            if (success) {
+                navigate("/dashboard", { replace: true });
+                return;
+            }
+
+            navigate("/login", { replace: true });
+            return;
+        }
+
+        navigate("/", { replace: true });
+    };
 
     return (
         <div className="bg-fisioblue text-slate-100 py-2">
@@ -61,5 +80,5 @@ export function Contact() {
                 </button>
             </div>
         </div>
-    )
+    );
 }

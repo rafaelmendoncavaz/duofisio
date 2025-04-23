@@ -1,40 +1,36 @@
-import axios, { type AxiosInstance } from "axios"
-import { useAPI } from "../store/store"
+import axios, { type AxiosInstance } from "axios";
+import { useAPI } from "../store/store";
 
 export const viacep: AxiosInstance = axios.create({
     baseURL: "https://viacep.com.br/ws",
     timeout: 10 * 1000,
-})
+});
 
 export const api: AxiosInstance = axios.create({
     baseURL: import.meta.env.VITE_API_URL,
     timeout: 10 * 1000,
     withCredentials: true,
-})
+});
 
-api.interceptors.request.use(async config => {
-    const { csrfToken } = useAPI.getState()
+api.interceptors.request.use(async (config) => {
+    const { csrfToken } = useAPI.getState();
     if (
         ["post", "put", "patch", "delete"].includes(
             config.method?.toLowerCase() || ""
         )
     ) {
         if (csrfToken) {
-            config.headers["X-CSRF-Token"] = csrfToken
-            console.log("Interceptor - X-CSRF-Token:", csrfToken)
+            config.headers["X-CSRF-Token"] = csrfToken;
         } else {
-            console.warn("Interceptor - CSRF Token não disponível")
+            console.warn("Interceptor - CSRF Token não disponível");
         }
     }
-    return config
-})
+    return config;
+});
 
 api.interceptors.response.use(
-    response => response,
-    error => {
-        if (error.response?.status === 401) {
-            window.location.href = "/login"
-        }
-        return Promise.reject(error)
+    (response) => response,
+    (error) => {
+        return Promise.reject(error);
     }
-)
+);

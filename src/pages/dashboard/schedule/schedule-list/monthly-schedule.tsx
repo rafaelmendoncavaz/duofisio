@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState } from "react";
 import {
     format,
     startOfMonth,
@@ -8,27 +8,27 @@ import {
     addDays,
     getMonth,
     getYear,
-} from "date-fns"
-import type { TypeAppointmentList } from "../../../../types/types"
-import { DayDetailSchedule } from "./day-detail-schedule"
-import { ArrowLeftCircle, ArrowRightCircle } from "lucide-react"
-import { useAPI } from "../../../../store/store"
+} from "date-fns";
+import type { TypeAppointmentList } from "../../../../types/types";
+import { DayDetailSchedule } from "./day-detail-schedule";
+import { ArrowLeftCircle, ArrowRightCircle } from "lucide-react";
+import { useAPI } from "../../../../store/store";
 
 interface MonthlyScheduleProps {
-    appointments: TypeAppointmentList[]
-    onSessionClick: (sessionId: string, appointmentId: string) => void
+    appointments: TypeAppointmentList[];
+    onSessionClick: (sessionId: string, appointmentId: string) => void;
 }
 
 export function MonthlySchedule({
     appointments,
     onSessionClick,
 }: MonthlyScheduleProps) {
-    const [selectedDay, setSelectedDay] = useState<Date | null>(null)
-    const { setActiveFilter, prevMonth, currentMonth, nextMonth } = useAPI()
+    const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+    const { setActiveFilter, prevMonth, currentMonth, nextMonth } = useAPI();
 
     // Extrair todas as sessões dos agendamentos
-    const allSessions = appointments.flatMap(appointment =>
-        appointment.sessions.map(session => ({
+    const allSessions = appointments.flatMap((appointment) =>
+        appointment.sessions.map((session) => ({
             sessionId: session.id,
             appointmentId: appointment.id,
             appointmentDate: new Date(session.appointmentDate),
@@ -39,13 +39,13 @@ export function MonthlySchedule({
             sessionNumber: session.sessionNumber,
             totalSessions: appointment.totalSessions,
         }))
-    )
+    );
 
-    const start = startOfMonth(currentMonth)
-    const end = endOfMonth(currentMonth)
-    const days = eachDayOfInterval({ start, end })
-    const firstDayOfWeek = startOfWeek(start, { weekStartsOn: 0 }) // Domingo
-    const weekDays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"]
+    const start = startOfMonth(currentMonth);
+    const end = endOfMonth(currentMonth);
+    const days = eachDayOfInterval({ start, end });
+    const firstDayOfWeek = startOfWeek(start, { weekStartsOn: 0 }); // Domingo
+    const weekDays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
     const month = [
         "Janeiro",
         "Fevereiro",
@@ -59,22 +59,22 @@ export function MonthlySchedule({
         "Outubro",
         "Novembro",
         "Dezembro",
-    ][getMonth(currentMonth)]
+    ][getMonth(currentMonth)];
 
     const paddingDays = Array.from(
         { length: (start.getDay() + 7) % 7 },
         (_, i) => addDays(firstDayOfWeek, i)
-    )
+    );
 
     if (selectedDay) {
         // Filtrar agendamentos que têm sessões no dia selecionado
-        const dayAppointments = appointments.filter(appointment =>
+        const dayAppointments = appointments.filter((appointment) =>
             appointment.sessions.some(
-                session =>
+                (session) =>
                     format(new Date(session.appointmentDate), "yyyy-MM-dd") ===
                     format(selectedDay, "yyyy-MM-dd")
             )
-        )
+        );
         return (
             <DayDetailSchedule
                 appointments={dayAppointments}
@@ -82,18 +82,18 @@ export function MonthlySchedule({
                 onBack={() => setSelectedDay(null)}
                 onSessionClick={onSessionClick}
             />
-        )
+        );
     }
 
     const handlePreviousMonth = () => {
-        prevMonth()
-        setActiveFilter("month")
-    }
+        prevMonth();
+        setActiveFilter("month");
+    };
 
     const handleNextMonth = () => {
-        nextMonth()
-        setActiveFilter("month")
-    }
+        nextMonth();
+        setActiveFilter("month");
+    };
 
     return (
         <div className="mt-2 space-y-2">
@@ -122,7 +122,7 @@ export function MonthlySchedule({
             </div>
 
             <div className="grid grid-cols-7 gap-2 text-center font-semibold mb-2">
-                {weekDays.map(day => (
+                {weekDays.map((day) => (
                     <div
                         key={day}
                         className="bg-fisioblue text-white rounded-md"
@@ -132,18 +132,18 @@ export function MonthlySchedule({
                 ))}
             </div>
             <div className="grid grid-cols-7 gap-2">
-                {paddingDays.map(day => (
+                {paddingDays.map((day) => (
                     <div
                         key={day.toISOString()}
                         className="border p-2 min-h-[100px] bg-gray-200"
                     />
                 ))}
-                {days.map(day => {
+                {days.map((day) => {
                     const daySessions = allSessions.filter(
-                        session =>
+                        (session) =>
                             format(session.appointmentDate, "yyyy-MM-dd") ===
                             format(day, "yyyy-MM-dd")
-                    )
+                    );
                     return (
                         <button
                             type="button"
@@ -160,9 +160,9 @@ export function MonthlySchedule({
                                 </p>
                             )}
                         </button>
-                    )
+                    );
                 })}
             </div>
         </div>
-    )
+    );
 }

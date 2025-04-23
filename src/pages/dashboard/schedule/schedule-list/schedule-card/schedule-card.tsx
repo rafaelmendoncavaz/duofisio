@@ -1,16 +1,16 @@
-import { CalendarCheck2, CircleAlert, ClipboardList, Flag } from "lucide-react"
+import { CalendarCheck2, CircleAlert, ClipboardList, Flag } from "lucide-react";
 
 // Definindo as novas props esperadas para uma sessão
 interface ScheduleCardProps {
-    sessionNumber: number
-    totalSessions: number
-    sessionId: string
-    appointmentId: string
-    patientName: string
-    status: "SOLICITADO" | "CONFIRMADO" | "CANCELADO" | "FINALIZADO"
-    cid: string
-    appointmentDate?: string
-    onSessionClick: (sessionId: string, appointmentId: string) => void
+    sessionNumber: number;
+    totalSessions: number;
+    sessionId: string;
+    appointmentId: string;
+    patientName: string;
+    status: "SOLICITADO" | "CONFIRMADO" | "CANCELADO" | "FINALIZADO";
+    cid: string;
+    appointmentDate?: string;
+    onSessionClick: (sessionId: string, appointmentId: string) => void;
 }
 
 export function ScheduleCard({
@@ -37,11 +37,11 @@ export function ScheduleCard({
         finalizado:
             status === "FINALIZADO" &&
             "border-red-800 bg-red-100 text-red-800 hover:bg-red-800 hover:text-red-100",
-    }
+    };
     return (
         <li
             onClick={() => onSessionClick(sessionId, appointmentId)}
-            onKeyDown={e =>
+            onKeyDown={(e) =>
                 e.key === "Enter" && onSessionClick(sessionId, appointmentId)
             }
             tabIndex={0}
@@ -90,5 +90,5 @@ export function ScheduleCard({
                 <span>{cid}</span>
             </div>
         </li>
-    )
+    );
 }

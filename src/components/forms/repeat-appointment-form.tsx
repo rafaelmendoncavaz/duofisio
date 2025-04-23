@@ -1,13 +1,13 @@
-import { useAPI, useModal } from "../../store/store"
-import { useForm, Controller } from "react-hook-form"
-import type { TypeAppointmentRepeat } from "../../types/types"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { repeatAppointmentSchema } from "../../schema/schema"
-import { Input } from "../global/input"
+import { useAPI, useModal } from "../../store/store";
+import { useForm, Controller } from "react-hook-form";
+import type { TypeAppointmentRepeat } from "../../types/types";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { repeatAppointmentSchema } from "../../schema/schema";
+import { Input } from "../global/input";
 
 export function RepeatAppointmentForm() {
-    const { repeatAppointment, getAppointments, sessionData } = useAPI()
-    const { closeModal } = useModal()
+    const { repeatAppointment, getAppointments, sessionData } = useAPI();
+    const { closeModal } = useModal();
 
     const {
         register,
@@ -20,14 +20,14 @@ export function RepeatAppointmentForm() {
             daysOfWeek: [],
             totalSessions: 1,
         },
-    })
+    });
 
     if (!sessionData) {
         return (
             <div className="p-4 text-center">
                 Nenhum agendamento selecionado.
             </div>
-        )
+        );
     }
 
     const days = [
@@ -38,15 +38,18 @@ export function RepeatAppointmentForm() {
         { value: 4, label: "Quinta" },
         { value: 5, label: "Sexta" },
         { value: 6, label: "Sábado" },
-    ]
+    ];
 
     const onSubmit = async (data: TypeAppointmentRepeat) => {
-        const result = await repeatAppointment(data, sessionData.appointment.id)
+        const result = await repeatAppointment(
+            data,
+            sessionData.appointment.id
+        );
         if (result.success) {
-            await getAppointments()
-            closeModal()
+            await getAppointments();
+            closeModal();
         }
-    }
+    };
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -66,7 +69,7 @@ export function RepeatAppointmentForm() {
                             control={control}
                             render={({ field }) => (
                                 <>
-                                    {days.map(day => (
+                                    {days.map((day) => (
                                         <label
                                             htmlFor="daysOfWeek"
                                             key={day.value}
@@ -80,7 +83,7 @@ export function RepeatAppointmentForm() {
                                                     checked={field.value.includes(
                                                         day.value
                                                     )}
-                                                    onChange={e => {
+                                                    onChange={(e) => {
                                                         const newValue = e
                                                             .target.checked
                                                             ? [
@@ -91,8 +94,10 @@ export function RepeatAppointmentForm() {
                                                                   (d: number) =>
                                                                       d !==
                                                                       day.value
-                                                              )
-                                                        field.onChange(newValue)
+                                                              );
+                                                        field.onChange(
+                                                            newValue
+                                                        );
                                                     }}
                                                 />
                                             </div>
@@ -130,5 +135,5 @@ export function RepeatAppointmentForm() {
                 {isSubmitting ? "Agendando..." : "Repetir Agendamento"}
             </button>
         </form>
-    )
+    );
 }

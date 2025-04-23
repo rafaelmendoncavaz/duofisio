@@ -1,67 +1,67 @@
-import { DashboardTemplate } from "../../../components/dashboard/dashboard-template"
-import { PatientList } from "./patient-list/patient-list"
-import { useAPI, useModal, useSearchFilter } from "../../../store/store"
-import { CreatePatientModal } from "../../../components/modal/patient/create-patient-modal"
-import { PatientFilter } from "./patient-filter/patient-filter"
-import { GetPatientInfoModal } from "../../../components/modal/patient/get-patient-info-modal"
-import type { TypePatientList } from "../../../types/types"
-import { useEffect, useMemo, useState } from "react"
-import ReactPaginate from "react-paginate"
+import { DashboardTemplate } from "../../../components/dashboard/dashboard-template";
+import { PatientList } from "./patient-list/patient-list";
+import { useAPI, useModal, useSearchFilter } from "../../../store/store";
+import { CreatePatientModal } from "../../../components/modal/patient/create-patient-modal";
+import { PatientFilter } from "./patient-filter/patient-filter";
+import { GetPatientInfoModal } from "../../../components/modal/patient/get-patient-info-modal";
+import type { TypePatientList } from "../../../types/types";
+import { useEffect, useMemo, useState } from "react";
+import ReactPaginate from "react-paginate";
 
 export function DashboardPatients() {
     const {
         isCreatePatientModalOpen,
         isSinglePatientModalOpen,
         openSinglePatientModal,
-    } = useModal()
+    } = useModal();
 
-    const { getSinglePatient, getPatients, patientList } = useAPI()
-    const { searchName, searchPhone, searchCPF } = useSearchFilter()
+    const { getSinglePatient, getPatients, patientList } = useAPI();
+    const { searchName, searchPhone, searchCPF } = useSearchFilter();
 
     // Carregamento da lista de pacientes no componente
     useEffect(() => {
         if (patientList.length === 0) {
-            getPatients()
+            getPatients();
         }
-    }, [patientList, getPatients])
+    }, [patientList, getPatients]);
 
     // Filtragem com useMemo
     const filteredPatients = useMemo(() => {
-        if (!patientList) return []
+        if (!patientList) return [];
         if (!(searchName.length || searchPhone.length || searchCPF.length)) {
-            return patientList
+            return patientList;
         }
-        return patientList.filter(patient => {
+        return patientList.filter((patient) => {
             const normalizedPatientName = patient.name
                 .normalize("NFD")
                 // biome-ignore lint/suspicious/noMisleadingCharacterClass: <explanation>
                 .replace(/[\u0300-\u036f]/g, "")
-                .toLowerCase()
+                .toLowerCase();
             const normalizedSearchName = searchName
                 .normalize("NFD")
                 // biome-ignore lint/suspicious/noMisleadingCharacterClass: <explanation>
                 .replace(/[\u0300-\u036f]/g, "")
-                .toLowerCase()
+                .toLowerCase();
             const matchName =
-                normalizedPatientName.includes(normalizedSearchName)
-            const matchPhone = patient.phone?.includes(searchPhone) ?? true
-            const matchCPF = patient.cpf.includes(searchCPF) ?? true
-            return matchName && matchPhone && matchCPF
-        })
-    }, [patientList, searchName, searchPhone, searchCPF])
+                normalizedPatientName.includes(normalizedSearchName);
+            const matchPhone = patient.phone?.includes(searchPhone) ?? true;
+            const matchCPF = patient.cpf.includes(searchCPF) ?? true;
+            return matchName && matchPhone && matchCPF;
+        });
+    }, [patientList, searchName, searchPhone, searchCPF]);
 
-    const [page, setPage] = useState(0)
-    const itemsPerPage = 20
-    const pageCount = Math.ceil((filteredPatients.length || 0) / itemsPerPage)
+    const [page, setPage] = useState(0);
+    const itemsPerPage = 20;
+    const pageCount = Math.ceil((filteredPatients.length || 0) / itemsPerPage);
     const paginatedPatients = filteredPatients.slice(
         page * itemsPerPage,
         (page + 1) * itemsPerPage
-    )
+    );
 
     // Função de carregamento dos dados do paciente no modal
     async function handleClick(patient: TypePatientList) {
-        await getSinglePatient(patient.id)
-        openSinglePatientModal()
+        await getSinglePatient(patient.id);
+        openSinglePatientModal();
     }
 
     return (
@@ -112,5 +112,5 @@ export function DashboardPatients() {
             {isCreatePatientModalOpen && <CreatePatientModal />}
             {isSinglePatientModalOpen && <GetPatientInfoModal />}
         </DashboardTemplate>
-    )
+    );
 }

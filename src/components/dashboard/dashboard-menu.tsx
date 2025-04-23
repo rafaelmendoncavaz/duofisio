@@ -1,15 +1,15 @@
-import { LogOut } from "lucide-react"
-import { useNavigate } from "react-router-dom"
-import { useAPI } from "../../store/store"
+import { LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAPI } from "../../store/store";
 
 export function DashboardMenu() {
-    const navigate = useNavigate()
-    const { user, userLogout } = useAPI()
+    const navigate = useNavigate();
+    const { user, userLogout } = useAPI();
 
     const handleLogout = async () => {
-        userLogout()
-        navigate("/")
-    }
+        userLogout();
+        navigate("/");
+    };
 
     return (
         <div className="bg-fisioblue text-slate-100 py-2">
@@ -34,5 +34,5 @@ export function DashboardMenu() {
                 </div>
             </div>
         </div>
-    )
+    );
 }

@@ -1,9 +1,9 @@
-import { ClipboardPen, Cross, House, List, UsersRound } from "lucide-react"
-import { useNavigate } from "react-router-dom"
-import { NavButton } from "./nav-button"
+import { ClipboardPen, Cross, House, List, UsersRound } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { NavButton } from "./nav-button";
 
 export function Navigation() {
-    const navigate = useNavigate()
+    const navigate = useNavigate();
 
     const navItems = [
         { path: "/", label: "Página Inicial", icon: <House size={20} /> },
@@ -19,11 +19,11 @@ export function Navigation() {
             icon: <ClipboardPen size={20} />,
         },
         { path: "/convenios", label: "Convênios", icon: <Cross size={20} /> },
-    ]
+    ];
 
     return (
         <nav className="flex items-center gap-2">
-            {navItems.map(item => (
+            {navItems.map((item) => (
                 <NavButton
                     key={item.path}
                     onClick={() => navigate(item.path)}
@@ -34,5 +34,5 @@ export function Navigation() {
                 </NavButton>
             ))}
         </nav>
-    )
+    );
 }

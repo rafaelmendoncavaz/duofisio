@@ -1,10 +1,10 @@
-import type { ClinicalData } from "../../../../types/types"
-import { RecordCard } from "./record-card"
+import type { ClinicalData } from "../../../../types/types";
+import { RecordCard } from "./record-card";
 
 interface RecordListProps {
-    records: ClinicalData[]
-    patientId: string
-    onRecordClick: (patientId: string, recordId: string) => Promise<void>
+    records: ClinicalData[];
+    patientId: string;
+    onRecordClick: (patientId: string, recordId: string) => Promise<void>;
 }
 
 export function RecordList({
@@ -14,7 +14,7 @@ export function RecordList({
 }: RecordListProps) {
     return (
         <ul className="grid grid-cols-2 gap-10 max-h-72 overflow-hidden scrollbar-hidden overflow-y-auto">
-            {records.map(record => (
+            {records.map((record) => (
                 <RecordCard
                     key={record.id}
                     record={record}
@@ -23,5 +23,5 @@ export function RecordList({
                 />
             ))}
         </ul>
-    )
+    );
 }

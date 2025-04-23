@@ -1,9 +1,9 @@
-import { z } from "zod"
+import { z } from "zod";
 import {
     addressSchema,
     adultResponsibleSchema,
     clinicalDataSchema,
-} from "./schema"
+} from "./schema";
 
 // Criar Paciente (alinhado com backend createPatientSchema)
 export const createPatientSchema = z.object({
@@ -17,7 +17,7 @@ export const createPatientSchema = z.object({
     address: addressSchema,
     clinicalData: clinicalDataSchema,
     adultResponsible: adultResponsibleSchema,
-})
+});
 
 // Atualizar Paciente (alinhado com backend, mas parcial)
 export const updatePatientSchema = z.object({
@@ -30,7 +30,7 @@ export const updatePatientSchema = z.object({
     profession: z.string().nullable().optional(), // Nullable
     address: addressSchema.optional(),
     adultResponsible: adultResponsibleSchema.optional(),
-})
+});
 
 // Lista de Pacientes (alinhado com backend statusPatientListSchema)
 export const patientListSchema = z.object({
@@ -60,7 +60,7 @@ export const patientListSchema = z.object({
             }),
         })
     ),
-})
+});
 
 export const patientDataSchema = z.object({
     id: z.string().uuid(),
@@ -104,4 +104,4 @@ export const patientDataSchema = z.object({
             ),
         })
     ),
-})
+});

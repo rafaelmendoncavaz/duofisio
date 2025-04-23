@@ -1,30 +1,30 @@
-import { CircleUser, Phone } from "lucide-react"
-import type { TypePatientList } from "../../../../../types/types"
+import { CircleUser, Phone } from "lucide-react";
+import type { TypePatientList } from "../../../../../types/types";
 
 interface PatientCardProps {
-    patient: TypePatientList
-    onClick: (patient: TypePatientList) => void
+    patient: TypePatientList;
+    onClick: (patient: TypePatientList) => void;
 }
 
 export function PatientCard({ patient, onClick }: PatientCardProps) {
     const formattedPhone = patient.phone?.replace(
         /(\d{2})(\d{5})(\d{4})/,
         "($1) $2-$3"
-    )
+    );
 
-    const currentDate = new Date()
-    const futureSessions = patient.appointments.flatMap(appointment => {
-        const sessions = appointment.sessions.filter(session => {
-            const sessionDate = new Date(session.appointmentDate)
-            return sessionDate >= currentDate
-        })
-        return sessions
-    }).length
+    const currentDate = new Date();
+    const futureSessions = patient.appointments.flatMap((appointment) => {
+        const sessions = appointment.sessions.filter((session) => {
+            const sessionDate = new Date(session.appointmentDate);
+            return sessionDate >= currentDate;
+        });
+        return sessions;
+    }).length;
 
     return (
         <li
             onClick={() => onClick(patient)}
-            onKeyDown={e => e.key === "Enter" && onClick(patient)}
+            onKeyDown={(e) => e.key === "Enter" && onClick(patient)}
             tabIndex={0}
             // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: <explanation>
             // biome-ignore lint/a11y/useSemanticElements: <explanation>
@@ -53,5 +53,5 @@ export function PatientCard({ patient, onClick }: PatientCardProps) {
                 <span>{futureSessions}</span>
             </div>
         </li>
-    )
+    );
 }

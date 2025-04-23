@@ -5,32 +5,32 @@ import {
     CalendarDays,
     Calendar,
     CalendarSearch,
-} from "lucide-react"
-import { useAPI, useModal } from "../../../../store/store"
+} from "lucide-react";
+import { useAPI, useModal } from "../../../../store/store";
 
 export function ScheduleFilter() {
-    const { setActiveFilter, activeFilter } = useAPI()
-    const { openFilterByTimespanModal } = useModal()
+    const { setActiveFilter, activeFilter } = useAPI();
+    const { openFilterByTimespanModal } = useModal();
 
     const handleTimespanModal = () => {
-        openFilterByTimespanModal()
-    }
+        openFilterByTimespanModal();
+    };
 
     const filterByToday = () => {
-        setActiveFilter("today")
-    }
+        setActiveFilter("today");
+    };
 
     const filterByTomorrow = () => {
-        setActiveFilter("tomorrow")
-    }
+        setActiveFilter("tomorrow");
+    };
 
     const filterByWeek = () => {
-        setActiveFilter("week")
-    }
+        setActiveFilter("week");
+    };
 
     const filterByMonth = () => {
-        setActiveFilter("month")
-    }
+        setActiveFilter("month");
+    };
 
     return (
         <div className="space-y-6">
@@ -100,5 +100,5 @@ export function ScheduleFilter() {
                 </div>
             </div>
         </div>
-    )
+    );
 }

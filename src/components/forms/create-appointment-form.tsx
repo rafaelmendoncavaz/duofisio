@@ -1,14 +1,14 @@
-import { ArrowLeftCircle } from "lucide-react"
-import { useAPI, useModal } from "../../store/store"
-import { Controller, useForm } from "react-hook-form"
-import type { TypeCreateAppointment } from "../../types/types"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { createAppointmentSchema } from "../../schema/schema"
-import { Input } from "../global/input"
-import { startOfDay, isBefore, isSameDay, format } from "date-fns"
+import { ArrowLeftCircle } from "lucide-react";
+import { useAPI, useModal } from "../../store/store";
+import { Controller, useForm } from "react-hook-form";
+import type { TypeCreateAppointment } from "../../types/types";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { createAppointmentSchema } from "../../schema/schema";
+import { Input } from "../global/input";
+import { startOfDay, isBefore, isSameDay, format } from "date-fns";
 
 interface CreateAppointmentFormProps {
-    closeCreateAppointment: () => void
+    closeCreateAppointment: () => void;
 }
 
 export function CreateAppointmentForm({
@@ -21,8 +21,8 @@ export function CreateAppointmentForm({
         getAppointments,
         employees,
         user,
-    } = useAPI()
-    const { closeModal } = useModal()
+    } = useAPI();
+    const { closeModal } = useModal();
 
     const {
         register,
@@ -41,43 +41,46 @@ export function CreateAppointmentForm({
             daysOfWeek: undefined,
             totalSessions: 1,
         },
-    })
+    });
 
     if (!patientData || !clinicalRecords || !employees) {
         return (
             <div className="p-4 text-center">
                 Nenhum paciente ou registros clínicos selecionados.
             </div>
-        )
+        );
     }
 
     const onSubmit = async (data: TypeCreateAppointment) => {
-        if (!patientData?.id) return
+        if (!patientData?.id) return;
 
         // Ajustar "now" para UTC-3
-        const now = new Date()
-        const nowInUtcMinus3 = new Date(now.getTime() - 3 * 60 * 60 * 1000)
-        const appointmentDate = new Date(data.appointmentDate)
+        const now = new Date();
+        const nowInUtcMinus3 = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+        const appointmentDate = new Date(data.appointmentDate);
 
         if (
             isBefore(appointmentDate, nowInUtcMinus3) &&
             !isSameDay(appointmentDate, nowInUtcMinus3)
         ) {
-            alert("A data do agendamento deve ser hoje ou no futuro")
-            return
+            alert("A data do agendamento deve ser hoje ou no futuro");
+            return;
         }
 
-        const result = await createAppointment(data)
+        const result = await createAppointment(data);
         if (result.success) {
-            await getAppointments() // Atualiza a lista de agendamentos com o novo agendamento criado
-            closeModal()
+            await getAppointments(); // Atualiza a lista de agendamentos com o novo agendamento criado
+            closeModal();
         }
-    }
+    };
 
     // Ajustar o min para UTC-3 no formato correto
-    const now = new Date()
-    const nowInUtcMinus3 = new Date(now.getTime() - 3 * 60 * 60 * 1000)
-    const minDateTime = format(startOfDay(nowInUtcMinus3), "yyyy-MM-dd'T'HH:mm")
+    const now = new Date();
+    const nowInUtcMinus3 = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+    const minDateTime = format(
+        startOfDay(nowInUtcMinus3),
+        "yyyy-MM-dd'T'HH:mm"
+    );
 
     const days = [
         { value: 0, label: "Domingo" },
@@ -87,9 +90,9 @@ export function CreateAppointmentForm({
         { value: 4, label: "Quinta" },
         { value: 5, label: "Sexta" },
         { value: 6, label: "Sábado" },
-    ]
+    ];
 
-    const totalSessions = watch("totalSessions")
+    const totalSessions = watch("totalSessions");
 
     return (
         <div className="flex flex-col gap-6 py-2 w-full mx-auto">
@@ -131,7 +134,7 @@ export function CreateAppointmentForm({
                             <option value="" disabled>
                                 Selecione um Funcionário
                             </option>
-                            {employees.map(employee => (
+                            {employees.map((employee) => (
                                 <option key={employee.id} value={employee.id}>
                                     {employee.name}
                                 </option>
@@ -196,11 +199,13 @@ export function CreateAppointmentForm({
                             <option value="" disabled>
                                 Selecione um CID
                             </option>
-                            {clinicalRecords.clinicalRecordList.map(record => (
-                                <option key={record.id} value={record.id}>
-                                    {record.cid}
-                                </option>
-                            ))}
+                            {clinicalRecords.clinicalRecordList.map(
+                                (record) => (
+                                    <option key={record.id} value={record.id}>
+                                        {record.cid}
+                                    </option>
+                                )
+                            )}
                         </select>
                         {errors.clinicalRecordId && (
                             <span className="text-sm text-red-500">
@@ -247,7 +252,7 @@ export function CreateAppointmentForm({
                                     control={control}
                                     render={({ field }) => (
                                         <>
-                                            {days.map(day => (
+                                            {days.map((day) => (
                                                 <label
                                                     htmlFor="daysOfWeek"
                                                     key={day.value}
@@ -263,10 +268,10 @@ export function CreateAppointmentForm({
                                                                     day.value
                                                                 ) || false
                                                             }
-                                                            onChange={e => {
+                                                            onChange={(e) => {
                                                                 const currentValue =
                                                                     field.value ||
-                                                                    [] // Garante que seja um array
+                                                                    []; // Garante que seja um array
                                                                 const newValue =
                                                                     e.target
                                                                         .checked
@@ -280,10 +285,10 @@ export function CreateAppointmentForm({
                                                                               ) =>
                                                                                   d !==
                                                                                   day.value
-                                                                          )
+                                                                          );
                                                                 field.onChange(
                                                                     newValue
-                                                                )
+                                                                );
                                                             }}
                                                         />
                                                     </div>
@@ -306,5 +311,5 @@ export function CreateAppointmentForm({
                 </button>
             </form>
         </div>
-    )
+    );
 }

@@ -1,42 +1,42 @@
-import { useEffect } from "react"
-import { ScheduleFilter } from "./schedule-filter/schedule-filter"
-import { DashboardTemplate } from "../../../components/dashboard/dashboard-template"
-import { useAPI, useModal } from "../../../store/store"
-import { AppointmentInfoModal } from "./modal/appointment-info-modal"
-import { MonthlySchedule } from "./schedule-list/monthly-schedule"
-import { WeeklySchedule } from "./schedule-list/weekly-schedule"
-import { DailySchedule } from "./schedule-list/daily-schedule"
-import { ScheduleHistory } from "./schedule-list/schedule-history"
-import { TimespanModal } from "./schedule-filter/timespan-modal"
+import { useEffect } from "react";
+import { ScheduleFilter } from "./schedule-filter/schedule-filter";
+import { DashboardTemplate } from "../../../components/dashboard/dashboard-template";
+import { useAPI, useModal } from "../../../store/store";
+import { AppointmentInfoModal } from "./modal/appointment-info-modal";
+import { MonthlySchedule } from "./schedule-list/monthly-schedule";
+import { WeeklySchedule } from "./schedule-list/weekly-schedule";
+import { DailySchedule } from "./schedule-list/daily-schedule";
+import { ScheduleHistory } from "./schedule-list/schedule-history";
+import { TimespanModal } from "./schedule-filter/timespan-modal";
 
 export function DashboardSchedule() {
     const {
         isFilterByTimespanModalOpen,
         isSingleAppointmentModalOpen,
         openSingleAppointmentModal,
-    } = useModal()
+    } = useModal();
     const {
         appointmentList,
         filteredAppointments,
         getAppointments,
         getSingleAppointment,
         activeFilter,
-    } = useAPI()
+    } = useAPI();
 
     // Carregamento da lista de agendamentos no componente
     useEffect(() => {
         const loadTodaysAppointments = async () => {
             if (!appointmentList) {
-                await getAppointments()
+                await getAppointments();
             }
-        }
-        loadTodaysAppointments()
-    }, [appointmentList, getAppointments])
+        };
+        loadTodaysAppointments();
+    }, [appointmentList, getAppointments]);
 
     // Função de carregamento dos dados da sessão no modal
     async function onSessionClick(sessionId: string, appointmentId: string) {
-        await getSingleAppointment(sessionId)
-        openSingleAppointmentModal()
+        await getSingleAppointment(sessionId);
+        openSingleAppointmentModal();
     }
 
     return (
@@ -83,5 +83,5 @@ export function DashboardSchedule() {
             {isSingleAppointmentModalOpen && <AppointmentInfoModal />}
             {isFilterByTimespanModalOpen && <TimespanModal />}
         </DashboardTemplate>
-    )
+    );
 }

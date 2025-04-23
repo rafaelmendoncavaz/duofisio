@@ -1,46 +1,46 @@
-import { useForm } from "react-hook-form"
-import { useAPI, useModal } from "../../../store/store"
-import type { TypeUpdatePatient } from "../../../types/types"
-import { useState } from "react"
-import { Hospital, UserRoundPen, UserRoundX, X } from "lucide-react"
-import { EditPatientForm } from "../../forms/edit-patient-form"
-import { PatientHistory } from "./patient-history"
+import { useForm } from "react-hook-form";
+import { useAPI, useModal } from "../../../store/store";
+import type { TypeUpdatePatient } from "../../../types/types";
+import { useState } from "react";
+import { Hospital, UserRoundPen, UserRoundX, X } from "lucide-react";
+import { EditPatientForm } from "../../forms/edit-patient-form";
+import { PatientHistory } from "./patient-history";
 
 export function PatientInfo() {
-    const { patientData, deletePatient } = useAPI()
-    const { closeModal } = useModal()
-    const [isEditing, setIsEditing] = useState(false)
+    const { patientData, deletePatient } = useAPI();
+    const { closeModal } = useModal();
+    const [isEditing, setIsEditing] = useState(false);
 
-    const [isClinicalHistoryOpen, setIsClinicalHistoryOpen] = useState(false)
+    const [isClinicalHistoryOpen, setIsClinicalHistoryOpen] = useState(false);
 
-    const { reset } = useForm<TypeUpdatePatient>()
+    const { reset } = useForm<TypeUpdatePatient>();
 
     const handleDelete = async () => {
-        if (!patientData?.id) return
+        if (!patientData?.id) return;
         const confirmation = window.confirm(
             "Você está prestes a deletar este paciente.\nEsta ação não pode ser desfeita!"
-        )
+        );
         if (confirmation) {
-            await deletePatient(patientData.id)
-            closeModal()
+            await deletePatient(patientData.id);
+            closeModal();
         }
-    }
+    };
 
     const openClinicalHistory = () => {
-        setIsClinicalHistoryOpen(true)
-    }
+        setIsClinicalHistoryOpen(true);
+    };
 
     const toggleEdit = () => {
         if (isEditing) {
-            reset() // Restaura os valores originais ao cancelar
+            reset(); // Restaura os valores originais ao cancelar
         }
-        setIsEditing(prev => !prev)
-    }
+        setIsEditing((prev) => !prev);
+    };
 
     if (!patientData) {
         return (
             <div className="p-4 text-center">Nenhum paciente selecionado.</div>
-        )
+        );
     }
 
     return (
@@ -98,5 +98,5 @@ export function PatientInfo() {
                 )}
             </div>
         </div>
-    )
+    );
 }

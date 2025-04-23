@@ -1,15 +1,15 @@
-import { ArrowLeftCircle, ClipboardPlus } from "lucide-react"
-import { useAPI } from "../../../../store/store"
-import { AppointmentList } from "./appointment-list"
-import { useState } from "react"
-import ReactPaginate from "react-paginate"
-import { AppointmentInfo } from "./appointment-info"
-import type { TypePatient } from "../../../../types/types"
-import { CreateAppointmentForm } from "../../../forms/create-appointment-form"
+import { ArrowLeftCircle, ClipboardPlus } from "lucide-react";
+import { useAPI } from "../../../../store/store";
+import { AppointmentList } from "./appointment-list";
+import { useState } from "react";
+import ReactPaginate from "react-paginate";
+import { AppointmentInfo } from "./appointment-info";
+import type { TypePatient } from "../../../../types/types";
+import { CreateAppointmentForm } from "../../../forms/create-appointment-form";
 
 interface AppointmentHistoryProps {
-    appointmentHistory: boolean
-    setAppointmentHistory: (isOpen: boolean) => void
+    appointmentHistory: boolean;
+    setAppointmentHistory: (isOpen: boolean) => void;
 }
 
 export function AppointmentHistory({
@@ -23,50 +23,50 @@ export function AppointmentHistory({
         selectedAppointmentData,
         setSelectedAppointmentData,
         clearSelectedAppointmentData,
-    } = useAPI()
+    } = useAPI();
 
     if (!patientData) {
-        return <p>Dados do paciente não encontrados</p>
+        return <p>Dados do paciente não encontrados</p>;
     }
 
     const [isCreateAppointmentOpen, setIsCreateAppointmentOpen] =
-        useState(false)
+        useState(false);
     const [isSelectedAppointmentOpen, setIsSelectedAppointmentOpen] =
-        useState(false)
+        useState(false);
 
-    const [page, setPage] = useState(0)
-    const itemsPerPage = 4
+    const [page, setPage] = useState(0);
+    const itemsPerPage = 4;
     const pageCount = Math.ceil(
         (patientData.appointments.length || 0) / itemsPerPage
-    )
+    );
     const paginatedAppointments =
         patientData.appointments.slice(
             page * itemsPerPage,
             (page + 1) * itemsPerPage
-        ) || []
+        ) || [];
 
     const setAppointmentData = (
         appointment: TypePatient["appointments"][0]
     ) => {
-        setIsSelectedAppointmentOpen(true)
-        setSelectedAppointmentData(appointment)
-    }
+        setIsSelectedAppointmentOpen(true);
+        setSelectedAppointmentData(appointment);
+    };
 
     const clearAppointmentData = () => {
-        setIsSelectedAppointmentOpen(false)
-        clearSelectedAppointmentData()
-    }
+        setIsSelectedAppointmentOpen(false);
+        clearSelectedAppointmentData();
+    };
 
     const openCreateAppointmentForm = async () => {
         if (!clinicalRecords) {
-            await getClinicalRecords(patientData.id)
+            await getClinicalRecords(patientData.id);
         }
-        setIsCreateAppointmentOpen(true)
-    }
+        setIsCreateAppointmentOpen(true);
+    };
 
     const closeCreateAppointmentForm = () => {
-        setIsCreateAppointmentOpen(false)
-    }
+        setIsCreateAppointmentOpen(false);
+    };
 
     if (isSelectedAppointmentOpen) {
         return (
@@ -74,7 +74,7 @@ export function AppointmentHistory({
                 appointmentData={selectedAppointmentData}
                 clearAppointmentData={clearAppointmentData}
             />
-        )
+        );
     }
 
     return (
@@ -147,5 +147,5 @@ export function AppointmentHistory({
                 />
             )}
         </section>
-    )
+    );
 }

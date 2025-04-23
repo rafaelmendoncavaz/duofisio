@@ -1,5 +1,5 @@
-import headerBanner from "../../assets/duofisio-w-banner-transparent.png"
-import { Navigation } from "./navigation"
+import headerBanner from "../../assets/duofisio-w-banner-transparent.png";
+import { Navigation } from "./navigation";
 
 export function Header() {
     return (
@@ -15,5 +15,5 @@ export function Header() {
                 <Navigation />
             </div>
         </header>
-    )
+    );
 }

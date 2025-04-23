@@ -1,30 +1,30 @@
-import ReactPaginate from "react-paginate"
-import { ScheduleList } from "./schedule-list"
-import { useState } from "react"
-import type { TypeAppointmentList } from "../../../../types/types"
-import { useAPI } from "../../../../store/store"
+import ReactPaginate from "react-paginate";
+import { ScheduleList } from "./schedule-list";
+import { useState } from "react";
+import type { TypeAppointmentList } from "../../../../types/types";
+import { useAPI } from "../../../../store/store";
 
 interface ScheduleHistoryProps {
-    appointments: TypeAppointmentList[]
-    onSessionClick: (sessionId: string, appointmentId: string) => void
+    appointments: TypeAppointmentList[];
+    onSessionClick: (sessionId: string, appointmentId: string) => void;
 }
 
 export function ScheduleHistory({
     appointments,
     onSessionClick,
 }: ScheduleHistoryProps) {
-    const { startDate, endDate } = useAPI()
+    const { startDate, endDate } = useAPI();
 
-    const start = startDate.toString().replace(/-/g, "/")
-    const end = endDate.toString().replace(/-/g, "/")
+    const start = startDate.toString().replace(/-/g, "/");
+    const end = endDate.toString().replace(/-/g, "/");
 
-    const [page, setPage] = useState(0)
-    const itemsPerPage = 20
-    const pageCount = Math.ceil((appointments.length || 0) / itemsPerPage)
+    const [page, setPage] = useState(0);
+    const itemsPerPage = 20;
+    const pageCount = Math.ceil((appointments.length || 0) / itemsPerPage);
     const paginatedAppointments = appointments.slice(
         page * itemsPerPage,
         (page + 1) * itemsPerPage
-    )
+    );
 
     return (
         <div className="flex flex-col gap-6">
@@ -67,5 +67,5 @@ export function ScheduleHistory({
                 </p>
             )}
         </div>
-    )
+    );
 }

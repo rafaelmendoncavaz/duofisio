@@ -1,13 +1,13 @@
-import { useAPI, useModal } from "../../store/store"
-import { useForm } from "react-hook-form"
-import type { TypeAppointmentUpdate } from "../../types/types"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { updateAppointmentSchema } from "../../schema/schema"
-import { Input } from "../global/input"
-import { startOfDay, isBefore, isSameDay } from "date-fns"
+import { useAPI, useModal } from "../../store/store";
+import { useForm } from "react-hook-form";
+import type { TypeAppointmentUpdate } from "../../types/types";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { updateAppointmentSchema } from "../../schema/schema";
+import { Input } from "../global/input";
+import { startOfDay, isBefore, isSameDay } from "date-fns";
 
 interface EditAppointmentFormProps {
-    isEditing: boolean
+    isEditing: boolean;
 }
 
 export function EditAppointmentForm({ isEditing }: EditAppointmentFormProps) {
@@ -19,11 +19,11 @@ export function EditAppointmentForm({ isEditing }: EditAppointmentFormProps) {
         sessionData,
         setActiveFilter,
         activeFilter,
-    } = useAPI()
-    const { closeModal } = useModal()
+    } = useAPI();
+    const { closeModal } = useModal();
 
     // Formata a data ISO para datetime-local (remove segundos e timezone)
-    const formatToDateTimeLocal = (isoString: string) => isoString.slice(0, 16)
+    const formatToDateTimeLocal = (isoString: string) => isoString.slice(0, 16);
 
     const {
         register,
@@ -40,49 +40,49 @@ export function EditAppointmentForm({ isEditing }: EditAppointmentFormProps) {
             status: sessionData?.status,
             progress: sessionData?.progress,
         },
-    })
+    });
 
     const onSubmit = async (data: TypeAppointmentUpdate) => {
-        if (!sessionData) return
+        if (!sessionData) return;
 
         // Converte appointmentDate para ISO com timezone local
-        const appointmentDate = data.appointmentDate
+        const appointmentDate = data.appointmentDate;
         if (!appointmentDate) {
-            alert("O agendamento não pode ficar sem data")
-            return
+            alert("O agendamento não pode ficar sem data");
+            return;
         }
 
-        const formattedDate = new Date(appointmentDate).toISOString()
+        const formattedDate = new Date(appointmentDate).toISOString();
 
-        const now = new Date()
+        const now = new Date();
         if (
             isBefore(new Date(formattedDate), now) &&
             !isSameDay(new Date(formattedDate), now)
         ) {
-            alert("A data do agendamento deve ser hoje ou no futuro")
-            return
+            alert("A data do agendamento deve ser hoje ou no futuro");
+            return;
         }
 
         const updateData: TypeAppointmentUpdate = {
             ...data,
             appointmentDate: formattedDate,
-        }
+        };
 
-        const result = await updateAppointment(updateData, sessionData.id)
+        const result = await updateAppointment(updateData, sessionData.id);
         if (result.success) {
-            await getAppointments() // Atualiza a lista de agendamentos para refletir o novo agendamento
-            setActiveFilter(activeFilter) // Atualiza o filtro ativo para refletir o novo agendamento
-            verifyAuth()
-            closeModal()
+            await getAppointments(); // Atualiza a lista de agendamentos para refletir o novo agendamento
+            setActiveFilter(activeFilter); // Atualiza o filtro ativo para refletir o novo agendamento
+            verifyAuth();
+            closeModal();
         }
-    }
+    };
 
     if (!sessionData) {
         return (
             <div className="p-4 text-center">
                 Nenhum agendamento selecionado.
             </div>
-        )
+        );
     }
 
     return (
@@ -107,7 +107,7 @@ export function EditAppointmentForm({ isEditing }: EditAppointmentFormProps) {
                         <option value="" disabled>
                             Selecione um Funcionário
                         </option>
-                        {employees?.map(employee => (
+                        {employees?.map((employee) => (
                             <option key={employee.id} value={employee.id}>
                                 {employee.name}
                             </option>
@@ -216,5 +216,5 @@ export function EditAppointmentForm({ isEditing }: EditAppointmentFormProps) {
                 {isSubmitting ? "Agendando..." : "Atualizar Agendamento"}
             </button>
         </form>
-    )
+    );
 }

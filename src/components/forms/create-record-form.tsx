@@ -1,19 +1,19 @@
-import { ArrowLeftCircle } from "lucide-react"
-import { useAPI, useModal } from "../../store/store"
-import { useForm } from "react-hook-form"
-import type { TypeCreateRecord } from "../../types/types"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { createRecordSchema } from "../../schema/schema"
-import { Input } from "../global/input"
+import { ArrowLeftCircle } from "lucide-react";
+import { useAPI, useModal } from "../../store/store";
+import { useForm } from "react-hook-form";
+import type { TypeCreateRecord } from "../../types/types";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { createRecordSchema } from "../../schema/schema";
+import { Input } from "../global/input";
 
 interface CreateRecordFormProps {
-    closeCreateRecord: () => void
+    closeCreateRecord: () => void;
 }
 
 export function CreateRecordForm({ closeCreateRecord }: CreateRecordFormProps) {
     const { createClinicalRecord, clinicalRecords, clearRecords, clearRecord } =
-        useAPI()
-    const { closeModal } = useModal()
+        useAPI();
+    const { closeModal } = useModal();
 
     const {
         register,
@@ -29,22 +29,22 @@ export function CreateRecordForm({ closeCreateRecord }: CreateRecordFormProps) {
             covenant: null,
             expires: null,
         },
-    })
+    });
 
     const onSubmit = async (data: TypeCreateRecord) => {
-        if (!clinicalRecords?.patientId) return
+        if (!clinicalRecords?.patientId) return;
 
-        await createClinicalRecord(clinicalRecords.patientId, data)
-        reset()
-        clearRecords()
-        clearRecord()
-        closeModal()
-    }
+        await createClinicalRecord(clinicalRecords.patientId, data);
+        reset();
+        clearRecords();
+        clearRecord();
+        closeModal();
+    };
 
     if (!clinicalRecords) {
         return (
             <div className="p-4 text-center">Nenhum paciente selecionado.</div>
-        )
+        );
     }
 
     return (
@@ -140,5 +140,5 @@ export function CreateRecordForm({ closeCreateRecord }: CreateRecordFormProps) {
                 </button>
             </form>
         </div>
-    )
+    );
 }

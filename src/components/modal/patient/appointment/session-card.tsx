@@ -1,9 +1,9 @@
-import { format, isBefore } from "date-fns"
+import { format, isBefore } from "date-fns";
 import type {
     TypeAppointmentUpdate,
     TypePatient,
-} from "../../../../types/types"
-import { useAPI } from "../../../../store/store"
+} from "../../../../types/types";
+import { useAPI } from "../../../../store/store";
 import {
     AlarmClock,
     CalendarCheck,
@@ -12,10 +12,10 @@ import {
     ChartNoAxesCombined,
     Flag,
     ListOrdered,
-} from "lucide-react"
+} from "lucide-react";
 
 interface SessionCardProps {
-    session: TypePatient["appointments"][0]["sessions"][0]
+    session: TypePatient["appointments"][0]["sessions"][0];
 }
 
 export function SessionCard({ session }: SessionCardProps) {
@@ -24,59 +24,59 @@ export function SessionCard({ session }: SessionCardProps) {
         getSinglePatient,
         updateAppointment,
         getAppointments,
-    } = useAPI()
+    } = useAPI();
 
     if (!patientData) {
-        return <p>Não foram encontrados dados deste paciente</p>
+        return <p>Não foram encontrados dados deste paciente</p>;
     }
 
-    const currentDate = new Date()
-    const appointmentDate = new Date(session.appointmentDate)
-    const currentAppointment = isBefore(appointmentDate, currentDate)
+    const currentDate = new Date();
+    const appointmentDate = new Date(session.appointmentDate);
+    const currentAppointment = isBefore(appointmentDate, currentDate);
 
     const confirmAppointment = async () => {
         const updateData: TypeAppointmentUpdate = {
             status: "CONFIRMADO",
-        }
+        };
 
         const confirmation = window.confirm(
             "Deseja marcar esta sessão como: CONFIRMADO?"
-        )
+        );
 
         if (confirmation) {
-            const result = await updateAppointment(updateData, session.id)
+            const result = await updateAppointment(updateData, session.id);
 
             if (result.success) {
-                await getAppointments()
-                await getSinglePatient(patientData.id)
+                await getAppointments();
+                await getSinglePatient(patientData.id);
             }
         }
-    }
+    };
 
     const terminateAppointment = async () => {
         if (!currentAppointment) {
-            alert("Você só pode finalizar sessões anteriores a hoje!")
-            return
+            alert("Você só pode finalizar sessões anteriores a hoje!");
+            return;
         }
 
         const updateData: TypeAppointmentUpdate = {
             status: "FINALIZADO",
-        }
+        };
 
         const confirmation = window.confirm(
             "Marcar esta sessão como: FINALIZADO.\nEsta ação não pode ser desfeita!"
-        )
+        );
 
         if (confirmation) {
-            const result = await updateAppointment(updateData, session.id)
+            const result = await updateAppointment(updateData, session.id);
             if (result.success) {
-                await getAppointments()
-                await getSinglePatient(patientData.id)
+                await getAppointments();
+                await getSinglePatient(patientData.id);
             }
         }
-    }
+    };
 
-    const sessionDate = format(session.appointmentDate, "dd/MM/yyyy")
+    const sessionDate = format(session.appointmentDate, "dd/MM/yyyy");
 
     const styleGuides = {
         solicitado:
@@ -91,7 +91,7 @@ export function SessionCard({ session }: SessionCardProps) {
         finalizado:
             session.status === "FINALIZADO" &&
             "border-red-800 bg-red-100 text-red-800 hover:bg-red-800 hover:text-red-100",
-    }
+    };
 
     return (
         <li
@@ -160,5 +160,5 @@ export function SessionCard({ session }: SessionCardProps) {
                 ) : null}
             </div>
         </li>
-    )
+    );
 }

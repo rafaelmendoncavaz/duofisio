@@ -1,4 +1,4 @@
-import { z } from "zod"
+import { z } from "zod";
 
 // Login (alinhado com backend authLoginSchema)
 export const loginSchema = z.object({
@@ -10,7 +10,7 @@ export const loginSchema = z.object({
         .string()
         .min(6, "Campo obrigatório")
         .max(20, "Máximo 20 caracteres"),
-})
+});
 
 // Dados Clínicos (alinhado com backend clinicalDataSchema)
 export const clinicalDataSchema = z.object({
@@ -20,7 +20,7 @@ export const clinicalDataSchema = z.object({
     CNS: z.string().nullable(), // Nullable no backend
     allegation: z.string().min(1, "Insira a queixa do paciente"),
     diagnosis: z.string().min(1, "Forneça um diagnóstico"),
-})
+});
 
 // Endereço (alinhado com backend addressSchema e ViaCEP)
 export const addressSchema = z.object({
@@ -31,10 +31,10 @@ export const addressSchema = z.object({
     neighborhood: z.string().min(1, "Insira o nome da região/bairro"),
     city: z.string().min(1, "Insira a cidade"),
     state: z.string().length(2, "Insira a UF com 2 caracteres"), // UF como no Brasil
-})
+});
 
 // CEP para ViaCEP
-export const cep = z.string().length(8, "CEP deve ter 8 dígitos")
+export const cep = z.string().length(8, "CEP deve ter 8 dígitos");
 
 // Responsável Adulto (alinhado com backend statusPatientDataSchema.adultResponsible)
 export const adultResponsibleSchema = z
@@ -45,4 +45,4 @@ export const adultResponsibleSchema = z
         email: z.string().email("Insira um e-mail válido"),
         address: addressSchema,
     })
-    .nullable() // Nullable no backend
+    .nullable(); // Nullable no backend

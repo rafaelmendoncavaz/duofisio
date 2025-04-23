@@ -1,28 +1,28 @@
-import { useState } from "react"
-import { format, addDays } from "date-fns"
-import { ptBR } from "date-fns/locale"
-import type { TypeAppointmentList } from "../../../../types/types"
-import { DayDetailSchedule } from "./day-detail-schedule"
-import { ArrowLeftCircle, ArrowRightCircle } from "lucide-react"
-import { useAPI } from "../../../../store/store"
+import { useState } from "react";
+import { format, addDays } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import type { TypeAppointmentList } from "../../../../types/types";
+import { DayDetailSchedule } from "./day-detail-schedule";
+import { ArrowLeftCircle, ArrowRightCircle } from "lucide-react";
+import { useAPI } from "../../../../store/store";
 
 type WeeklyScheduleProps = {
-    appointments: TypeAppointmentList[]
-    onSessionClick: (sessionId: string, appointmentId: string) => void
-}
+    appointments: TypeAppointmentList[];
+    onSessionClick: (sessionId: string, appointmentId: string) => void;
+};
 
 export function WeeklySchedule({
     appointments,
     onSessionClick,
 }: WeeklyScheduleProps) {
-    const { currentWeek, prevWeek, nextWeek, setActiveFilter } = useAPI()
-    const [selectedDay, setSelectedDay] = useState<Date | null>(null)
+    const { currentWeek, prevWeek, nextWeek, setActiveFilter } = useAPI();
+    const [selectedDay, setSelectedDay] = useState<Date | null>(null);
 
-    const days = Array.from({ length: 7 }, (_, i) => addDays(currentWeek, i))
+    const days = Array.from({ length: 7 }, (_, i) => addDays(currentWeek, i));
 
     // Extrair todas as sessões dos agendamentos
-    const allSessions = appointments.flatMap(appointment =>
-        appointment.sessions.map(session => ({
+    const allSessions = appointments.flatMap((appointment) =>
+        appointment.sessions.map((session) => ({
             sessionId: session.id,
             appointmentId: appointment.id,
             appointmentDate: new Date(session.appointmentDate),
@@ -33,43 +33,43 @@ export function WeeklySchedule({
             sessionNumber: session.sessionNumber,
             totalSessions: appointment.totalSessions,
         }))
-    )
+    );
 
     // Função para contar sessões por dia
     const getSession = (day: Date) =>
         allSessions.filter(
-            session =>
+            (session) =>
                 format(session.appointmentDate, "yyyy-MM-dd") ===
                 format(day, "yyyy-MM-dd")
-        )
+        );
 
     const getSessionStatus = (day: Date, status: string) => {
         const session = getSession(day)
-            .filter(sessionStatus => sessionStatus.status === status)
-            .map(sessionStatus => sessionStatus.status)
+            .filter((sessionStatus) => sessionStatus.status === status)
+            .map((sessionStatus) => sessionStatus.status);
 
-        return session
-    }
+        return session;
+    };
 
     // Navegação semanal
     const handlePreviousWeek = () => {
-        prevWeek()
-        setActiveFilter("week")
-    }
+        prevWeek();
+        setActiveFilter("week");
+    };
     const handleNextWeek = () => {
-        nextWeek()
-        setActiveFilter("week")
-    }
+        nextWeek();
+        setActiveFilter("week");
+    };
 
     // Se um dia for selecionado, renderizar DayDetailSchedule
     if (selectedDay) {
-        const dayAppointments = appointments.filter(appointment =>
+        const dayAppointments = appointments.filter((appointment) =>
             appointment.sessions.some(
-                session =>
+                (session) =>
                     format(new Date(session.appointmentDate), "yyyy-MM-dd") ===
                     format(selectedDay, "yyyy-MM-dd")
             )
-        )
+        );
         return (
             <DayDetailSchedule
                 appointments={dayAppointments}
@@ -77,7 +77,7 @@ export function WeeklySchedule({
                 onBack={() => setSelectedDay(null)}
                 onSessionClick={onSessionClick}
             />
-        )
+        );
     }
 
     return (
@@ -110,21 +110,21 @@ export function WeeklySchedule({
 
             {/* Colunas dos Dias */}
             <div className="grid grid-cols-7 gap-4">
-                {days.map(day => {
-                    const sessionCount = getSession(day).length
+                {days.map((day) => {
+                    const sessionCount = getSession(day).length;
                     const solicitado = getSessionStatus(
                         day,
                         "SOLICITADO"
-                    ).length
+                    ).length;
                     const confirmado = getSessionStatus(
                         day,
                         "CONFIRMADO"
-                    ).length
-                    const cancelado = getSessionStatus(day, "CANCELADO").length
+                    ).length;
+                    const cancelado = getSessionStatus(day, "CANCELADO").length;
                     const finalizado = getSessionStatus(
                         day,
                         "FINALIZADO"
-                    ).length
+                    ).length;
                     return (
                         <div
                             key={day.toISOString()}
@@ -196,9 +196,9 @@ export function WeeklySchedule({
                                 </div>
                             </button>
                         </div>
-                    )
+                    );
                 })}
             </div>
         </div>
-    )
+    );
 }

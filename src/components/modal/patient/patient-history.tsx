@@ -1,11 +1,11 @@
-import { ArrowLeftCircle } from "lucide-react"
-import { useState } from "react"
-import { CreateRecord } from "./record/create-record"
-import { AppointmentHistory } from "./appointment/appointment-history"
-import { useAPI } from "../../../store/store"
+import { ArrowLeftCircle } from "lucide-react";
+import { useState } from "react";
+import { CreateRecord } from "./record/create-record";
+import { AppointmentHistory } from "./appointment/appointment-history";
+import { useAPI } from "../../../store/store";
 
 interface PatientHistoryProps {
-    setIsClinicalHistoryOpen: (isOpen: boolean) => void
+    setIsClinicalHistoryOpen: (isOpen: boolean) => void;
 }
 
 export function PatientHistory({
@@ -17,30 +17,30 @@ export function PatientHistory({
         clearRecords,
         clearRecord,
         patientData,
-    } = useAPI()
+    } = useAPI();
 
     if (!patientData) {
-        return <p>Dados do paciente não encontrados</p>
+        return <p>Dados do paciente não encontrados</p>;
     }
 
-    const [clinicalHistory, setClinicalHistory] = useState(false)
-    const [appointmentHistory, setAppointmentHistory] = useState(false)
+    const [clinicalHistory, setClinicalHistory] = useState(false);
+    const [appointmentHistory, setAppointmentHistory] = useState(false);
 
     const handleClinicalHistory = async () => {
         if (!clinicalRecords) {
-            await getClinicalRecords(patientData.id)
+            await getClinicalRecords(patientData.id);
         }
 
-        setClinicalHistory(true)
-        setAppointmentHistory(false)
-    }
+        setClinicalHistory(true);
+        setAppointmentHistory(false);
+    };
 
     const handleAppointmentHistory = () => {
-        setClinicalHistory(false)
-        setAppointmentHistory(true)
-        clearRecords()
-        clearRecord()
-    }
+        setClinicalHistory(false);
+        setAppointmentHistory(true);
+        clearRecords();
+        clearRecord();
+    };
 
     return (
         <>
@@ -97,5 +97,5 @@ export function PatientHistory({
                 </section>
             )}
         </>
-    )
+    );
 }

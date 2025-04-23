@@ -1,24 +1,25 @@
-import type { ReactNode } from "react"
-import { X } from "lucide-react"
-import { useModal } from "../../store/store"
-import { useKeyDown, useOutClick } from "../../hooks/hooks"
+import type { ReactNode } from "react";
+import { X } from "lucide-react";
+import { useModal } from "../../store/store";
+import { useKeyDown, useOutClick } from "../../hooks/hooks";
 
 interface ModalProps {
-    children: ReactNode
-    title: string
+    children: ReactNode;
+    title: string;
 }
 
 export function Modal({ children, title }: ModalProps) {
-    const { closeModal } = useModal()
+    const { closeModal } = useModal();
 
-    const modalRef = useOutClick(() => closeModal())
-    const btnRef = useKeyDown<HTMLButtonElement>("Escape", element =>
+    const modalRef = useOutClick(() => closeModal());
+    const btnRef = useKeyDown<HTMLButtonElement>("Escape", (element) =>
         element?.click()
-    )
+    );
 
     return (
         <div
             className="fixed inset-0 bg-black/60 flex items-center justify-center p-4"
+            // biome-ignore lint/a11y/useSemanticElements: <explanation>
             role="dialog"
             aria-labelledby="modal-title"
             aria-modal="true"
@@ -50,5 +51,5 @@ export function Modal({ children, title }: ModalProps) {
                 </div>
             </div>
         </div>
-    )
+    );
 }

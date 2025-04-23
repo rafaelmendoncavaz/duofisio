@@ -1,21 +1,21 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useState, useCallback } from "react"
-import { useForm } from "react-hook-form"
-import { viacep } from "../../api/api"
-import { createPatientSchema } from "../../schema/schema"
-import type { TypeCreatePatient } from "../../types/types"
-import { Input } from "../global/input"
-import { useAPI, useModal } from "../../store/store"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useState, useCallback } from "react";
+import { useForm } from "react-hook-form";
+import { viacep } from "../../api/api";
+import { createPatientSchema } from "../../schema/schema";
+import type { TypeCreatePatient } from "../../types/types";
+import { Input } from "../global/input";
+import { useAPI, useModal } from "../../store/store";
 
 export function CreatePatientForm() {
-    const [hasAdultResponsible, setHasAdultResponsible] = useState(false)
+    const [hasAdultResponsible, setHasAdultResponsible] = useState(false);
     const [isLoadingCEP, setIsLoadingCEP] = useState({
         patient: false,
         adult: false,
-    })
+    });
 
-    const { createPatient, getPatients } = useAPI()
-    const { closeModal } = useModal()
+    const { createPatient, getPatients } = useAPI();
+    const { closeModal } = useModal();
 
     const {
         register,
@@ -30,40 +30,40 @@ export function CreatePatientForm() {
             clinicalData: { expires: null },
             adultResponsible: null,
         },
-    })
+    });
 
     const fetchAddress = useCallback(
         async (cep: string, type: "patient" | "adult") => {
-            if (cep.length !== 8) return
-            setIsLoadingCEP(prev => ({ ...prev, [type]: true }))
+            if (cep.length !== 8) return;
+            setIsLoadingCEP((prev) => ({ ...prev, [type]: true }));
             try {
-                const { data } = await viacep.get(`/${cep}/json`)
+                const { data } = await viacep.get(`/${cep}/json`);
                 const prefix =
-                    type === "patient" ? "address" : "adultResponsible.address"
-                setValue(`${prefix}.street`, data.logradouro || "")
-                setValue(`${prefix}.neighborhood`, data.bairro || "")
-                setValue(`${prefix}.city`, data.localidade || "")
-                setValue(`${prefix}.state`, data.uf || "")
+                    type === "patient" ? "address" : "adultResponsible.address";
+                setValue(`${prefix}.street`, data.logradouro || "");
+                setValue(`${prefix}.neighborhood`, data.bairro || "");
+                setValue(`${prefix}.city`, data.localidade || "");
+                setValue(`${prefix}.state`, data.uf || "");
             } catch (error) {
-                console.error(`Erro ao buscar endereço do ${type}`, error)
+                console.error(`Erro ao buscar endereço do ${type}`, error);
             } finally {
-                setIsLoadingCEP(prev => ({ ...prev, [type]: false }))
+                setIsLoadingCEP((prev) => ({ ...prev, [type]: false }));
             }
         },
         [setValue]
-    )
+    );
 
     const onSubmit = async (data: TypeCreatePatient) => {
         const payload = hasAdultResponsible
             ? data
-            : { ...data, adultResponsible: null }
-        const response = await createPatient(payload)
+            : { ...data, adultResponsible: null };
+        const response = await createPatient(payload);
         if (response.success && response.status === 201) {
-            getPatients()
-            reset()
-            closeModal()
+            getPatients();
+            reset();
+            closeModal();
         }
-    }
+    };
 
     return (
         <form
@@ -190,7 +190,7 @@ export function CreatePatientForm() {
                         <Input
                             type="text"
                             {...register("address.cep", {
-                                onChange: e =>
+                                onChange: (e) =>
                                     fetchAddress(e.target.value, "patient"),
                             })}
                             disabled={isLoadingCEP.patient}
@@ -383,7 +383,7 @@ export function CreatePatientForm() {
                             type="checkbox"
                             checked={hasAdultResponsible}
                             onChange={() =>
-                                setHasAdultResponsible(prev => !prev)
+                                setHasAdultResponsible((prev) => !prev)
                             }
                         />
                         Sim
@@ -468,7 +468,7 @@ export function CreatePatientForm() {
                             <Input
                                 type="text"
                                 {...register("adultResponsible.address.cep", {
-                                    onChange: e =>
+                                    onChange: (e) =>
                                         fetchAddress(e.target.value, "adult"),
                                 })}
                                 disabled={isLoadingCEP.adult}
@@ -607,5 +607,5 @@ export function CreatePatientForm() {
                 {isSubmitting ? "Cadastrando..." : "Cadastrar Paciente"}
             </button>
         </form>
-    )
+    );
 }

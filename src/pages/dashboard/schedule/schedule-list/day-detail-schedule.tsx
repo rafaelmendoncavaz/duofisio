@@ -1,14 +1,14 @@
-import { format, addMinutes, isBefore } from "date-fns"
-import type { TypeAppointmentList } from "../../../../types/types"
-import { ScheduleCard } from "./schedule-card/schedule-card"
-import { ChevronLeft } from "lucide-react"
+import { format, addMinutes, isBefore } from "date-fns";
+import type { TypeAppointmentList } from "../../../../types/types";
+import { ScheduleCard } from "./schedule-card/schedule-card";
+import { ChevronLeft } from "lucide-react";
 
 type DayDetailScheduleProps = {
-    appointments: TypeAppointmentList[]
-    selectedDay: Date
-    onBack: () => void
-    onSessionClick: (sessionId: string, appointmentId: string) => void // Ajustado para sessões
-}
+    appointments: TypeAppointmentList[];
+    selectedDay: Date;
+    onBack: () => void;
+    onSessionClick: (sessionId: string, appointmentId: string) => void; // Ajustado para sessões
+};
 
 export function DayDetailSchedule({
     appointments,
@@ -18,8 +18,8 @@ export function DayDetailSchedule({
 }: DayDetailScheduleProps) {
     // Extrair todas as sessões dos agendamentos e filtrar pelo dia selecionado
     const allSessions = appointments
-        .flatMap(appointment =>
-            appointment.sessions.map(session => ({
+        .flatMap((appointment) =>
+            appointment.sessions.map((session) => ({
                 sessionId: session.id,
                 appointmentId: appointment.id,
                 appointmentDate: new Date(session.appointmentDate),
@@ -32,10 +32,10 @@ export function DayDetailSchedule({
             }))
         )
         .filter(
-            session =>
+            (session) =>
                 format(session.appointmentDate, "yyyy-MM-dd") ===
                 format(selectedDay, "yyyy-MM-dd")
-        )
+        );
 
     if (!allSessions.length) {
         return (
@@ -51,18 +51,18 @@ export function DayDetailSchedule({
                     Nenhum agendamento para {format(selectedDay, "dd/MM/yyyy")}.
                 </p>
             </div>
-        )
+        );
     }
 
-    const dates = allSessions.map(session => session.appointmentDate)
-    const earliest = new Date(Math.min(...dates.map(d => d.getTime())))
-    const latest = new Date(Math.max(...dates.map(d => d.getTime())))
-    const intervals: Date[] = []
-    let current = earliest
+    const dates = allSessions.map((session) => session.appointmentDate);
+    const earliest = new Date(Math.min(...dates.map((d) => d.getTime())));
+    const latest = new Date(Math.max(...dates.map((d) => d.getTime())));
+    const intervals: Date[] = [];
+    let current = earliest;
 
     while (isBefore(current, addMinutes(latest, 30))) {
-        intervals.push(current)
-        current = addMinutes(current, 30)
+        intervals.push(current);
+        current = addMinutes(current, 30);
     }
 
     return (
@@ -94,20 +94,20 @@ export function DayDetailSchedule({
                 {/* Cards */}
                 <div>
                     {intervals.map((time, index) => {
-                        const slotSessions = allSessions.filter(session => {
-                            const sessionTime = session.appointmentDate
+                        const slotSessions = allSessions.filter((session) => {
+                            const sessionTime = session.appointmentDate;
                             return (
                                 !isBefore(sessionTime, time) &&
                                 isBefore(sessionTime, addMinutes(time, 30))
-                            )
-                        })
+                            );
+                        });
                         return (
                             <div
                                 // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
                                 key={index}
                                 className="h-[80px] border-b flex gap-2 items-start pt-1"
                             >
-                                {slotSessions.map(session => (
+                                {slotSessions.map((session) => (
                                     <ul
                                         key={session.sessionId}
                                         className="flex-1 min-w-[60px] max-w-52"
@@ -131,10 +131,10 @@ export function DayDetailSchedule({
                                     </ul>
                                 ))}
                             </div>
-                        )
+                        );
                     })}
                 </div>
             </div>
         </div>
-    )
+    );
 }

@@ -10,10 +10,10 @@
 	},
 	"javascript": {
 		"formatter": {
-			"arrowParentheses": "asNeeded",
+			"arrowParentheses": "always",
 			"jsxQuoteStyle": "double",
 			"quoteStyle": "double",
-			"semicolons": "asNeeded",
+			"semicolons": "always",
 			"trailingCommas": "es5"
 		}
 	},
@@ -28,7 +28,11 @@
 	},
 	"files": {
 		"ignore": [
-			"node_modules"
+			"node_modules",
+			"src/assets",
+			"tsconfig.app.json",
+			"tsconfig.json",
+			"tsconfig.node.json"
 		]
 	}
 }

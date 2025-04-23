@@ -1,9 +1,9 @@
-import type { ReactNode } from "react"
-import { DashboardMenu } from "./dashboard-menu"
-import { DashboardNavigation } from "./dashboard-navigation"
+import type { ReactNode } from "react";
+import { DashboardMenu } from "./dashboard-menu";
+import { DashboardNavigation } from "./dashboard-navigation";
 
 export interface DashboardTemplateProps {
-    children: ReactNode
+    children: ReactNode;
 }
 
 export function DashboardTemplate({ children }: DashboardTemplateProps) {
@@ -17,5 +17,5 @@ export function DashboardTemplate({ children }: DashboardTemplateProps) {
                 </main>
             </div>
         </div>
-    )
+    );
 }

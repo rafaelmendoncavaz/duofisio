@@ -1,5 +1,5 @@
-import { type ComponentProps, forwardRef } from "react"
-import { tv, type VariantProps } from "tailwind-variants"
+import { type ComponentProps, forwardRef } from "react";
+import { tv, type VariantProps } from "tailwind-variants";
 
 const inputVariants = tv({
     base: "outline-none border rounded-md focus:border-fisioblue py-1 px-3 shadow-shape transition-colors",
@@ -18,7 +18,7 @@ const inputVariants = tv({
         sizeVariant: "default",
         colorVariant: "enabled",
     },
-})
+});
 
 interface InputProps
     extends ComponentProps<"input">,
@@ -33,8 +33,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                 className={inputVariants({ sizeVariant, colorVariant })}
                 disabled={props.disabled}
             />
-        )
+        );
     }
-)
+);
 
-Input.displayName = "Input"
+Input.displayName = "Input";

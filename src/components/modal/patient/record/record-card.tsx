@@ -1,9 +1,9 @@
-import type { ClinicalData } from "../../../../types/types"
+import type { ClinicalData } from "../../../../types/types";
 
 interface RecordCardProps {
-    record: ClinicalData
-    patientId: string
-    handleClick: (patientId: string, recordId: string) => Promise<void>
+    record: ClinicalData;
+    patientId: string;
+    handleClick: (patientId: string, recordId: string) => Promise<void>;
 }
 
 export function RecordCard({
@@ -15,7 +15,7 @@ export function RecordCard({
         <li
             className="border border-red-800 bg-red-100 text-red-800 rounded-md shadow-shape p-2 hover:bg-red-800 hover:text-red-100 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-900"
             onClick={() => handleClick(patientId, record.id)}
-            onKeyDown={e =>
+            onKeyDown={(e) =>
                 e.key === "Enter" && handleClick(patientId, record.id)
             }
             tabIndex={0}
@@ -37,5 +37,5 @@ export function RecordCard({
                 {record.diagnosis}
             </p>
         </li>
-    )
+    );
 }

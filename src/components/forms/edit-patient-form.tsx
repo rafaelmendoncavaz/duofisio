@@ -1,15 +1,15 @@
-import { useForm } from "react-hook-form"
-import { useAPI } from "../../store/store"
-import { updatePatientSchema } from "../../schema/schema"
-import type { TypeUpdatePatient } from "../../types/types"
-import { Input } from "../global/input"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useState, useCallback, useEffect } from "react"
-import { viacep } from "../../api/api"
+import { useForm } from "react-hook-form";
+import { useAPI } from "../../store/store";
+import { updatePatientSchema } from "../../schema/schema";
+import type { TypeUpdatePatient } from "../../types/types";
+import { Input } from "../global/input";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useState, useCallback, useEffect } from "react";
+import { viacep } from "../../api/api";
 
 interface EditPatientFormProps {
-    isEditing: boolean
-    setIsEditing: React.Dispatch<React.SetStateAction<boolean>>
+    isEditing: boolean;
+    setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export function EditPatientForm({
@@ -17,15 +17,15 @@ export function EditPatientForm({
     setIsEditing,
 }: EditPatientFormProps) {
     const { verifyAuth, patientData, getSinglePatient, updatePatient } =
-        useAPI()
+        useAPI();
 
     const [isLoadingCEP, setIsLoadingCEP] = useState({
         patient: false,
         adult: false,
-    })
+    });
 
     const birthDate =
-        patientData && new Date(patientData.dateOfBirth).toISOString()
+        patientData && new Date(patientData.dateOfBirth).toISOString();
 
     const {
         register,
@@ -79,50 +79,50 @@ export function EditPatientForm({
                       : null,
               }
             : undefined,
-    })
+    });
 
     useEffect(() => {
         if (!isEditing) {
-            reset()
+            reset();
         }
-    }, [isEditing, reset])
+    }, [isEditing, reset]);
 
     const fetchAddress = useCallback(
         async (cep: string, type: "patient" | "adult") => {
-            if (cep.length !== 8) return
-            setIsLoadingCEP(prev => ({ ...prev, [type]: true }))
+            if (cep.length !== 8) return;
+            setIsLoadingCEP((prev) => ({ ...prev, [type]: true }));
             try {
-                const { data } = await viacep.get(`/${cep}/json`)
+                const { data } = await viacep.get(`/${cep}/json`);
                 const prefix =
-                    type === "patient" ? "address" : "adultResponsible.address"
-                setValue(`${prefix}.street`, data.logradouro || "")
-                setValue(`${prefix}.neighborhood`, data.bairro || "")
-                setValue(`${prefix}.city`, data.localidade || "")
-                setValue(`${prefix}.state`, data.uf || "")
+                    type === "patient" ? "address" : "adultResponsible.address";
+                setValue(`${prefix}.street`, data.logradouro || "");
+                setValue(`${prefix}.neighborhood`, data.bairro || "");
+                setValue(`${prefix}.city`, data.localidade || "");
+                setValue(`${prefix}.state`, data.uf || "");
             } catch (error) {
-                console.error(`Erro ao buscar endereço do ${type}`, error)
+                console.error(`Erro ao buscar endereço do ${type}`, error);
             } finally {
-                setIsLoadingCEP(prev => ({ ...prev, [type]: false }))
+                setIsLoadingCEP((prev) => ({ ...prev, [type]: false }));
             }
         },
         [setValue]
-    )
+    );
 
     const onSubmit = async (data: TypeUpdatePatient) => {
-        if (!patientData?.id) return
+        if (!patientData?.id) return;
 
-        const result = await updatePatient(data, patientData.id)
+        const result = await updatePatient(data, patientData.id);
         if (result.success) {
-            setIsEditing(false)
-            getSinglePatient(patientData.id)
-            verifyAuth()
+            setIsEditing(false);
+            getSinglePatient(patientData.id);
+            verifyAuth();
         }
-    }
+    };
 
     if (!patientData) {
         return (
             <div className="p-4 text-center">Nenhum paciente selecionado.</div>
-        )
+        );
     }
 
     return (
@@ -273,7 +273,7 @@ export function EditPatientForm({
                         <Input
                             type="text"
                             {...register("address.cep", {
-                                onChange: e =>
+                                onChange: (e) =>
                                     isEditing &&
                                     fetchAddress(e.target.value, "patient"),
                             })}
@@ -490,7 +490,7 @@ export function EditPatientForm({
                             <Input
                                 type="text"
                                 {...register("adultResponsible.address.cep", {
-                                    onChange: e =>
+                                    onChange: (e) =>
                                         isEditing &&
                                         fetchAddress(e.target.value, "adult"),
                                 })}
@@ -653,5 +653,5 @@ export function EditPatientForm({
                 {isSubmitting ? "Atualizando..." : "Atualizar Paciente"}
             </button>
         </form>
-    )
+    );
 }

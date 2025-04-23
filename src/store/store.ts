@@ -1,4 +1,4 @@
-import { create } from "zustand"
+import { create } from "zustand";
 import type {
     TypeSearchFilter,
     TypeLoginData,
@@ -11,8 +11,8 @@ import type {
     TypeAppointmentUpdate,
     TypeAppointmentRepeat,
     TypeAppointmentList,
-} from "../types/types"
-import { api } from "../api/api"
+} from "../types/types";
+import { api } from "../api/api";
 import {
     addDays,
     endOfDay,
@@ -26,7 +26,7 @@ import {
     subMonths,
     addWeeks,
     subWeeks,
-} from "date-fns"
+} from "date-fns";
 
 // Função auxiliar para aplicar o filtro
 function applyFilter(
@@ -34,59 +34,59 @@ function applyFilter(
     filter: string | null,
     state: TypeAPI
 ) {
-    if (!appointments || !filter) return null
+    if (!appointments || !filter) return null;
 
-    const now = new Date(new Date().getTime() - 3 * 60 * 60 * 1000)
-    let start: Date
-    let end: Date
+    const now = new Date(new Date().getTime() - 3 * 60 * 60 * 1000);
+    let start: Date;
+    let end: Date;
 
     switch (filter) {
         case "history":
-            start = startOfDay(state.startDate)
-            end = endOfDay(state.endDate)
-            break
+            start = startOfDay(state.startDate);
+            end = endOfDay(state.endDate);
+            break;
         case "today":
-            start = startOfDay(now)
-            end = endOfDay(now)
-            break
+            start = startOfDay(now);
+            end = endOfDay(now);
+            break;
         case "tomorrow":
-            start = startOfDay(addDays(now, 1))
-            end = endOfDay(addDays(now, 1))
-            break
+            start = startOfDay(addDays(now, 1));
+            end = endOfDay(addDays(now, 1));
+            break;
         case "week":
-            start = startOfWeek(state.currentWeek)
-            end = endOfWeek(state.currentWeek)
-            break
+            start = startOfWeek(state.currentWeek);
+            end = endOfWeek(state.currentWeek);
+            break;
         case "month":
-            start = startOfMonth(state.currentMonth)
-            end = endOfMonth(state.currentMonth)
-            break
+            start = startOfMonth(state.currentMonth);
+            end = endOfMonth(state.currentMonth);
+            break;
         default:
-            return null
+            return null;
     }
 
     const filteredAppointments = appointments
-        .map(appointment => {
-            const filteredSessions = appointment.sessions.filter(session =>
+        .map((appointment) => {
+            const filteredSessions = appointment.sessions.filter((session) =>
                 isWithinInterval(new Date(session.appointmentDate), {
                     start,
                     end,
                 })
-            )
+            );
             if (filteredSessions.length > 0) {
                 return {
                     ...appointment,
                     sessions: filteredSessions,
-                }
+                };
             }
-            return null
+            return null;
         })
-        .filter(Boolean) as TypeAppointmentList[]
+        .filter(Boolean) as TypeAppointmentList[];
 
-    return filteredAppointments
+    return filteredAppointments;
 }
 
-export const useModal = create<TypeModal>(set => ({
+export const useModal = create<TypeModal>((set) => ({
     isCreatePatientModalOpen: false,
     isSinglePatientModalOpen: false,
     isCreateAppointmentModalOpen: false,
@@ -104,16 +104,16 @@ export const useModal = create<TypeModal>(set => ({
             isSingleAppointmentModalOpen: false,
             isFilterByTimespanModalOpen: false,
         }),
-}))
+}));
 
-export const useSearchFilter = create<TypeSearchFilter>(set => ({
+export const useSearchFilter = create<TypeSearchFilter>((set) => ({
     searchName: "",
     searchPhone: "",
     searchCPF: "",
     setSearchName: (name: string) => set({ searchName: name }),
     setSearchPhone: (phone: string) => set({ searchPhone: phone }),
     setSearchCPF: (cpf: string) => set({ searchCPF: cpf }),
-}))
+}));
 
 export const useAPI = create<TypeAPI>((set, get) => ({
     // Estados
@@ -147,115 +147,115 @@ export const useAPI = create<TypeAPI>((set, get) => ({
     clearError: () => set({ error: null }),
 
     // Funções de controle de estado
-    setCsrfToken: csrfToken => set({ csrfToken }),
-    setSelectedAppointmentData: appointment =>
+    setCsrfToken: (csrfToken) => set({ csrfToken }),
+    setSelectedAppointmentData: (appointment) =>
         set({ selectedAppointmentData: appointment }),
     clearSelectedAppointmentData: () => set({ selectedAppointmentData: null }),
-    setActiveFilter: filter => {
-        set(state => {
+    setActiveFilter: (filter) => {
+        set((state) => {
             const filteredAppointments = applyFilter(
                 state.appointmentList,
                 filter,
                 state
-            )
+            );
             return {
                 activeFilter: filter,
                 filteredAppointments,
-            }
-        })
+            };
+        });
     },
     setDateRangeFilter: (startDate, endDate) => {
-        set({ startDate, endDate })
+        set({ startDate, endDate });
     },
 
     prevWeek: () =>
-        set(state => ({
+        set((state) => ({
             currentWeek: subWeeks(state.currentWeek, 1),
         })),
 
     nextWeek: () =>
-        set(state => ({
+        set((state) => ({
             currentWeek: addWeeks(state.currentWeek, 1),
         })),
 
     prevMonth: () =>
-        set(state => ({
+        set((state) => ({
             currentMonth: subMonths(state.currentMonth, 1),
         })),
 
     nextMonth: () =>
-        set(state => ({
+        set((state) => ({
             currentMonth: addMonths(state.currentMonth, 1),
         })),
 
     // Funções assíncronas
     userLogin: async (loginData: TypeLoginData) => {
         try {
-            const { getCsrfToken, setCsrfToken } = get()
-            const token = await getCsrfToken()
-            console.log("CSRF Token antes do POST:", token)
+            const { getCsrfToken, setCsrfToken } = get();
+            const token = await getCsrfToken();
             if (token) {
-                setCsrfToken(token)
+                setCsrfToken(token);
             }
-            await api.post("/auth/login", loginData)
-            set({ error: null })
-            await get().verifyAuth() // Verifica usuário após login
-            return { success: true }
+            await api.post("/auth/login", loginData);
+            set({ error: null });
+            await get().verifyAuth(); // Verifica usuário após login
+            return { success: true };
         } catch (error) {
-            set({ error: "Erro ao realizar login" })
-            return { success: false, error }
+            set({ error: "Erro ao realizar login" });
+            return { success: false, error };
         }
     },
 
     userLogout: async () => {
         try {
-            await api.post("/auth/logout") // CSRF tratado pelo interceptor
-            set({ user: null, csrfToken: null, employees: null })
-            return { success: true }
+            await api.post("/auth/logout"); // CSRF tratado pelo interceptor
+            set({ user: null, csrfToken: null, employees: null });
+            return { success: true };
         } catch (error) {
-            set({ error: "Erro ao fazer logout" })
-            return { success: false, error }
+            set({ error: "Erro ao fazer logout" });
+            return { success: false, error };
         }
     },
 
     verifyAuth: async () => {
         try {
-            const { csrfToken, getCsrfToken, setCsrfToken } = get()
+            const { csrfToken, getCsrfToken, setCsrfToken } = get();
             if (!csrfToken) {
-                const token = await getCsrfToken()
-                if (token) setCsrfToken(token)
+                const token = await getCsrfToken();
+                if (token) setCsrfToken(token);
             }
 
-            const { data } = await api.get("/auth/verify")
+            const { data } = await api.get("/auth/verify");
+            if (!data.user) throw new Error("Usuário não encontrado");
             set({
                 user: data.user,
                 employees: data.employees,
                 error: null,
-            })
-            return { success: true, user: data.user }
+            });
+            return { success: true, user: data.user };
         } catch (error) {
             set({
                 user: null,
                 error: "Erro ao verificar autenticação",
                 csrfToken: null,
-            })
-            return { success: false, error }
+            });
+            return { success: false, error };
         }
     },
 
     getCsrfToken: async () => {
-        const { csrfToken } = get()
-        if (csrfToken) return csrfToken
+        const { csrfToken } = get();
+        if (csrfToken) return csrfToken;
 
         try {
             const response = await api.get<{ csrfToken: string }>(
                 "/auth/csrf-token"
-            )
-            set({ csrfToken: response.data.csrfToken }) // Atualiza o estado
-            return response.data.csrfToken
+            );
+            set({ csrfToken: response.data.csrfToken }); // Atualiza o estado
+            return response.data.csrfToken;
         } catch (error) {
-            console.error("Erro ao obter CSRF token:", error)
-            return null
+            console.error("Erro ao obter CSRF token:", error);
+            return null;
         }
     },
 
@@ -264,105 +264,107 @@ export const useAPI = create<TypeAPI>((set, get) => ({
             const { data: response, status } = await api.post(
                 "/dashboard/patients",
                 data
-            ) // CSRF tratado pelo interceptor
-            set({ error: null })
-            return { success: true, patientId: response.patientId, status }
+            ); // CSRF tratado pelo interceptor
+            set({ error: null });
+            return { success: true, patientId: response.patientId, status };
         } catch (error) {
-            set({ error: "Erro ao criar paciente" })
-            return { success: false, error }
+            set({ error: "Erro ao criar paciente" });
+            return { success: false, error };
         }
     },
 
     getPatients: async () => {
         try {
-            const { data } = await api.get("/dashboard/patients")
-            set({ patientList: data.patients, error: null })
-            return { success: true }
+            const { data } = await api.get("/dashboard/patients");
+            set({ patientList: data.patients, error: null });
+            return { success: true };
         } catch (error) {
-            set({ error: "Erro ao buscar pacientes" })
-            return { success: false, error }
+            set({ error: "Erro ao buscar pacientes" });
+            return { success: false, error };
         }
     },
 
     getSinglePatient: async (id: string) => {
         try {
-            set({ patientData: null })
-            const { data } = await api.get(`/dashboard/patients/${id}`)
-            set({ patientData: data.patient, error: null })
-            return { success: true, patient: data.patient }
+            set({ patientData: null });
+            const { data } = await api.get(`/dashboard/patients/${id}`);
+            set({ patientData: data.patient, error: null });
+            return { success: true, patient: data.patient };
         } catch (error) {
-            set({ error: "Erro ao buscar paciente" })
-            return { success: false, error }
+            set({ error: "Erro ao buscar paciente" });
+            return { success: false, error };
         }
     },
 
     updatePatient: async (data: TypeUpdatePatient, id: string) => {
         try {
-            const { status } = await api.put(`/dashboard/patients/${id}`, data)
-            set({ error: null })
-            return { success: true, status }
+            const { status } = await api.put(`/dashboard/patients/${id}`, data);
+            set({ error: null });
+            return { success: true, status };
         } catch (error) {
-            set({ error: "Erro ao editar paciente" })
-            return { success: false, error }
+            set({ error: "Erro ao editar paciente" });
+            return { success: false, error };
         }
     },
 
     deletePatient: async (id: string) => {
         try {
-            await api.delete(`/dashboard/patients/${id}`)
-            set({ error: null })
-            return { success: true }
+            await api.delete(`/dashboard/patients/${id}`);
+            set({ error: null });
+            return { success: true };
         } catch (error) {
-            set({ error: "Erro ao deletar paciente" })
-            return { success: false, error }
+            set({ error: "Erro ao deletar paciente" });
+            return { success: false, error };
         }
     },
 
     createClinicalRecord: async (id: string, data: TypeCreateRecord) => {
         try {
-            await api.post(`/dashboard/patients/${id}/clinical`, data)
-            set({ error: null })
-            return { success: true }
+            await api.post(`/dashboard/patients/${id}/clinical`, data);
+            set({ error: null });
+            return { success: true };
         } catch (error) {
-            set({ error: "Erro ao criar registro clínico" })
-            return { success: false, error }
+            set({ error: "Erro ao criar registro clínico" });
+            return { success: false, error };
         }
     },
 
     getClinicalRecords: async (id: string) => {
         try {
-            set({ clinicalRecords: null })
-            const { data } = await api.get(`/dashboard/patients/${id}/clinical`)
-            set({ clinicalRecords: data.patientClinicalRecord, error: null })
-            return { success: true }
+            set({ clinicalRecords: null });
+            const { data } = await api.get(
+                `/dashboard/patients/${id}/clinical`
+            );
+            set({ clinicalRecords: data.patientClinicalRecord, error: null });
+            return { success: true };
         } catch (error) {
-            set({ error: "Erro ao buscar registros clínicos" })
-            return { success: false, error }
+            set({ error: "Erro ao buscar registros clínicos" });
+            return { success: false, error };
         }
     },
 
     getSingleClinicalRecord: async (id: string, recordId: string) => {
         try {
-            set({ clinicalRecord: null })
+            set({ clinicalRecord: null });
             const { data } = await api.get(
                 `/dashboard/patients/${id}/clinical/${recordId}`
-            )
-            set({ clinicalRecord: data.clinicalRecord, error: null })
-            return { success: true, record: data.clinicalRecord }
+            );
+            set({ clinicalRecord: data.clinicalRecord, error: null });
+            return { success: true, record: data.clinicalRecord };
         } catch (error) {
-            set({ error: "Erro ao buscar registro clínico" })
-            return { success: false, error }
+            set({ error: "Erro ao buscar registro clínico" });
+            return { success: false, error };
         }
     },
 
     deleteClinicalRecord: async (id: string, recordId: string) => {
         try {
-            await api.delete(`/dashboard/patients/${id}/clinical/${recordId}`)
-            set({ error: null })
-            return { success: true }
+            await api.delete(`/dashboard/patients/${id}/clinical/${recordId}`);
+            set({ error: null });
+            return { success: true };
         } catch (error) {
-            set({ error: "Erro ao deletar registro clínico" })
-            return { success: false, error }
+            set({ error: "Erro ao deletar registro clínico" });
+            return { success: false, error };
         }
     },
 
@@ -371,53 +373,53 @@ export const useAPI = create<TypeAPI>((set, get) => ({
             const { data: response, status } = await api.post(
                 "/dashboard/appointments",
                 data
-            )
-            set({ error: null })
+            );
+            set({ error: null });
             return {
                 success: true,
                 appointmentId: response.appointmentId,
                 status,
-            }
+            };
         } catch (error) {
-            set({ error: "Erro ao criar agendamento" })
-            return { success: false, error }
+            set({ error: "Erro ao criar agendamento" });
+            return { success: false, error };
         }
     },
 
     getAppointments: async () => {
         try {
-            const { data } = await api.get("/dashboard/appointments")
-            set(state => {
-                const newAppointmentList = data.appointments
+            const { data } = await api.get("/dashboard/appointments");
+            set((state) => {
+                const newAppointmentList = data.appointments;
                 const newFilteredAppointments = applyFilter(
                     newAppointmentList,
                     state.activeFilter,
                     state
-                )
+                );
                 return {
                     appointmentList: newAppointmentList,
                     filteredAppointments: newFilteredAppointments,
                     error: null,
-                }
-            })
-            return { success: true }
+                };
+            });
+            return { success: true };
         } catch (error) {
-            set({ error: "Erro ao buscar agendamentos" })
-            return { success: false, error }
+            set({ error: "Erro ao buscar agendamentos" });
+            return { success: false, error };
         }
     },
 
     getSingleAppointment: async (appointmentId: string) => {
         try {
-            set({ sessionData: null })
+            set({ sessionData: null });
             const { data } = await api.get(
                 `/dashboard/appointments/${appointmentId}`
-            )
-            set({ sessionData: data.session, error: null })
-            return { success: true, appointment: data.session }
+            );
+            set({ sessionData: data.session, error: null });
+            return { success: true, appointment: data.session };
         } catch (error) {
-            set({ error: "Erro ao buscar agendamento" })
-            return { success: false, error }
+            set({ error: "Erro ao buscar agendamento" });
+            return { success: false, error };
         }
     },
 
@@ -429,12 +431,12 @@ export const useAPI = create<TypeAPI>((set, get) => ({
             const { data: response } = await api.post(
                 `/dashboard/appointments/${appointmentId}/repeat`,
                 data
-            )
-            set({ error: null })
-            return { success: true, appointmentIds: response.sessionIds }
+            );
+            set({ error: null });
+            return { success: true, appointmentIds: response.sessionIds };
         } catch (error) {
-            set({ error: "Erro ao repetir agendamento" })
-            return { success: false, error }
+            set({ error: "Erro ao repetir agendamento" });
+            return { success: false, error };
         }
     },
 
@@ -446,23 +448,23 @@ export const useAPI = create<TypeAPI>((set, get) => ({
             const { status } = await api.put(
                 `/dashboard/appointments/${appointmentId}`,
                 data
-            )
-            set({ error: null })
-            return { success: true, status }
+            );
+            set({ error: null });
+            return { success: true, status };
         } catch (error) {
-            set({ error: "Erro ao editar agendamento" })
-            return { success: false, error }
+            set({ error: "Erro ao editar agendamento" });
+            return { success: false, error };
         }
     },
 
     deleteAppointment: async (appointmentId: string) => {
         try {
-            await api.delete(`/dashboard/appointments/${appointmentId}`)
-            set({ error: null })
-            return { success: true }
+            await api.delete(`/dashboard/appointments/${appointmentId}`);
+            set({ error: null });
+            return { success: true };
         } catch (error) {
-            set({ error: "Erro ao deletar agendamento" })
-            return { success: false, error }
+            set({ error: "Erro ao deletar agendamento" });
+            return { success: false, error };
         }
     },
-}))
+}));

@@ -4,18 +4,18 @@ import {
     CalendarSync,
     CalendarX2,
     X,
-} from "lucide-react"
-import { useAPI, useModal } from "../../../store/store"
-import { EditAppointmentForm } from "../../../components/forms/edit-appointment-form"
-import { Input } from "../../../components/global/input"
-import { useState } from "react"
-import { RepeatAppointmentForm } from "../../../components/forms/repeat-appointment-form"
-import { isBefore, format } from "date-fns"
-import type { TypeAppointmentUpdate } from "../../../types/types"
+} from "lucide-react";
+import { useAPI, useModal } from "../../../store/store";
+import { EditAppointmentForm } from "../../../components/forms/edit-appointment-form";
+import { Input } from "../../../components/global/input";
+import { useState } from "react";
+import { RepeatAppointmentForm } from "../../../components/forms/repeat-appointment-form";
+import { isBefore, format } from "date-fns";
+import type { TypeAppointmentUpdate } from "../../../types/types";
 
 export function ScheduleInfo() {
-    const [isEditing, setIsEditing] = useState(false)
-    const [isRepeating, setIsRepeating] = useState(false)
+    const [isEditing, setIsEditing] = useState(false);
+    const [isRepeating, setIsRepeating] = useState(false);
 
     const {
         filteredAppointments,
@@ -23,88 +23,88 @@ export function ScheduleInfo() {
         getAppointments,
         updateAppointment,
         deleteAppointment,
-    } = useAPI()
-    const { closeModal } = useModal()
+    } = useAPI();
+    const { closeModal } = useModal();
 
-    if (!sessionData) return null
+    if (!sessionData) return null;
 
-    const currentDate = new Date()
-    const appointmentDate = new Date(sessionData.appointmentDate)
-    const currentAppointment = isBefore(appointmentDate, currentDate)
+    const currentDate = new Date();
+    const appointmentDate = new Date(sessionData.appointmentDate);
+    const currentAppointment = isBefore(appointmentDate, currentDate);
     const createdAt = format(
         new Date(sessionData.appointment.createdAt).toISOString().split("T")[0],
         "dd-MM-yyyy"
-    )
+    );
     const updatedAt = format(
         new Date(sessionData.appointment.updatedAt).toISOString().split("T")[0],
         "dd-MM-yyyy"
-    )
+    );
 
     const formattedPhone =
         sessionData.appointment.patient.phone
             ?.replace(/(\d{2})(\d)/, "($1) $2")
-            .replace(/(\d{5})(\d)/, "$1-$2") || "Não Informado"
+            .replace(/(\d{5})(\d)/, "$1-$2") || "Não Informado";
 
     const toggleEdit = () => {
-        setIsEditing(prev => !prev)
-    }
+        setIsEditing((prev) => !prev);
+    };
 
     const checkForUnfinishedSessions = filteredAppointments
-        ?.filter(appointment => appointment.id === sessionData.appointment.id)
-        .some(check => {
+        ?.filter((appointment) => appointment.id === sessionData.appointment.id)
+        .some((check) => {
             const sessions = check.sessions.some(
-                checkStatus => checkStatus.status !== "FINALIZADO"
-            )
-            return sessions
-        })
+                (checkStatus) => checkStatus.status !== "FINALIZADO"
+            );
+            return sessions;
+        });
 
     const toggleRepeat = () => {
         if (checkForUnfinishedSessions) {
-            alert("Você só pode repetir atendimentos finalizados!")
-            return
+            alert("Você só pode repetir atendimentos finalizados!");
+            return;
         }
-        setIsRepeating(prev => !prev)
-    }
+        setIsRepeating((prev) => !prev);
+    };
 
     const terminateAppointment = async () => {
-        if (!currentAppointment) return
+        if (!currentAppointment) return;
 
         const updateData: TypeAppointmentUpdate = {
             status: "FINALIZADO",
-        }
+        };
 
         const confirmation = window.confirm(
             "Marcar esta sessão como: FINALIZADO.\nEsta ação não pode ser desfeita!"
-        )
+        );
 
         if (confirmation) {
             const result = await updateAppointment(
                 updateData,
                 sessionData.id // sessionId
-            )
+            );
             if (result.success) {
-                await getAppointments() // Atualiza a lista de agendamentos
-                closeModal()
+                await getAppointments(); // Atualiza a lista de agendamentos
+                closeModal();
             }
         }
-    }
+    };
 
     const handleDelete = async () => {
-        if (!sessionData) return
+        if (!sessionData) return;
         const confirmation = window.confirm(
             "Você está prestes a excluir o Agendamento.\nIsto apagará todas as sessões relacionadas! \nEsta ação não pode ser desfeita!"
-        )
+        );
 
         if (confirmation) {
-            const result = await deleteAppointment(sessionData.appointment.id) // appointmentId
+            const result = await deleteAppointment(sessionData.appointment.id); // appointmentId
             if (result.success) {
-                await getAppointments() // Atualiza a lista de agendamentos
-                closeModal()
+                await getAppointments(); // Atualiza a lista de agendamentos
+                closeModal();
             }
         }
-    }
+    };
 
-    const currentSession = `sessão ${sessionData.sessionNumber} de ${sessionData.appointment.totalSessions}`
+    const currentSession = `sessão ${sessionData.sessionNumber} de ${sessionData.appointment.totalSessions}`;
 
     return (
         <div className="flex flex-col gap-4 py-2 w-full mx-auto max-h-[70vh] overflow-hidden scrollbar-hidden overflow-y-auto">
@@ -261,5 +261,5 @@ export function ScheduleInfo() {
                 <EditAppointmentForm isEditing={isEditing} />
             )}
         </div>
-    )
+    );
 }

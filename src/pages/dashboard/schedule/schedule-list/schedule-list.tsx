@@ -1,9 +1,9 @@
-import type { TypeAppointmentList } from "../../../../types/types"
-import { ScheduleCard } from "./schedule-card/schedule-card"
+import type { TypeAppointmentList } from "../../../../types/types";
+import { ScheduleCard } from "./schedule-card/schedule-card";
 
 interface AppointmentListProps {
-    appointments: TypeAppointmentList[]
-    onSessionClick: (sessionId: string, appointmentId: string) => void
+    appointments: TypeAppointmentList[];
+    onSessionClick: (sessionId: string, appointmentId: string) => void;
 }
 
 export function ScheduleList({
@@ -12,8 +12,8 @@ export function ScheduleList({
 }: AppointmentListProps) {
     // Extrair todas as sessões dos agendamentos
     const allSessions = appointments
-        .flatMap(appointment =>
-            appointment.sessions.map(session => ({
+        .flatMap((appointment) =>
+            appointment.sessions.map((session) => ({
                 sessionId: session.id,
                 appointmentId: appointment.id,
                 appointmentDate: new Date(session.appointmentDate),
@@ -25,11 +25,11 @@ export function ScheduleList({
                 totalSessions: appointment.totalSessions,
             }))
         )
-        .sort((a, b) => a.patientName.localeCompare(b.patientName))
+        .sort((a, b) => a.patientName.localeCompare(b.patientName));
 
     return (
         <ul className="grid grid-cols-5 grid-rows-4 gap-4">
-            {allSessions.map(session => (
+            {allSessions.map((session) => (
                 <ScheduleCard
                     key={session.sessionId}
                     sessionId={session.sessionId}
@@ -44,5 +44,5 @@ export function ScheduleList({
                 />
             ))}
         </ul>
-    )
+    );
 }

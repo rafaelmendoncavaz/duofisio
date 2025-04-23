@@ -1,26 +1,20 @@
-import { useForm } from "react-hook-form"
-import { useNavigate } from "react-router-dom"
-import { Key, User } from "lucide-react"
-import { Contact } from "../global/contact"
-import { Input } from "../global/input"
-import { useAPI } from "../../store/store"
-import type { TypeLoginData } from "../../types/types"
-import roundLogo from "../../assets/duofisio-rounded-transparent.png"
-import { useEffect } from "react"
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import { Key, User } from "lucide-react";
+import { Contact } from "../global/contact";
+import { Input } from "../global/input";
+import { useAPI } from "../../store/store";
+import type { TypeLoginData } from "../../types/types";
+import roundLogo from "../../assets/duofisio-rounded-transparent.png";
+import { useEffect } from "react";
 
 export function Login() {
-    const navigate = useNavigate()
-    const { user, userLogin } = useAPI()
+    const navigate = useNavigate();
+    const { userLogin, user } = useAPI();
 
     useEffect(() => {
-        const checkForRedirect = async () => {
-            if (user) {
-                navigate("/dashboard", { replace: true })
-                return
-            }
-        }
-        checkForRedirect()
-    }, [navigate, user])
+        if (user) navigate("/dashboard", { replace: true });
+    }, [navigate, user]);
 
     const {
         register,
@@ -28,15 +22,13 @@ export function Login() {
         formState: { isSubmitting },
     } = useForm<TypeLoginData>({
         defaultValues: { email: "", password: "" },
-    })
+    });
 
     const onSubmit = async (data: TypeLoginData) => {
-        const response = await userLogin(data)
-        if (!response.success) {
-            return
-        }
-        navigate("/dashboard", { replace: true })
-    }
+        const response = await userLogin(data);
+        if (!response.success) return;
+        navigate("/dashboard", { replace: true });
+    };
 
     return (
         <div className="h-screen flex flex-col">
@@ -99,5 +91,5 @@ export function Login() {
                 </div>
             </div>
         </div>
-    )
+    );
 }

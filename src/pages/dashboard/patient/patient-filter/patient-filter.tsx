@@ -1,46 +1,46 @@
-import { UserPlus, UserSearch, User, Phone, IdCard } from "lucide-react"
-import { Input } from "../../../../components/global/input"
-import { useModal, useSearchFilter } from "../../../../store/store"
-import { useState } from "react"
+import { UserPlus, UserSearch, User, Phone, IdCard } from "lucide-react";
+import { Input } from "../../../../components/global/input";
+import { useModal, useSearchFilter } from "../../../../store/store";
+import { useState } from "react";
 
 export function PatientFilter() {
-    const { openCreatePatientModal } = useModal()
-    const { setSearchName, setSearchPhone, setSearchCPF } = useSearchFilter()
+    const { openCreatePatientModal } = useModal();
+    const { setSearchName, setSearchPhone, setSearchCPF } = useSearchFilter();
 
-    const [nameInput, setNameInput] = useState("") // Estado local para o input
+    const [nameInput, setNameInput] = useState(""); // Estado local para o input
 
     // Formata CPF enquanto digita
     const handleCPFChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const rawValue = e.target.value.replace(/\D/g, "").slice(0, 11)
+        const rawValue = e.target.value.replace(/\D/g, "").slice(0, 11);
         const formattedValue = rawValue
             .replace(/(\d{3})(\d)/, "$1.$2")
             .replace(/(\d{3})(\d)/, "$1.$2")
-            .replace(/(\d{3})(\d{1,2})$/, "$1-$2")
-        e.target.value = formattedValue
-        setSearchCPF(rawValue)
-    }
+            .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+        e.target.value = formattedValue;
+        setSearchCPF(rawValue);
+    };
 
     // Formata Telefone enquanto digita
     const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const rawValue = e.target.value.replace(/\D/g, "").slice(0, 11)
+        const rawValue = e.target.value.replace(/\D/g, "").slice(0, 11);
         const formattedValue = rawValue
             .replace(/(\d{2})(\d)/, "($1) $2")
-            .replace(/(\d{5})(\d)/, "$1-$2")
-        e.target.value = formattedValue
-        setSearchPhone(rawValue)
-    }
+            .replace(/(\d{5})(\d)/, "$1-$2");
+        e.target.value = formattedValue;
+        setSearchPhone(rawValue);
+    };
 
     // Normaliza Nome para busca, mas mantém o input como digitado
     const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const rawValue = e.target.value
-        setNameInput(rawValue) // Mostra o que o usuário digitou
+        const rawValue = e.target.value;
+        setNameInput(rawValue); // Mostra o que o usuário digitou
         const normalizedValue = rawValue
             .normalize("NFD")
             // biome-ignore lint/suspicious/noMisleadingCharacterClass: <explanation>
             .replace(/[\u0300-\u036f]/g, "")
-            .toLowerCase()
-        setSearchName(normalizedValue) // Salva normalizado para busca
-    }
+            .toLowerCase();
+        setSearchName(normalizedValue); // Salva normalizado para busca
+    };
 
     return (
         <div className="space-y-6">
@@ -106,5 +106,5 @@ export function PatientFilter() {
                 </div>
             </div>
         </div>
-    )
+    );
 }

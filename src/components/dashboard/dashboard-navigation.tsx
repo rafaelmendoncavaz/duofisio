@@ -1,21 +1,15 @@
-import { CalendarDays, Hospital, House, Users } from "lucide-react"
-import roundedLogo from "../../assets/duofisio-rounded-transparent.png"
-import { useNavigate } from "react-router-dom"
-import { useAPI } from "../../store/store"
+import { CalendarDays, Hospital, House, Users } from "lucide-react";
+import roundedLogo from "../../assets/duofisio-rounded-transparent.png";
+import { useNavigate } from "react-router-dom";
 
 export function DashboardNavigation() {
-    const { verifyAuth } = useAPI()
-
-    const navigate = useNavigate()
+    const navigate = useNavigate();
 
     const navItems = [
         {
             id: 1,
             label: "Página Inicial",
-            path: async () => {
-                await verifyAuth()
-                navigate("/dashboard")
-            },
+            path: () => navigate("/dashboard"),
             icon: <House size={20} />,
         },
         {
@@ -30,7 +24,7 @@ export function DashboardNavigation() {
             path: () => navigate("/dashboard/pacientes"),
             icon: <Users size={20} />,
         },
-    ]
+    ];
 
     return (
         <aside className="bg-fisioblue text-slate-100 w-60 h-full">
@@ -59,7 +53,7 @@ export function DashboardNavigation() {
                     </div>
 
                     <nav className="mt-2">
-                        {navItems.map(item => (
+                        {navItems.map((item) => (
                             <button
                                 key={item.id}
                                 onClick={item.path}
@@ -75,5 +69,5 @@ export function DashboardNavigation() {
                 </div>
             </div>
         </aside>
-    )
+    );
 }
