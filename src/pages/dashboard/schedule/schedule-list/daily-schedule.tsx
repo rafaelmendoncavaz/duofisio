@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { format, addMinutes, isBefore, set } from "date-fns";
 import type { TypeAppointmentList } from "../../../../types/types";
 import { ScheduleCard } from "./schedule-card/schedule-card";
+import { formatToBrazilTime, parseBrazilTimeToUTC } from "../../../../utils/date";
 
 type DailyScheduleProps = {
     appointments: TypeAppointmentList[];
@@ -16,22 +17,14 @@ export function DailySchedule({
 }: DailyScheduleProps) {
     const [currentTime, setCurrentTime] = useState(() => {
         const now = new Date();
-        return new Date(
-            now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" })
-        );
+        return parseBrazilTimeToUTC(formatToBrazilTime(now))
     });
 
     useEffect(() => {
         if (isToday) {
             const interval = setInterval(() => {
                 const now = new Date();
-                setCurrentTime(
-                    new Date(
-                        now.toLocaleString("en-US", {
-                            timeZone: "America/Sao_Paulo",
-                        })
-                    )
-                );
+                setCurrentTime(parseBrazilTimeToUTC(formatToBrazilTime(now)));
             }, 60000);
             return () => clearInterval(interval);
         }
@@ -42,7 +35,9 @@ export function DailySchedule({
         appointment.sessions.map((session) => ({
             sessionId: session.id,
             appointmentId: appointment.id,
-            appointmentDate: new Date(session.appointmentDate),
+            appointmentDate: parseBrazilTimeToUTC(
+                formatToBrazilTime(new Date(session.appointmentDate))
+            ),
             duration: session.duration,
             status: session.status,
             patientName: appointment.patient.name,
@@ -55,11 +50,8 @@ export function DailySchedule({
     // Definir o início como 06:00 e o fim como 20:00 no dia base, em UTC-3
     const baseDate = allSessions.length
         ? new Date(allSessions[0].appointmentDate)
-        : new Date(
-              new Date().toLocaleString("en-US", {
-                  timeZone: "America/Sao_Paulo",
-              })
-          );
+        : parseBrazilTimeToUTC(formatToBrazilTime(new Date()));
+        
     const start = set(baseDate, {
         hours: 6,
         minutes: 0,
@@ -98,8 +90,8 @@ export function DailySchedule({
                         className="absolute left-0 flex justify-center items-center w-full text-red-700 bg-red-700 h-px"
                         style={{
                             top: `${
-                                ((currentTime.getHours() * 60 +
-                                    currentTime.getMinutes() -
+                                ((new Date(currentTime).getHours() * 60 +
+                                    new Date(currentTime).getMinutes() -
                                     360) /
                                     30) *
                                 80

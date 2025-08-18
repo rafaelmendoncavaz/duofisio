@@ -36,7 +36,7 @@ function applyFilter(
 ) {
     if (!appointments || !filter) return null;
 
-    const now = new Date(new Date().getTime() - 3 * 60 * 60 * 1000);
+    const now = new Date();
     let start: Date;
     let end: Date;
 
@@ -124,11 +124,11 @@ export const useAPI = create<TypeAPI>((set, get) => ({
     activeFilter: "today",
     startDate: "",
     endDate: "",
-    currentWeek: startOfWeek(
-        new Date(new Date().getTime() - 3 * 60 * 60 * 1000),
-        { weekStartsOn: 0 }
+    currentWeek: startOfWeek(new Date(), { 
+        weekStartsOn: 0 
+    }
     ),
-    currentMonth: new Date(new Date().getTime() - 3 * 60 * 60 * 1000),
+    currentMonth: new Date(),
 
     // Armazenamento de requisições
     patientList: [],

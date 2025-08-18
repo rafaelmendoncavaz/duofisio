@@ -3,6 +3,7 @@ import { ScheduleList } from "./schedule-list";
 import { useState } from "react";
 import type { TypeAppointmentList } from "../../../../types/types";
 import { useAPI } from "../../../../store/store";
+import { formatToBrazilTime } from "../../../../utils/date";
 
 interface ScheduleHistoryProps {
     appointments: TypeAppointmentList[];
@@ -15,8 +16,8 @@ export function ScheduleHistory({
 }: ScheduleHistoryProps) {
     const { startDate, endDate } = useAPI();
 
-    const start = startDate.toString().replace(/-/g, "/");
-    const end = endDate.toString().replace(/-/g, "/");
+    const start = formatToBrazilTime(startDate as string, "dd/MM/yyyy");
+    const end = formatToBrazilTime(endDate as string, "dd/MM/yyyy");
 
     const [page, setPage] = useState(0);
     const itemsPerPage = 20;

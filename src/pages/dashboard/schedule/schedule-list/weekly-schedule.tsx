@@ -5,6 +5,7 @@ import type { TypeAppointmentList } from "../../../../types/types";
 import { DayDetailSchedule } from "./day-detail-schedule";
 import { ArrowLeftCircle, ArrowRightCircle } from "lucide-react";
 import { useAPI } from "../../../../store/store";
+import { formatToBrazilTime } from "../../../../utils/date";
 
 type WeeklyScheduleProps = {
     appointments: TypeAppointmentList[];
@@ -38,9 +39,12 @@ export function WeeklySchedule({
     // Função para contar sessões por dia
     const getSession = (day: Date) =>
         allSessions.filter(
-            (session) =>
-                format(session.appointmentDate, "yyyy-MM-dd") ===
-                format(day, "yyyy-MM-dd")
+            (session) => {
+                const sessionDay = formatToBrazilTime(session.appointmentDate, "yyyy-MM-dd")
+                const targetDay = formatToBrazilTime(day, "yyyy-MM-dd")
+                
+                return sessionDay === targetDay
+            }
         );
 
     const getSessionStatus = (day: Date, status: string) => {
@@ -66,8 +70,8 @@ export function WeeklySchedule({
         const dayAppointments = appointments.filter((appointment) =>
             appointment.sessions.some(
                 (session) =>
-                    format(new Date(session.appointmentDate), "yyyy-MM-dd") ===
-                    format(selectedDay, "yyyy-MM-dd")
+                    formatToBrazilTime(session.appointmentDate, "yyyy-MM-dd") ===
+                    formatToBrazilTime(selectedDay, "yyyy-MM-dd")
             )
         );
         return (
@@ -86,7 +90,7 @@ export function WeeklySchedule({
             <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-fisiogray">
                     Semana de {format(currentWeek, "dd/MM")} a{" "}
-                    {format(addDays(currentWeek, 6), "dd/MM")}
+                    {formatToBrazilTime(addDays(currentWeek, 6), "dd/MM")}
                 </h2>
                 <div className="flex items-center gap-2">
                     <button
@@ -127,7 +131,7 @@ export function WeeklySchedule({
                     ).length;
                     return (
                         <div
-                            key={day.toISOString()}
+                            key={formatToBrazilTime(day, "yyyy-MM-dd")}
                             className="text-center pr-4 border-r border-r-black"
                         >
                             <p className="font-semibold text-lg text-slate-100 bg-fisioblue rounded-md mb-2">

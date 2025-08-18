@@ -30,15 +30,10 @@ export function ScheduleInfo() {
 
     const currentDate = new Date();
     const appointmentDate = new Date(sessionData.appointmentDate);
-    const currentAppointment = isBefore(appointmentDate, currentDate);
-    const createdAt = format(
-        new Date(sessionData.appointment.createdAt).toISOString().split("T")[0],
-        "dd-MM-yyyy"
-    );
-    const updatedAt = format(
-        new Date(sessionData.appointment.updatedAt).toISOString().split("T")[0],
-        "dd-MM-yyyy"
-    );
+    const isPastAppointment = isBefore(appointmentDate, currentDate);
+    const createdAt = format(new Date(sessionData.appointment.createdAt), "dd-MM-yyyy");
+    const updatedAt = format(new Date(sessionData.appointment.updatedAt), "dd-MM-yyyy");
+
 
     const formattedPhone =
         sessionData.appointment.patient.phone
@@ -67,7 +62,7 @@ export function ScheduleInfo() {
     };
 
     const terminateAppointment = async () => {
-        if (!currentAppointment) return;
+        if (!isPastAppointment) return;
 
         const updateData: TypeAppointmentUpdate = {
             status: "FINALIZADO",
@@ -118,7 +113,7 @@ export function ScheduleInfo() {
                         {`Informações do Agendamento: (${currentSession})`}
                     </h1>
                     <div className="flex items-center gap-4">
-                        {currentAppointment &&
+                        {isPastAppointment &&
                         sessionData.status !== "FINALIZADO" ? (
                             <button
                                 title="Finalizar Sessão"

@@ -1,7 +1,8 @@
-import { format, addMinutes, isBefore } from "date-fns";
+import { addMinutes, isBefore } from "date-fns";
 import type { TypeAppointmentList } from "../../../../types/types";
 import { ScheduleCard } from "./schedule-card/schedule-card";
 import { ChevronLeft } from "lucide-react";
+import { formatToBrazilTime } from "../../../../utils/date";
 
 type DayDetailScheduleProps = {
     appointments: TypeAppointmentList[];
@@ -33,8 +34,8 @@ export function DayDetailSchedule({
         )
         .filter(
             (session) =>
-                format(session.appointmentDate, "yyyy-MM-dd") ===
-                format(selectedDay, "yyyy-MM-dd")
+                formatToBrazilTime(session.appointmentDate, "yyyy-MM-dd") ===
+                formatToBrazilTime(selectedDay, "yyyy-MM-dd")
         );
 
     if (!allSessions.length) {
@@ -48,7 +49,7 @@ export function DayDetailSchedule({
                     <ChevronLeft size={20} /> Voltar ao calendário
                 </button>
                 <p>
-                    Nenhum agendamento para {format(selectedDay, "dd/MM/yyyy")}.
+                    Nenhum agendamento para {formatToBrazilTime(selectedDay, "dd/MM/yyyy")}.
                 </p>
             </div>
         );
@@ -75,7 +76,7 @@ export function DayDetailSchedule({
                 <ChevronLeft size={20} /> Voltar ao calendário
             </button>
             <h2 className="text-xl font-semibold mb-4">
-                Agendamentos de {format(selectedDay, "dd/MM/yyyy")}
+                Agendamentos de {formatToBrazilTime(selectedDay, "dd/MM/yyyy")}
             </h2>
             <div className="grid grid-cols-[120px_1fr] gap-4">
                 {/* Linha do Tempo */}
@@ -86,7 +87,7 @@ export function DayDetailSchedule({
                             key={index}
                             className="h-[80px] border-b text-right pr-2 pt-2 text-sm"
                         >
-                            {format(time, "HH:mm")}
+                            {formatToBrazilTime(time, "HH:mm")}
                         </div>
                     ))}
                 </div>

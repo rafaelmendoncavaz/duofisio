@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-    format,
     startOfMonth,
     endOfMonth,
     eachDayOfInterval,
@@ -13,6 +12,7 @@ import type { TypeAppointmentList } from "../../../../types/types";
 import { DayDetailSchedule } from "./day-detail-schedule";
 import { ArrowLeftCircle, ArrowRightCircle } from "lucide-react";
 import { useAPI } from "../../../../store/store";
+import { formatToBrazilTime } from "../../../../utils/date";
 
 interface MonthlyScheduleProps {
     appointments: TypeAppointmentList[];
@@ -71,8 +71,8 @@ export function MonthlySchedule({
         const dayAppointments = appointments.filter((appointment) =>
             appointment.sessions.some(
                 (session) =>
-                    format(new Date(session.appointmentDate), "yyyy-MM-dd") ===
-                    format(selectedDay, "yyyy-MM-dd")
+                    formatToBrazilTime(session.appointmentDate, "yyyy-MM-dd") ===
+                    formatToBrazilTime(selectedDay, "yyyy-MM-dd")
             )
         );
         return (
@@ -134,15 +134,15 @@ export function MonthlySchedule({
             <div className="grid grid-cols-7 gap-2">
                 {paddingDays.map((day) => (
                     <div
-                        key={day.toISOString()}
+                        key={formatToBrazilTime(day, "yyyy-MM-dd")}
                         className="border p-2 min-h-[100px] bg-gray-200"
                     />
                 ))}
                 {days.map((day) => {
                     const daySessions = allSessions.filter(
                         (session) =>
-                            format(session.appointmentDate, "yyyy-MM-dd") ===
-                            format(day, "yyyy-MM-dd")
+                            formatToBrazilTime(session.appointmentDate, "yyyy-MM-dd") ===
+                            formatToBrazilTime(day, "yyyy-MM-dd")
                     );
                     return (
                         <button
@@ -152,7 +152,7 @@ export function MonthlySchedule({
                             className="flex flex-col justify-between border p-2 min-h-[100px] bg-yellow-50 hover:bg-fisioblue hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-fisioblue2"
                         >
                             <p className="font-semibold text-start">
-                                {format(day, "d")}
+                                {formatToBrazilTime(day, "d")}
                             </p>
                             {daySessions.length > 0 && (
                                 <p className="mt-1 text-xs font-semibold text-center bg-blue-100 text-blue-800 rounded-md p-[2px]">

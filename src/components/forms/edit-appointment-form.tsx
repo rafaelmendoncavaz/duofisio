@@ -4,10 +4,20 @@ import type { TypeAppointmentUpdate } from "../../types/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { updateAppointmentSchema } from "../../schema/schema";
 import { Input } from "../global/input";
-import { startOfDay, isBefore, isSameDay } from "date-fns";
+import { isBefore, isSameDay } from "date-fns";
 
 interface EditAppointmentFormProps {
     isEditing: boolean;
+}
+
+function parseBrazilTimeToUTC(datetimeLocal: string): string {
+    const [datePart, timePart] = datetimeLocal.split("T")
+    const [year, month, day] = datePart.split("-").map(Number)
+    const [hours, minutes] = timePart.split(":").map(Number)
+
+    const date = new Date(Date.UTC(year, month -1, day, hours + 3, minutes, 0, 0))
+
+    return date.toISOString()
 }
 
 export function EditAppointmentForm({ isEditing }: EditAppointmentFormProps) {
@@ -45,14 +55,12 @@ export function EditAppointmentForm({ isEditing }: EditAppointmentFormProps) {
     const onSubmit = async (data: TypeAppointmentUpdate) => {
         if (!sessionData) return;
 
-        // Converte appointmentDate para ISO com timezone local
-        const appointmentDate = data.appointmentDate;
-        if (!appointmentDate) {
+        if (!data.appointmentDate) {
             alert("O agendamento não pode ficar sem data");
             return;
         }
 
-        const formattedDate = new Date(appointmentDate).toISOString();
+        const formattedDate = parseBrazilTimeToUTC(data.appointmentDate);
 
         const now = new Date();
         if (
@@ -127,7 +135,7 @@ export function EditAppointmentForm({ isEditing }: EditAppointmentFormProps) {
                     <Input
                         type="datetime-local"
                         {...register("appointmentDate")}
-                        min={startOfDay(new Date()).toISOString().slice(0, 16)} // Hoje em diante
+                        min={formatToDateTimeLocal(new Date().toISOString())} // Hoje em diante
                         colorVariant={isEditing ? "enabled" : "disabled"}
                     />
                     {errors.appointmentDate && (

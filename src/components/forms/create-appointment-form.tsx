@@ -5,7 +5,8 @@ import type { TypeCreateAppointment } from "../../types/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createAppointmentSchema } from "../../schema/schema";
 import { Input } from "../global/input";
-import { startOfDay, isBefore, isSameDay, format } from "date-fns";
+import { startOfDay } from "date-fns";
+import { formatToBrazilTime, parseBrazilTimeToUTC } from "../../utils/date";
 
 interface CreateAppointmentFormProps {
     closeCreateAppointment: () => void;
@@ -54,20 +55,14 @@ export function CreateAppointmentForm({
     const onSubmit = async (data: TypeCreateAppointment) => {
         if (!patientData?.id) return;
 
-        // Ajustar "now" para UTC-3
-        const now = new Date();
-        const nowInUtcMinus3 = new Date(now.getTime() - 3 * 60 * 60 * 1000);
-        const appointmentDate = new Date(data.appointmentDate);
-
-        if (
-            isBefore(appointmentDate, nowInUtcMinus3) &&
-            !isSameDay(appointmentDate, nowInUtcMinus3)
-        ) {
-            alert("A data do agendamento deve ser hoje ou no futuro");
-            return;
+        const appointmentDateUTC = parseBrazilTimeToUTC(data.appointmentDate);
+        
+        const payload = {
+            ...data,
+            appointmentDate: appointmentDateUTC,
         }
 
-        const result = await createAppointment(data);
+        const result = await createAppointment(payload);
         if (result.success) {
             await getAppointments(); // Atualiza a lista de agendamentos com o novo agendamento criado
             closeModal();
@@ -75,12 +70,7 @@ export function CreateAppointmentForm({
     };
 
     // Ajustar o min para UTC-3 no formato correto
-    const now = new Date();
-    const nowInUtcMinus3 = new Date(now.getTime() - 3 * 60 * 60 * 1000);
-    const minDateTime = format(
-        startOfDay(nowInUtcMinus3),
-        "yyyy-MM-dd'T'HH:mm"
-    );
+    const minDateTime = formatToBrazilTime(startOfDay(new Date()), "yyyy-MM-dd'T'HH:mm");
 
     const days = [
         { value: 0, label: "Domingo" },

@@ -37,7 +37,7 @@ export function ScheduleList({
                     patientName={session.patientName}
                     status={session.status}
                     cid={session.cid}
-                    appointmentDate={session.appointmentDate.toISOString()}
+                    appointmentDate={session.appointmentDate}
                     sessionNumber={session.sessionNumber}
                     totalSessions={session.totalSessions}
                     onSessionClick={onSessionClick}

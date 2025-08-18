@@ -1,4 +1,5 @@
 import { CalendarCheck2, CircleAlert, ClipboardList, Flag } from "lucide-react";
+import { formatToBrazilTime } from "../../../../../utils/date";
 
 // Definindo as novas props esperadas para uma sessão
 interface ScheduleCardProps {
@@ -9,7 +10,7 @@ interface ScheduleCardProps {
     patientName: string;
     status: "SOLICITADO" | "CONFIRMADO" | "CANCELADO" | "FINALIZADO";
     cid: string;
-    appointmentDate?: string;
+    appointmentDate?: Date;
     onSessionClick: (sessionId: string, appointmentId: string) => void;
 }
 
@@ -63,7 +64,7 @@ export function ScheduleCard({
                 <div className="flex items-center gap-1">
                     <CalendarCheck2 size={16} />
                     <span className="text-xs font-semibold">
-                        {appointmentDate.slice(0, 10).replace(/-/g, "/")}
+                        {formatToBrazilTime(appointmentDate)}
                     </span>
                 </div>
             )}
