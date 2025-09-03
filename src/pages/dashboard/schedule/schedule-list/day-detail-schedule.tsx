@@ -2,7 +2,7 @@ import { addMinutes, isBefore } from "date-fns";
 import type { TypeAppointmentList } from "../../../../types/types";
 import { ScheduleCard } from "./schedule-card/schedule-card";
 import { ChevronLeft } from "lucide-react";
-import { formatToBrazilTime } from "../../../../utils/date";
+import { formatToBrazilTime, toDatetimeLocalValue } from "../../../../utils/date";
 
 type DayDetailScheduleProps = {
     appointments: TypeAppointmentList[];
@@ -18,12 +18,13 @@ export function DayDetailSchedule({
     onSessionClick,
 }: DayDetailScheduleProps) {
     // Extrair todas as sessões dos agendamentos e filtrar pelo dia selecionado
+
     const allSessions = appointments
         .flatMap((appointment) =>
             appointment.sessions.map((session) => ({
                 sessionId: session.id,
                 appointmentId: appointment.id,
-                appointmentDate: new Date(session.appointmentDate),
+                appointmentDate: toDatetimeLocalValue(session.appointmentDate),
                 duration: session.duration,
                 status: session.status,
                 patientName: appointment.patient.name,
@@ -56,8 +57,8 @@ export function DayDetailSchedule({
     }
 
     const dates = allSessions.map((session) => session.appointmentDate);
-    const earliest = new Date(Math.min(...dates.map((d) => d.getTime())));
-    const latest = new Date(Math.max(...dates.map((d) => d.getTime())));
+    const earliest = new Date(Math.min(...dates.map((d) => new Date(d).getTime())));
+    const latest = new Date(Math.max(...dates.map((d) => new Date(d).getTime())));
     const intervals: Date[] = [];
     let current = earliest;
 

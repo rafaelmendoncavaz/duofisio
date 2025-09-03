@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { format, addMinutes, isBefore, set } from "date-fns";
 import type { TypeAppointmentList } from "../../../../types/types";
 import { ScheduleCard } from "./schedule-card/schedule-card";
-import { formatToBrazilTime, parseBrazilTimeToUTC } from "../../../../utils/date";
+import { toDatetimeLocalValue } from "../../../../utils/date";
 
 type DailyScheduleProps = {
     appointments: TypeAppointmentList[];
@@ -17,14 +17,14 @@ export function DailySchedule({
 }: DailyScheduleProps) {
     const [currentTime, setCurrentTime] = useState(() => {
         const now = new Date();
-        return parseBrazilTimeToUTC(formatToBrazilTime(now))
+        return toDatetimeLocalValue(now)
     });
 
     useEffect(() => {
         if (isToday) {
             const interval = setInterval(() => {
                 const now = new Date();
-                setCurrentTime(parseBrazilTimeToUTC(formatToBrazilTime(now)));
+                setCurrentTime(toDatetimeLocalValue(now));
             }, 60000);
             return () => clearInterval(interval);
         }
@@ -35,9 +35,8 @@ export function DailySchedule({
         appointment.sessions.map((session) => ({
             sessionId: session.id,
             appointmentId: appointment.id,
-            appointmentDate: parseBrazilTimeToUTC(
-                formatToBrazilTime(new Date(session.appointmentDate))
-            ),
+            appointmentDate: 
+                toDatetimeLocalValue(session.appointmentDate),
             duration: session.duration,
             status: session.status,
             patientName: appointment.patient.name,
@@ -50,7 +49,7 @@ export function DailySchedule({
     // Definir o início como 06:00 e o fim como 20:00 no dia base, em UTC-3
     const baseDate = allSessions.length
         ? new Date(allSessions[0].appointmentDate)
-        : parseBrazilTimeToUTC(formatToBrazilTime(new Date()));
+        : toDatetimeLocalValue(new Date());
         
     const start = set(baseDate, {
         hours: 6,

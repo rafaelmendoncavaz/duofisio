@@ -10,7 +10,7 @@ interface ScheduleCardProps {
     patientName: string;
     status: "SOLICITADO" | "CONFIRMADO" | "CANCELADO" | "FINALIZADO";
     cid: string;
-    appointmentDate?: Date;
+    appointmentDate?: string | Date;
     onSessionClick: (sessionId: string, appointmentId: string) => void;
 }
 

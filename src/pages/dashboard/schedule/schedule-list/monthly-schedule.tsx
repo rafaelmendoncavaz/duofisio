@@ -12,7 +12,7 @@ import type { TypeAppointmentList } from "../../../../types/types";
 import { DayDetailSchedule } from "./day-detail-schedule";
 import { ArrowLeftCircle, ArrowRightCircle } from "lucide-react";
 import { useAPI } from "../../../../store/store";
-import { formatToBrazilTime } from "../../../../utils/date";
+import { formatToBrazilTime, toDatetimeLocalValue } from "../../../../utils/date";
 
 interface MonthlyScheduleProps {
     appointments: TypeAppointmentList[];
@@ -31,7 +31,7 @@ export function MonthlySchedule({
         appointment.sessions.map((session) => ({
             sessionId: session.id,
             appointmentId: appointment.id,
-            appointmentDate: new Date(session.appointmentDate),
+            appointmentDate: new Date(toDatetimeLocalValue(session.appointmentDate)),
             duration: session.duration,
             status: session.status,
             patientName: appointment.patient.name,
@@ -71,7 +71,7 @@ export function MonthlySchedule({
         const dayAppointments = appointments.filter((appointment) =>
             appointment.sessions.some(
                 (session) =>
-                    formatToBrazilTime(session.appointmentDate, "yyyy-MM-dd") ===
+                    formatToBrazilTime(new Date(session.appointmentDate), "yyyy-MM-dd") ===
                     formatToBrazilTime(selectedDay, "yyyy-MM-dd")
             )
         );
@@ -134,7 +134,7 @@ export function MonthlySchedule({
             <div className="grid grid-cols-7 gap-2">
                 {paddingDays.map((day) => (
                     <div
-                        key={formatToBrazilTime(day, "yyyy-MM-dd")}
+                        key={toDatetimeLocalValue(day)}
                         className="border p-2 min-h-[100px] bg-gray-200"
                     />
                 ))}

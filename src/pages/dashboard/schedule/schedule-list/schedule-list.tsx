@@ -1,5 +1,6 @@
 import type { TypeAppointmentList } from "../../../../types/types";
 import { ScheduleCard } from "./schedule-card/schedule-card";
+import { formatToBrazilTime } from "../../../../utils/date";
 
 interface AppointmentListProps {
     appointments: TypeAppointmentList[];
@@ -16,7 +17,7 @@ export function ScheduleList({
             appointment.sessions.map((session) => ({
                 sessionId: session.id,
                 appointmentId: appointment.id,
-                appointmentDate: new Date(session.appointmentDate),
+                appointmentDate: formatToBrazilTime(new Date(session.appointmentDate)),
                 duration: session.duration,
                 status: session.status,
                 patientName: appointment.patient.name,

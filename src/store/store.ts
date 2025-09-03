@@ -11,6 +11,8 @@ import type {
     TypeAppointmentUpdate,
     TypeAppointmentRepeat,
     TypeAppointmentList,
+    TypeCreateEmployee,
+    TypeUpdateEmployee,
 } from "../types/types";
 import { api } from "../api/api";
 import {
@@ -27,6 +29,7 @@ import {
     addWeeks,
     subWeeks,
 } from "date-fns";
+import { dateOnlyToUTC } from "../utils/date";
 
 // Função auxiliar para aplicar o filtro
 function applyFilter(
@@ -42,8 +45,8 @@ function applyFilter(
 
     switch (filter) {
         case "history":
-            start = startOfDay(state.startDate);
-            end = endOfDay(state.endDate);
+            start = dateOnlyToUTC(state.startDate as string, "start");
+            end = dateOnlyToUTC(state.endDate as string, "end");
             break;
         case "today":
             start = startOfDay(now);
@@ -67,11 +70,16 @@ function applyFilter(
 
     const filteredAppointments = appointments
         .map((appointment) => {
-            const filteredSessions = appointment.sessions.filter((session) =>
-                isWithinInterval(new Date(session.appointmentDate), {
+            const filteredSessions = appointment.sessions.filter((session) => {
+                const sessDate = new Date(session.appointmentDate);
+            if (!(sessDate instanceof Date) || Number.isNaN(sessDate.getTime())) {
+                return false;
+            }
+                return isWithinInterval(new Date(session.appointmentDate), {
                     start,
                     end,
                 })
+            }
             );
             if (filteredSessions.length > 0) {
                 return {
@@ -82,7 +90,7 @@ function applyFilter(
             return null;
         })
         .filter(Boolean) as TypeAppointmentList[];
-
+        
     return filteredAppointments;
 }
 
@@ -92,17 +100,23 @@ export const useModal = create<TypeModal>((set) => ({
     isCreateAppointmentModalOpen: false,
     isSingleAppointmentModalOpen: false,
     isFilterByTimespanModalOpen: false,
+    isCreateEmployeeModalOpen: false,
+    isUpdateEmployeeModalOpen: false,
     openCreatePatientModal: () => set({ isCreatePatientModalOpen: true }),
     openSinglePatientModal: () => set({ isSinglePatientModalOpen: true }),
     openSingleAppointmentModal: () =>
         set({ isSingleAppointmentModalOpen: true }),
     openFilterByTimespanModal: () => set({ isFilterByTimespanModalOpen: true }),
+    openCreateEmployeeModal: () => set({ isCreateEmployeeModalOpen: true }),
+    openUpdateEmployeeModal: () => set({ isUpdateEmployeeModalOpen: true }),
     closeModal: () =>
         set({
             isCreatePatientModalOpen: false,
             isSinglePatientModalOpen: false,
             isSingleAppointmentModalOpen: false,
             isFilterByTimespanModalOpen: false,
+            isCreateEmployeeModalOpen: false,
+            isUpdateEmployeeModalOpen: false,
         }),
 }));
 
@@ -121,6 +135,7 @@ export const useAPI = create<TypeAPI>((set, get) => ({
     csrfToken: null,
     user: null,
     employees: null,
+    employee: null,
     activeFilter: "today",
     startDate: "",
     endDate: "",
@@ -264,7 +279,7 @@ export const useAPI = create<TypeAPI>((set, get) => ({
             const { data: response, status } = await api.post(
                 "/dashboard/patients",
                 data
-            ); // CSRF tratado pelo interceptor
+            );
             set({ error: null });
             return { success: true, patientId: response.patientId, status };
         } catch (error) {
@@ -467,4 +482,66 @@ export const useAPI = create<TypeAPI>((set, get) => ({
             return { success: false, error };
         }
     },
+
+    createEmployee: async (data: TypeCreateEmployee) => {
+        try {
+            const { status } = await api.post(
+                "/dashboard/employee",
+                data,
+            );
+            set({ error: null });
+            return { success: true, status };
+        } catch (error) {
+            set({ error: "Erro ao criar usuário" });
+            return { success: false, error };
+        }
+    },
+
+    getEmployees: async () => {
+        try {
+            const { data } = await api.get("/dashboard/employee");
+            set({ employees: data.employees, error: null });
+            return { success: true };
+        } catch (error) {
+            set({ error: "Erro ao buscar funcionários" });
+            return { success: false, error };
+        }
+    }, 
+
+    getEmployee: async (id: string) => {
+        try {
+            const { data } = await api.get(
+                `/dashboard/employee/${id}`
+            );
+            console.log(data)
+            set({ employee: data, error: null });
+            return { success: true };
+        } catch (error) {
+            set({ error: "Erro ao buscar funcionário específico" });
+            return { success: false, error };
+        }
+    },
+    updateEmployee: async (id: string, data: TypeUpdateEmployee) => {
+         try {
+            const { status } = await api.patch(
+                `/dashboard/employee/${id}`,
+                data,
+            );
+            set({ error: null });
+            return { success: true, status };
+        } catch (error) {
+            set({ error: "Erro ao editar funcionário" });
+            return { success: false, error };
+        }
+    },
+    deleteEmployee: async (id: string) => {
+        try {
+            await api.delete(`/dashboard/employee/${id}`);
+            set({ error: null });
+            return { success: true };
+        } catch (error) {
+            set({ error: "Erro ao deletar funcionário" });
+            return { success: false, error };
+        }
+    }
 }));

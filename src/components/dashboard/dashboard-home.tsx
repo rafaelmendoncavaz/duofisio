@@ -14,13 +14,20 @@ import {
     Settings2,
     CircleAlert,
     Smile,
+    UsersRound,
+    ArrowLeft,
+    UserRoundPlus,
 } from "lucide-react";
 import { AppointmentInfoModal } from "../../pages/dashboard/schedule/modal/appointment-info-modal";
 import { GetPatientInfoModal } from "../modal/patient/get-patient-info-modal";
+import { useState } from "react";
+import { DashboardManage } from "./dashboard-manage";
 
 export function DashboardHome() {
+    const [toggleManage, setToggleManage] = useState<boolean>(false)
     const {
         user,
+        employees,
         verifyAuth,
         getAppointments,
         getSingleAppointment,
@@ -32,10 +39,11 @@ export function DashboardHome() {
         isSinglePatientModalOpen,
         openSingleAppointmentModal,
         openSinglePatientModal,
+        openCreateEmployeeModal,
     } = useModal();
 
     if (!user) return null;
-
+    
     const currentDate = new Date();
     const todaysAppointments = user.appointments
         .flatMap((appointment) =>
@@ -117,19 +125,76 @@ export function DashboardHome() {
         <DashboardTemplate>
             {/* Seção 1: Dados e Estatísticas */}
             <section className="space-y-2">
-                <h1 className="text-2xl text-fisiogray font-bold">
-                    Bem-vindo, {user.name}
-                </h1>
+                <div className="flex items-center justify-between">
+                    <h1 className="text-2xl text-fisiogray font-bold">
+                        Bem-vindo, {user.name}
+                    </h1>
+                    {
+                        user.isAdmin
+                        ? (
+                             <button
+                                type="button"
+                                title="Gerenciar usuários"
+                                onClick={() => setToggleManage(!toggleManage)}
+                                className="flex items-center gap-2 rounded-md bg-fisioblue text-slate-100 hover:bg-fisioblue2 px-3 py-1 shadow-shape font-semibold transition-colors"
+                            >
+                                {
+                                    toggleManage
+                                        ? (
+                                            <>
+                                                <ArrowLeft size={20} />
+                                                Voltar
+                                            </>
+                                        )
+                                        : (
+                                            <>
+                                                <UsersRound size={20} />
+                                                Gerenciar usuários
+                                            </>
+                                        )
+                                }
+                                
+                            </button>
+                        )
+                        : null
+                    }
+                </div>
                 <p className="text-gray-600">
                     Hoje, {format(currentDate, "dd 'de' MMMM 'de' yyyy")}
                 </p>
-                <h1 className="text-xl text-fisiogray font-bold italic">
-                    Seus agendamentos de hoje
-                </h1>
+                <div className="flex items-center justify-between">
+                    <h1 className="text-xl text-fisiogray font-bold italic">
+                        {
+                            toggleManage 
+                                ? "Gerenciar usuários"
+                                : "Seus agendamentos de hoje"
+                        }
+                    </h1>
+                        {
+                            toggleManage
+                                ? (
+                                    <button
+                                type="button"
+                                title="Criar usuário"
+                                onClick={openCreateEmployeeModal}
+                                className="flex items-center gap-2 rounded-md bg-fisioblue text-slate-100 hover:bg-fisioblue2 px-3 py-1 shadow-shape font-semibold transition-colors"
+                            >
+                                <UserRoundPlus size={20} />
+                                Criar Usuário
+                            </button>
+                                )
+                                : null
+                        }
+                </div>
 
                 <div className="w-full h-px bg-fisioblue shadow-shape" />
 
-                <div className="mt-4 flex gap-4">
+                {
+                    toggleManage
+                        ? <DashboardManage employees={employees} setToggleManage={setToggleManage} />
+                        : (
+                            <>
+                                <div className="mt-4 flex gap-4">
                     <div className="p-3 bg-blue-100 text-blue-800 rounded">
                         Total do dia: {todaysAppointments.length}
                     </div>
@@ -159,9 +224,7 @@ export function DashboardHome() {
                         </span>
                     </div>
                 )}
-            </section>
-
-            {/* Seção 2: Tabela de Agendamentos */}
+                {/* Seção 2: Tabela de Agendamentos */}
             <section>
                 <h2 className="text-lg font-semibold mb-2">
                     Agendamentos de Hoje
@@ -330,6 +393,14 @@ export function DashboardHome() {
             </section>
             {isSingleAppointmentModalOpen && <AppointmentInfoModal />}
             {isSinglePatientModalOpen && <GetPatientInfoModal />}
+                            </>
+                        )
+                }
+
+                
+            </section>
+
+            
         </DashboardTemplate>
     );
 }

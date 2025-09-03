@@ -36,8 +36,8 @@ export const createAppointmentSchema = z.object({
 export const appointmentListSchema = z.object({
     id: z.string().uuid("ID do agendamento deve ser um UUID"),
     totalSessions: z.number(),
-    createdAt: z.date(),
-    updatedAt: z.date(),
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
     patient: z.object({
         id: z.string().uuid("ID do paciente deve ser um UUID"),
         name: z.string(),
@@ -64,7 +64,7 @@ export const appointmentListSchema = z.object({
                 z.literal("FINALIZADO"),
             ]),
             sessionNumber: z.number(),
-            appointmentDate: z.string(),
+            appointmentDate: z.string().datetime(),
             duration: z.number(),
             progress: z.string().nullable(),
         })
@@ -74,7 +74,7 @@ export const appointmentListSchema = z.object({
 // Buscar Agendamento Específico (alinhado com backend getSinglePatientAppointments)
 export const getSinglePatientAppointments = z.object({
     id: z.string().uuid("ID do agendamento deve ser um UUID"),
-    appointmentDate: z.string(),
+    appointmentDate: z.string().datetime(),
     duration: z.number(),
     status: z.union([
         z.literal("SOLICITADO"),
@@ -87,8 +87,8 @@ export const getSinglePatientAppointments = z.object({
     appointment: z.object({
         id: z.string().uuid("ID do agendamento deve ser um UUID"),
         totalSessions: z.number(),
-        createdAt: z.date(),
-        updatedAt: z.date(),
+        createdAt: z.string().datetime(),
+        updatedAt: z.string().datetime(),
         patient: z.object({
             patientId: z.string().uuid("ID do paciente deve ser um UUID"),
             name: z.string(),

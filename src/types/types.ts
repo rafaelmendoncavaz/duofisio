@@ -4,6 +4,7 @@ import type {
     appointmentListSchema,
     cep,
     createAppointmentSchema,
+    createEmployeeSchema,
     createPatientSchema,
     createRecordSchema,
     getSinglePatientAppointments,
@@ -12,6 +13,7 @@ import type {
     patientListSchema,
     repeatAppointmentSchema,
     updateAppointmentSchema,
+    updateEmployeeSchema,
     updatePatientSchema,
 } from "../schema/schema";
 
@@ -29,6 +31,8 @@ export type TypeSession = z.infer<typeof getSinglePatientAppointments>;
 export type TypeAppointmentRepeat = z.infer<typeof repeatAppointmentSchema>;
 export type TypeAppointmentUpdate = z.infer<typeof updateAppointmentSchema>;
 export type TypeAppointmentList = z.infer<typeof appointmentListSchema>;
+export type TypeCreateEmployee = z.infer<typeof createEmployeeSchema>;
+export type TypeUpdateEmployee = z.infer<typeof updateEmployeeSchema>;
 
 // ClinicalData (alinhado com schema.prisma e /dashboard/patients/:id/clinical)
 export interface ClinicalData {
@@ -62,6 +66,7 @@ export interface TypeSearchFilter {
 export interface TypeUser {
     id: string;
     name: string;
+    isAdmin: boolean;
     appointments: {
         id: string;
         totalSessions: number;
@@ -77,6 +82,15 @@ export interface TypeUser {
     }[];
 }
 
+export interface TypeEmployee {
+    id: string;
+    name: string;
+    email: string;
+    isAdmin: boolean;
+    createdAt: string;
+    updatedAt: string;
+}
+
 // Modal
 export interface TypeModal {
     closeModal: () => void;
@@ -84,10 +98,14 @@ export interface TypeModal {
     isSinglePatientModalOpen: boolean;
     isSingleAppointmentModalOpen: boolean;
     isFilterByTimespanModalOpen: boolean;
+    isCreateEmployeeModalOpen: boolean;
+    isUpdateEmployeeModalOpen: boolean;
     openCreatePatientModal: () => void;
     openSinglePatientModal: () => void;
     openSingleAppointmentModal: () => void;
     openFilterByTimespanModal: () => void;
+    openCreateEmployeeModal: () => void;
+    openUpdateEmployeeModal: () => void;
 }
 
 export interface TypeAPI {
@@ -95,7 +113,8 @@ export interface TypeAPI {
     error: string | null;
     csrfToken: string | null;
     user: TypeUser | null; // Reflete o retorno de /auth/verify
-    employees: { name: string; id: string }[] | null;
+    employees: TypeEmployee[] | null;
+    employee: { id: string, name: string } | null;
     activeFilter: "history" | "today" | "tomorrow" | "week" | "month" | null;
     startDate: string | number | Date;
     endDate: string | number | Date;
@@ -201,8 +220,35 @@ export interface TypeAPI {
     updateAppointment: (
         data: TypeAppointmentUpdate,
         appointmentId: string
-    ) => Promise<{ success: boolean; status?: number; error?: unknown }>;
+    ) => Promise<{ success: boolean; status?: number; error?: unknown; }>;
     deleteAppointment: (
         appointmentId: string
-    ) => Promise<{ success: boolean; status?: number; error?: unknown }>;
+    ) => Promise<{ success: boolean; status?: number; error?: unknown; }>;
+    createEmployee: (data: TypeCreateEmployee) => Promise<{ 
+        success: boolean; 
+        status?: number; 
+        error?: unknown; 
+    }>
+    getEmployees: () => Promise<{ 
+        success: boolean; 
+        employees?: TypeEmployee[];
+        status?: number;
+        error?: unknown;
+    }>
+    getEmployee: (id: string) => Promise<{
+        success: boolean;
+        employee?: { id: string, name: string };
+        status?: number;
+        error?: unknown;
+    }>
+    updateEmployee: (id: string, data: TypeUpdateEmployee) => Promise<{
+        success: boolean;
+        status?: number;
+        error?: unknown;
+    }>
+    deleteEmployee: (id: string) => Promise<{
+        success: boolean;
+        status?: number;
+        error?: unknown;
+    }>
 }

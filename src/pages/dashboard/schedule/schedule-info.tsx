@@ -10,8 +10,9 @@ import { EditAppointmentForm } from "../../../components/forms/edit-appointment-
 import { Input } from "../../../components/global/input";
 import { useState } from "react";
 import { RepeatAppointmentForm } from "../../../components/forms/repeat-appointment-form";
-import { isBefore, format } from "date-fns";
+import { isBefore } from "date-fns";
 import type { TypeAppointmentUpdate } from "../../../types/types";
+import { formatToBrazilTime } from "../../../utils/date";
 
 export function ScheduleInfo() {
     const [isEditing, setIsEditing] = useState(false);
@@ -31,8 +32,8 @@ export function ScheduleInfo() {
     const currentDate = new Date();
     const appointmentDate = new Date(sessionData.appointmentDate);
     const isPastAppointment = isBefore(appointmentDate, currentDate);
-    const createdAt = format(new Date(sessionData.appointment.createdAt), "dd-MM-yyyy");
-    const updatedAt = format(new Date(sessionData.appointment.updatedAt), "dd-MM-yyyy");
+    const createdAt = formatToBrazilTime(new Date(sessionData.appointment.createdAt), "dd-MM-yyyy");
+    const updatedAt = formatToBrazilTime(new Date(sessionData.appointment.updatedAt), "dd-MM-yyyy");
 
 
     const formattedPhone =

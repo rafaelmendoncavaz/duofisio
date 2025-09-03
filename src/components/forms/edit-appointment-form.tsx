@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { updateAppointmentSchema } from "../../schema/schema";
 import { Input } from "../global/input";
 import { isBefore, isSameDay } from "date-fns";
+import { toDatetimeLocalValue } from "../../utils/date";
 
 interface EditAppointmentFormProps {
     isEditing: boolean;
@@ -32,9 +33,6 @@ export function EditAppointmentForm({ isEditing }: EditAppointmentFormProps) {
     } = useAPI();
     const { closeModal } = useModal();
 
-    // Formata a data ISO para datetime-local (remove segundos e timezone)
-    const formatToDateTimeLocal = (isoString: string) => isoString.slice(0, 16);
-
     const {
         register,
         handleSubmit,
@@ -44,7 +42,7 @@ export function EditAppointmentForm({ isEditing }: EditAppointmentFormProps) {
         defaultValues: {
             employeeId: sessionData?.appointment.employee.employeeId,
             appointmentDate: sessionData?.appointmentDate
-                ? formatToDateTimeLocal(sessionData.appointmentDate)
+                ? toDatetimeLocalValue(sessionData.appointmentDate)
                 : "",
             duration: sessionData?.duration,
             status: sessionData?.status,
@@ -135,7 +133,7 @@ export function EditAppointmentForm({ isEditing }: EditAppointmentFormProps) {
                     <Input
                         type="datetime-local"
                         {...register("appointmentDate")}
-                        min={formatToDateTimeLocal(new Date().toISOString())} // Hoje em diante
+                        min={toDatetimeLocalValue(new Date().toISOString())} // Hoje em diante
                         colorVariant={isEditing ? "enabled" : "disabled"}
                     />
                     {errors.appointmentDate && (

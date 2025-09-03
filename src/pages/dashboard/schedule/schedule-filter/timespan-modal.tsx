@@ -1,4 +1,4 @@
-import { startOfYesterday } from "date-fns";
+import { startOfDay, startOfYesterday } from "date-fns";
 import { Input } from "../../../../components/global/input";
 import { Modal } from "../../../../components/global/modal";
 import { useAPI, useModal } from "../../../../store/store";
@@ -18,6 +18,9 @@ export function TimespanModal() {
         setActiveFilter("history");
         closeModal();
     };
+    console.log(new Date(toDate).toISOString())
+    console.log(fromDate)
+    console.log(startOfDay(new Date(toDate).toISOString()))
 
     return (
         <Modal title="Filtrar por Data">
