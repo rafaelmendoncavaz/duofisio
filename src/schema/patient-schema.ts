@@ -11,7 +11,7 @@ export const createPatientSchema = z.object({
     cpf: z.string().length(11, "CPF deve ter 11 dígitos"),
     dateOfBirth: z.coerce.date(),
     phone: z.string().nullable(), // Nullable no backend
-    email: z.string().email("Insira um e-mail válido").nullable(), // Nullable
+    email: z.string().email("Insira um e-mail válido").nullable().optional(), // Nullable
     sex: z.enum(["Masculino", "Feminino"]).nullable(), // Enum nullable
     profession: z.string().nullable(), // Nullable
     address: addressSchema,
