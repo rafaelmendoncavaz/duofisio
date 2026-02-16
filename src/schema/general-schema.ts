@@ -16,7 +16,7 @@ export const loginSchema = z.object({
 export const clinicalDataSchema = z.object({
     cid: z.string().min(1, "Insira o código do CID"),
     covenant: z.string().nullable(), // Nullable no backend
-    expires: z.coerce.date().nullable(), // Nullable e coercível
+    expires: z.preprocess((val) => val === "" ? null : val, z.coerce.date().nullable()), // Nullable e coercível
     CNS: z.string().nullable(), // Nullable no backend
     allegation: z.string().min(1, "Insira a queixa do paciente"),
     diagnosis: z.string().min(1, "Forneça um diagnóstico"),

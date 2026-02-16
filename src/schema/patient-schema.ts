@@ -11,7 +11,7 @@ export const createPatientSchema = z.object({
     cpf: z.string().length(11, "CPF deve ter 11 dígitos"),
     dateOfBirth: z.coerce.date(),
     phone: z.string().nullable(), // Nullable no backend
-    email: z.string().email("Insira um e-mail válido").nullable().optional(), // Nullable
+    email: z.preprocess((val) => val === "" ? null : val, z.string().email("Insira um e-mail válido").nullable().optional()), // Nullable
     sex: z.enum(["Masculino", "Feminino"]).nullable(), // Enum nullable
     profession: z.string().nullable(), // Nullable
     address: addressSchema,
@@ -25,7 +25,7 @@ export const updatePatientSchema = z.object({
     cpf: z.string().length(11, "CPF deve ter 11 dígitos").optional(),
     dateOfBirth: z.string().optional(),
     phone: z.string().nullable().optional(), // Nullable e opcional
-    email: z.string().email("Insira um e-mail válido").nullable().optional(), // Nullable
+    email: z.preprocess((val) => val === "" ? null : val, z.string().email("Insira um e-mail válido").nullable().optional()), // Nullable
     sex: z.enum(["Masculino", "Feminino"]).nullable().optional(), // Nullable
     profession: z.string().nullable().optional(), // Nullable
     address: addressSchema.optional(),

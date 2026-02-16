@@ -26,7 +26,15 @@ export function CreatePatientForm() {
     } = useForm<TypeCreatePatient>({
         resolver: zodResolver(createPatientSchema),
         defaultValues: {
-            address: { cep: "" },
+            address: { 
+                cep: "85980276",
+                street: "Rua Sete de Setembro",
+                number: 798,
+                complement: "Clínica",
+                neighborhood: "Vila Velha",
+                city: "Guaíra",
+                state: "PR" 
+            },
             clinicalData: { expires: null },
             adultResponsible: null,
         },
@@ -85,7 +93,7 @@ export function CreatePatientForm() {
                         <label className="block" htmlFor="">
                             Nome <span className="text-red-500">*</span>
                         </label>
-                        <Input type="text" {...register("name")} />
+                        <Input type="text" {...register("name")} placeholder="Insira o Nome Completo" />
                         {errors.name && (
                             <span className="text-sm text-red-500">
                                 {errors.name.message}
@@ -98,7 +106,7 @@ export function CreatePatientForm() {
                             <label className="block" htmlFor="">
                                 CPF <span className="text-red-500">*</span>
                             </label>
-                            <Input type="text" {...register("cpf")} />
+                            <Input type="text" {...register("cpf")} placeholder="Ex: 12345678901" />
                             {errors.cpf && (
                                 <span className="text-sm text-red-500">
                                     {errors.cpf.message}
@@ -123,7 +131,7 @@ export function CreatePatientForm() {
                             <label className="block" htmlFor="">
                                 Telefone
                             </label>
-                            <Input type="text" {...register("phone")} />
+                            <Input type="text" {...register("phone")} placeholder="Ex: 45988007070 (opcional)" />
                             {errors.phone && (
                                 <span className="text-sm text-red-500">
                                     {errors.phone.message}
@@ -134,7 +142,7 @@ export function CreatePatientForm() {
                             <label className="block" htmlFor="">
                                 Email
                             </label>
-                            <Input type="email" {...register("email")} />
+                            <Input type="email" {...register("email")} placeholder="Ex: email@email.com (opcional)" />
                             {errors.email && (
                                 <span className="text-sm text-red-500">
                                     {errors.email.message}
@@ -168,7 +176,7 @@ export function CreatePatientForm() {
                             <label className="block" htmlFor="">
                                 Ocupação
                             </label>
-                            <Input type="text" {...register("profession")} />
+                            <Input type="text" {...register("profession")} placeholder="Profissão (opcional)" />
                             {errors.profession && (
                                 <span className="text-sm text-red-500">
                                     {errors.profession.message}
@@ -180,7 +188,11 @@ export function CreatePatientForm() {
 
                 {/* Endereço do Paciente */}
                 <section className="space-y-4">
-                    <h2 className="text-lg font-semibold">Endereço</h2>
+                    <div>
+                        <h2 className="text-lg font-semibold">Endereço</h2>
+                        <p className="text-sm italic">Caso nenhum endereço for cadastrado, o endereço padrão será o da clínica</p>
+                        <p className="text-sm italic">Para inserir um endereço, basta preencher o CEP e atualizar o número</p>
+                    </div>
                     <div className="w-full h-px bg-fisioblue shadow-shape" />
 
                     <div className="space-y-2">
@@ -301,6 +313,7 @@ export function CreatePatientForm() {
                             <Input
                                 type="text"
                                 {...register("clinicalData.cid")}
+                                placeholder="No mínimo um caractere"
                             />
                             {errors.clinicalData?.cid && (
                                 <span className="text-sm text-red-500">
@@ -315,6 +328,7 @@ export function CreatePatientForm() {
                             <Input
                                 type="text"
                                 {...register("clinicalData.CNS")}
+                                placeholder="Número Carteirinha SUS (opcional)"
                             />
                         </div>
                     </div>
@@ -327,6 +341,7 @@ export function CreatePatientForm() {
                             <Input
                                 type="text"
                                 {...register("clinicalData.covenant")}
+                                placeholder="Convênio Médico (opcional)"
                             />
                         </div>
                         <div className="space-y-2">
@@ -348,6 +363,7 @@ export function CreatePatientForm() {
                             <Input
                                 type="text"
                                 {...register("clinicalData.allegation")}
+                                placeholder="Insira a queixa de dor do paciente"
                             />
                             {errors.clinicalData?.allegation && (
                                 <span className="text-sm text-red-500">
@@ -363,6 +379,7 @@ export function CreatePatientForm() {
                             <Input
                                 type="text"
                                 {...register("clinicalData.diagnosis")}
+                                placeholder="Insira o diagnóstico inicial"
                             />
                             {errors.clinicalData?.diagnosis && (
                                 <span className="text-sm text-red-500">
